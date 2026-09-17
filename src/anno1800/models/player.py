@@ -24,6 +24,7 @@ class PlayerState:
     victory_points: int = 0
 
     hand: list[PopulationCard] = field(default_factory=list)
+    completed_cards: list[PopulationCard] = field(default_factory=list)
 
     gold: int = 0
 
@@ -76,3 +77,21 @@ class PlayerState:
             raise ValueError("Not enough gold")
 
         self.gold -= amount
+
+    def has_card(self, card: PopulationCard) -> bool:
+        return card in self.hand
+
+    def complete_card(self, card: PopulationCard) -> None:
+        if card not in self.hand:
+            raise ValueError(
+                f"Card {card.id} is not in player's hand"
+            )
+
+        self.hand.remove(card)
+        self.completed_cards.append(card)
+
+    def card_victory_points(self) -> int:
+        return sum(card.victory_points for card in self.completed_cards)
+
+    def total_victory_points(self) -> int:
+        return self.victory_points + self.card_victory_points()
