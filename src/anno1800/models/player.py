@@ -6,6 +6,7 @@ from .population import Population, PopulationType
 from .ship import ShipType, Ship
 from .cards import PopulationCard
 from .new_world import NewWorldIsland
+from .goods import Good
 from anno1800.services.production import ProductionResolver
 
 @dataclass
@@ -27,6 +28,7 @@ class PlayerState:
     new_world_islands: list[NewWorldIsland] = field(default_factory=list)
     hand: list[PopulationCard] = field(default_factory=list)
     completed_cards: list[PopulationCard] = field(default_factory=list)
+    traded_goods_this_turn: set[Good] = field(default_factory=set)
 
     gold: int = 0
 
@@ -126,3 +128,12 @@ class PlayerState:
 
     def has_new_world_resource(self, good) -> bool:
         return any(island.has_resource(good) for island in self.new_world_islands)
+
+    def has_traded_good(self, good: Good) -> bool:
+        return (good in self.traded_goods_this_turn)
+
+    def record_traded_good(self, good: Good) -> None:
+        self.traded_goods_this_turn.add(good)
+
+    def reset_trade_history(self) -> None:
+        self.traded_goods_this_turn.clear()

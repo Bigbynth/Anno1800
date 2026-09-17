@@ -22,6 +22,8 @@ class FulfillPopulationCardAction(GameAction):
         hand_snapshot = player.hand.copy()
         completed_snapshot = player.completed_cards.copy()
         ship_snapshot = player.ship_usage_snapshot()
+        trade_history_snapshot = player.traded_goods_this_turn.copy()
+        trade_owner_gold_snapshots = {id(trade.owner): (trade.owner, trade.owner.gold) for trade in self.foreign_production}
         resolver = player.start_production()
 
         try:
@@ -50,6 +52,9 @@ class FulfillPopulationCardAction(GameAction):
             player.hand = hand_snapshot
             player.completed_cards = completed_snapshot
             player.restore_ship_usage(ship_snapshot)
+            player.traded_goods_this_turn = trade_history_snapshot
+            for owner, gold in (trade_owner_gold_snapshots.values):
+                owner.gold = gold
             raise
 
         finally:

@@ -31,6 +31,8 @@ class Game:
         return result
 
     def end_turn(self) -> None:
+        current_player = self.state.current_player
+        current_player.reset_trade_history()
         player_count = len(self.state.players)
 
         self.state.current_player_index = (self.state.current_player_index + 1) % player_count
