@@ -61,4 +61,6 @@ class ProductionResolver:
         for good, amount in cost.items():
             self.context.consume(good, amount)
 
-    
+    def add_external_good(self, good: Good, amount: int = 1) -> None:
+        self._ensure_active()
+        self.context.add(good, amount)

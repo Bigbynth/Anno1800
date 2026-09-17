@@ -4,11 +4,14 @@ from anno1800.models.cards import PopulationCard
 from anno1800.models.industry import OwnedIndustry
 from anno1800.models.player import PlayerState
 from anno1800.services.production import ProductionResolver
+from anno1800.models.trade import ForeignProduction
+from anno1800.services.trade import TradeResolver
 
 @dataclass
 class FulfillPopulationCardAction(GameAction):
     card: PopulationCard
     production_plan: list[OwnedIndustry] = field(default_factory=list)
+    foreign_production: list[ForeignProduction] = field(default_factory=list)
 
     def execute(self, player: PlayerState) -> ActionResult:
         self._validate_card(player)
@@ -18,11 +21,18 @@ class FulfillPopulationCardAction(GameAction):
         island_snapshot = player.island.snapshot()
         hand_snapshot = player.hand.copy()
         completed_snapshot = player.completed_cards.copy()
+        ship_snapshot = player.ship_usage_snapshot()
         resolver = player.start_production()
 
         try:
             for industry in self.production_plan:
                 resolver.produce(industry)
+
+            trade_resolver = TradeResolver(buyer=player)
+
+            traded_goods = trade_resolver.execute(self.foreign_production)
+            for good in traded_goods:
+                resolver.add_external_good(good)
 
             if not resolver.can_pay(self.card.requirements):
                 raise InvalidActionError(self._missing_goods_message(resolver))
@@ -39,6 +49,7 @@ class FulfillPopulationCardAction(GameAction):
             player.island.restore(island_snapshot)
             player.hand = hand_snapshot
             player.completed_cards = completed_snapshot
+            player.restore_ship_usage(ship_snapshot)
             raise
 
         finally:

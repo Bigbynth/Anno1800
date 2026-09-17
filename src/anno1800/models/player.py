@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from .industry import Industry, OwnedIndustry
 from .island import Island
 from .population import Population, PopulationType
-
+from .ship import ShipType, Ship
 from .cards import PopulationCard
 from anno1800.services.production import ProductionResolver
 
@@ -22,7 +22,7 @@ class PlayerState:
     )
 
     victory_points: int = 0
-
+    ships: list[Ship] = field(default_factory=list)
     hand: list[PopulationCard] = field(default_factory=list)
     completed_cards: list[PopulationCard] = field(default_factory=list)
 
@@ -95,3 +95,26 @@ class PlayerState:
 
     def total_victory_points(self) -> int:
         return self.victory_points + self.card_victory_points()
+
+    def add_ship(self, ship: Ship) -> None:
+        self.ships.append(ship)
+
+    def get_ships(self, ship_type: ShipType) -> list[Ship]:
+        return [ship for ship in self.ships if ship.ship_type == ship_type]
+
+    def available_ship_capacity(self, ship_type: ShipType) -> int:
+        return sum(ship.available_capacity for ship in self.get_ships(ship_type))
+
+    def ship_usage_snapshot(self) -> list[int]:
+        return [ship.used for ship in self.ships]
+
+    def restore_ship_usage(self, snapshot: list[int]) -> None:
+        if len(snapshot) != len(self.ships):
+            raise ValueError("Invalid ship snapshot")
+
+        for ship, used in zip(self.ships, snapshot):
+            ship.used = used
+
+    def refresh_ships(self) -> None:
+        for ship in self.ships:
+            ship.refresh()
