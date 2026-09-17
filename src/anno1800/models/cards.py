@@ -11,4 +11,5 @@ class PopulationCard:
     requirements: dict[Good, int] = field(default_factory=dict)
 
     victory_points: int = 0
+    is_new_world: bool = False
     

@@ -9,6 +9,7 @@ class EmptyDeckError(Exception):
 @dataclass
 class PopulationCardDeck:
     cards: dict[PopulationType, list[PopulationCard]] = field(default_factory=dict)
+    new_world_cards: list[PopulationCard] = field(default_factory=list)
 
     def remaining(self, population_type: PopulationType) -> int:
         return len(self.cards.get(population_type, []))
@@ -26,4 +27,13 @@ class PopulationCardDeck:
                 "population cards remaining"
             )
         return stack.pop()
+
+    def remaining_new_world(self) -> int:
+        return len(self.new_world_cards)
+
+    def draw_new_world(self) -> PopulationCard:
+        if not self.new_world_cards:
+            raise EmptyDeckError("No New World cards remaining")
+
+        return self.new_world_cards.pop()
     

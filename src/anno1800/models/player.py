@@ -5,6 +5,7 @@ from .island import Island
 from .population import Population, PopulationType
 from .ship import ShipType, Ship
 from .cards import PopulationCard
+from .new_world import NewWorldIsland
 from anno1800.services.production import ProductionResolver
 
 @dataclass
@@ -23,6 +24,7 @@ class PlayerState:
 
     victory_points: int = 0
     ships: list[Ship] = field(default_factory=list)
+    new_world_islands: list[NewWorldIsland] = field(default_factory=list)
     hand: list[PopulationCard] = field(default_factory=list)
     completed_cards: list[PopulationCard] = field(default_factory=list)
 
@@ -118,3 +120,9 @@ class PlayerState:
     def refresh_ships(self) -> None:
         for ship in self.ships:
             ship.refresh()
+
+    def add_new_world_island(self, island: NewWorldIsland) -> None:
+        self.new_world_islands.append(island)
+
+    def has_new_world_resource(self, good) -> bool:
+        return any(island.has_resource(good) for island in self.new_world_islands)
