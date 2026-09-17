@@ -137,3 +137,13 @@ class PlayerState:
 
     def reset_trade_history(self) -> None:
         self.traded_goods_this_turn.clear()
+
+    def can_activate_card(self, card: PopulationCard) -> bool:
+        return (card in self.completed_cards and not card.activated)
+
+    def activate_card(self, card: PopulationCard) -> None:
+        if card not in self.completed_cards:
+            raise ValueError(
+                f"Card {card.id} has not been completed"
+            )
+        card.activate()

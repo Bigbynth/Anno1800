@@ -38,3 +38,10 @@ class Game:
         self.state.current_player_index = (self.state.current_player_index + 1) % player_count
 
         self.state.turn_number += 1
+
+    def perform_free_action(self, action: GameAction) -> ActionResult:
+        if self.state.game_over:
+            raise RuntimeError("The game is already over")
+
+        player = self.current_player
+        return action.execute(player)
