@@ -4,6 +4,7 @@ from .industry import Industry, OwnedIndustry
 from .island import Island
 from .population import Population, PopulationType
 
+from .cards import PopulationCard
 from anno1800.services.production import ProductionResolver
 
 @dataclass
@@ -21,6 +22,10 @@ class PlayerState:
     )
 
     victory_points: int = 0
+
+    hand: list[PopulationCard] = field(default_factory=list)
+
+    gold: int = 0
 
     def add_population(self, population_type: PopulationType, amount: int = 1) -> None:
         self.population.add(population_type, amount)
@@ -49,3 +54,25 @@ class PlayerState:
     def refresh_population(self) -> None: 
         self.population.refresh_all()
         self.island.clear_worker()
+
+    def add_card(self, card: PopulationCard) -> None:
+        self.hand.append(card)
+
+    def add_gold(self, amount: int) -> None:
+
+        if amount < 0:
+            raise ValueError("Amount cannot be negative")
+
+        self.gold += amount
+
+    def can_spend_gold(self, amount: int) -> bool:
+        return self.gold >= amount
+
+    def spend_gold(self, amount: int) -> None:
+        if amount < 0:
+            raise ValueError("Amount cannot be negative")
+
+        if not self.can_spend_gold(amount):
+            raise ValueError("Not enough gold")
+
+        self.gold -= amount
