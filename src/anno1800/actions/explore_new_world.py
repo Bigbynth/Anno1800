@@ -17,16 +17,17 @@ class ExploreNewWorldAction(GameAction):
         player = context.player
         deck = state.population_deck
 
-        self._validate(player, deck)
+        self._validate(context)
 
-        island = (state.draw_new_world_island())
         exploration_cost = self._exploration_cost(player)
         ship_snapshot = player.ship_usage_snapshot()
-        islands_snapshot = state.new_world_islands.copy()
+        islands_snapshot = (player.new_world_islands.copy())
         hand_snapshot = player.hand.copy()
         deck_snapshot = deck.new_world_cards.copy()
+        island_stack_snapshot = (state.new_world_islands.copy())
 
         try:
+            island = (state.draw_new_world_island())
             ShippingService.use_capacity(player, ShipType.EXPLORATION, exploration_cost)
             player.add_new_world_island(island)
 
@@ -44,7 +45,7 @@ class ExploreNewWorldAction(GameAction):
             player.new_world_islands = islands_snapshot
             player.hand = hand_snapshot
             deck.new_world_cards = deck_snapshot
-            state.new_world_islands = (islands_snapshot)
+            state.new_world_islands = (island_stack_snapshot)
 
             raise
 
