@@ -1,15 +1,17 @@
 from anno1800.actions.base import ActionResult, GameAction
 
-from anno1800.models.player import PlayerState
+from anno1800.actions.context import ActionContext
 
 class FestivalAction(GameAction):
-    def execute(self, player: PlayerState) -> ActionResult:
+    def execute(self, context: ActionContext) -> ActionResult:
+        player = context.player
+
         player.refresh_population()
 
         return ActionResult(
             message=(
                 f"{player.name} held a festival."
-                f"population is available again"
+                "Population is available again."
             )
         )
 

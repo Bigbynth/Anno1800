@@ -2,6 +2,7 @@ from anno1800.actions.base import ActionResult, GameAction
 
 from anno1800.game_state import GameState
 from anno1800.models.player import PlayerState
+from anno1800.actions.context import ActionContext
 
 class Game: 
 
@@ -22,9 +23,8 @@ class Game:
         if self.state.game_over:
             raise RuntimeError("The game is already over")
 
-        player = self.current_player
-
-        result = action.execute(player)
+        context = ActionContext(state=self.state, player=self.current_player)
+        result = action.execute(context)
 
         self.end_turn()
 
@@ -43,5 +43,5 @@ class Game:
         if self.state.game_over:
             raise RuntimeError("The game is already over")
 
-        player = self.current_player
-        return action.execute(player)
+        context = ActionContext(state=self.state, player=self.current_player)
+        return action.execute(context)

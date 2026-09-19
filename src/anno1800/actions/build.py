@@ -13,6 +13,7 @@ from anno1800.models.player import PlayerState
 from anno1800.services.production import (
     ProductionResolver,
 )
+from anno1800.actions.context import ActionContext
 
 
 @dataclass
@@ -25,9 +26,9 @@ class BuildAction(GameAction):
 
     def execute(
         self,
-        player: PlayerState,
+        context: ActionContext
     ) -> ActionResult:
-
+        player = context.player
         self._validate_production_plan(
             player
         )

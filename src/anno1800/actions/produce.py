@@ -3,13 +3,14 @@ from dataclasses import dataclass
 from anno1800.actions.base import ActionResult, GameAction, InvalidActionError
 
 from anno1800.models.industry import OwnedIndustry
-from anno1800.models.player import PlayerState
+from anno1800.actions.context import ActionContext
 
 @dataclass
 class ProduceAction(GameAction):
     industry: OwnedIndustry
 
-    def execute(self, player: PlayerState) -> ActionResult:
+    def execute(self, context: ActionContext) -> ActionResult:
+        player = context.player
         if self.industry not in player.island.industries:
             raise InvalidActionError("Player does not own this industry")
 

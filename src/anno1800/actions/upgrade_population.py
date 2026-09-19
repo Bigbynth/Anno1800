@@ -7,6 +7,7 @@ from anno1800.models.goods import Good
 from anno1800.models.industry import OwnedIndustry
 from anno1800.models.player import PlayerState
 from anno1800.models.population_upgrade import PopulationUpgrade
+from anno1800.actions.context import ActionContext
 
 MAX_UPGRADES_PER_ACTION = 3
 
@@ -16,7 +17,8 @@ class UpgradePopulationAction(GameAction):
 
     production_plan: list[OwnedIndustry] = field(default_factory=list)
 
-    def execute(self, player: PlayerState) -> ActionResult:
+    def execute(self, context: ActionContext) -> ActionResult:
+        player = context.player
         self._validate_upgrade_count()
         self._validate_industries(player)
 

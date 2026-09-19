@@ -1,9 +1,14 @@
-from dataclasses import dataclass
+from __future__ import annotations
 
-from anno1800.game_state import GameState
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
 from anno1800.models.player import PlayerState
 
-@dataclass
+if TYPE_CHECKING:
+    from anno1800.game_state import GameState
+
+@dataclass(frozen=True)
 class ActionContext:
     state: GameState
     player: PlayerState

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from anno1800.models.player import PlayerState
+from anno1800.actions.context import ActionContext
 
 class InvalidActionError(Exception):
     pass
@@ -13,6 +13,6 @@ class ActionResult:
 class GameAction(ABC):
 
     @abstractmethod
-    def execute(self, player: PlayerState) -> ActionResult:
+    def execute(self, context: ActionContext) -> ActionResult:
         raise NotImplementedError()
 

@@ -3,12 +3,14 @@ from anno1800.actions.base import ActionResult, GameAction, InvalidActionError
 from anno1800.models.cards import CardEffect, CardEffectType, PopulationCard
 from anno1800.models.player import PlayerState
 from anno1800.models.ship import ShipType, Ship
+from anno1800.actions.context import ActionContext
 
 @dataclass
 class ActivatePopulationCardAction(GameAction):
     card: PopulationCard
 
-    def execute(self, player: PlayerState) -> ActionResult:
+    def execute(self, context: ActionContext) -> ActionResult:
+        player = context.player
         if not player.can_activate_card(self.card):
             raise InvalidActionError(
                 f"Card {self.card.id} cannot be activated"

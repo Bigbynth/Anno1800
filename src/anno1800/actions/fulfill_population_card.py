@@ -6,6 +6,7 @@ from anno1800.models.player import PlayerState
 from anno1800.services.production import ProductionResolver
 from anno1800.models.trade import ForeignProduction
 from anno1800.services.trade import TradeResolver
+from anno1800.actions.context import ActionContext
 
 @dataclass
 class FulfillPopulationCardAction(GameAction):
@@ -13,7 +14,8 @@ class FulfillPopulationCardAction(GameAction):
     production_plan: list[OwnedIndustry] = field(default_factory=list)
     foreign_production: list[ForeignProduction] = field(default_factory=list)
 
-    def execute(self, player: PlayerState) -> ActionResult:
+    def execute(self, context: ActionContext) -> ActionResult:
+        player = context.player
         self._validate_card(player)
         self._validate_industries(player)
 
