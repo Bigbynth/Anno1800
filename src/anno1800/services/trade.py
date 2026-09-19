@@ -1,7 +1,7 @@
 from anno1800.actions.base import InvalidActionError
 from anno1800.models.goods import Good
 from anno1800.models.player import PlayerState
-from anno1800.models.ship import ShipType
+from anno1800.models.ship import NavalTokenType
 from anno1800.models.population import PopulationType
 from anno1800.models.trade import ForeignProduction
 from anno1800.services.shipping import ShippingService
@@ -49,7 +49,7 @@ class TradeResolver:
                 )
 
         required_capacity = sum(self._trade_cost(trade) for trade in trades)
-        if not ShippingService.can_use_capacity(self.buyer, ShipType.TRADE, required_capacity):
+        if not ShippingService.can_use_capacity(self.buyer, NavalTokenType.TRADE, required_capacity):
             raise InvalidActionError("Not enough trade ship capacity")
 
     def execute(self, trades: list[ForeignProduction]) -> list[Good]:
@@ -62,7 +62,7 @@ class TradeResolver:
         for trade in trades:
             good = (trade.industry.industry.good)
             cost = self._trade_cost(trade)
-            ShippingService.use_capacity(self.buyer, ShipType.TRADE, cost)
+            ShippingService.use_capacity(self.buyer, NavalTokenType.TRADE, cost)
 
             trade.owner.add_gold(1)
             self.buyer.record_traded_good(good)

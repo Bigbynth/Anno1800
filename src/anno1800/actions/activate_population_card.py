@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from anno1800.actions.base import ActionResult, GameAction, InvalidActionError
 from anno1800.models.cards import CardEffect, CardEffectType, PopulationCard
 from anno1800.models.player import PlayerState
-from anno1800.models.ship import ShipType, Ship
+from anno1800.models.ship import NavalTokenType
 from anno1800.actions.context import ActionContext
 
 @dataclass
@@ -21,6 +21,7 @@ class ActivatePopulationCardAction(GameAction):
         gold_snapshot = player.gold
         population_snapshot = (player.population.snapshot())
         ships_snapshot = (player.ships.copy())
+        naval_tokens_snapshot = (player.naval_tokens.copy())
         activated_snapshot = (self.card.activated)
 
         try:
@@ -37,7 +38,8 @@ class ActivatePopulationCardAction(GameAction):
         except Exception:
             player.gold = gold_snapshot
             player.population.restore(population_snapshot)
-            player.ships = ships_snapshot
+            player.ships = (ships_snapshot)
+            player.naval_tokens = (naval_tokens_snapshot)
             self.card.activated = (activated_snapshot)
             raise
 
@@ -58,11 +60,11 @@ class ActivatePopulationCardAction(GameAction):
             return
 
         if effect.effect_type == CardEffectType.GAIN_TRADE_CAPACITY:
-            player.add_ship(Ship(name=("Card Trade Token"), ship_type=(ShipType.TRADE), capacity=effect.amount))
+            player.add_naval_tokens(NavalTokenType.TRADE, effect.amount)
             return
 
         if effect.effect_type == CardEffectType.GAIN_EXPLORATION_CAPACITY:
-            player.add_ship(Ship(name=("Car Exploration Token"), ship_type=(ShipType.EXPLORATION), capacity=effect.amount))
+            player.add_naval_tokens(NavalTokenType.EXPLORATION, effect.amount)
             return
 
         if effect.effect_type == CardEffectType.GAIN_POPULATION:

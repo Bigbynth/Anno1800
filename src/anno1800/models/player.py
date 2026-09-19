@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from .industry import Industry, OwnedIndustry
 from .island import Island
 from .population import Population, PopulationType
-from .ship import ShipType, Ship
+from .ship import NavalToken, NavalTokenType, Ship
 from .cards import PopulationCard
 from .new_world import NewWorldIsland
 from .goods import Good
@@ -25,6 +25,7 @@ class PlayerState:
 
     victory_points: int = 0
     ships: list[Ship] = field(default_factory=list)
+    naval_tokens: list[NavalToken] = field(default_factory=list)
     new_world_islands: list[NewWorldIsland] = field(default_factory=list)
     hand: list[PopulationCard] = field(default_factory=list)
     completed_cards: list[PopulationCard] = field(default_factory=list)
@@ -103,25 +104,35 @@ class PlayerState:
     def add_ship(self, ship: Ship) -> None:
         self.ships.append(ship)
 
-    def get_ships(self, ship_type: ShipType) -> list[Ship]:
-        return [ship for ship in self.ships if ship.ship_type == ship_type]
+        for _ in range(ship.trade_token):
+            self.naval_tokens.append(NavalToken(token_type=(NavalTokenType.TRADE)))
 
-    def available_ship_capacity(self, ship_type: ShipType) -> int:
-        return sum(ship.available_capacity for ship in self.get_ships(ship_type))
+        for _ in range(ship.exploration_tokens):
+            self.naval_tokens.append(NavalToken(token_type=NavalTokenType.EXPLORATION))
 
-    def ship_usage_snapshot(self) -> list[int]:
-        return [ship.used for ship in self.ships]
+    def available_ship_capacity(self, token_type: NavalTokenType) -> int:
+        return sum(1 for token in self.naval_tokens if (token.token_type == token_type and token.available))
 
-    def restore_ship_usage(self, snapshot: list[int]) -> None:
-        if len(snapshot) != len(self.ships):
-            raise ValueError("Invalid ship snapshot")
+    def naval_token_snapshot(self) -> list[bool]:
+        return [token.exhausted for token in self.naval_tokens]
 
-        for ship, used in zip(self.ships, snapshot):
-            ship.used = used
+    def restore_naval_token(self, snapshot: list[bool]) -> None:
+        if len(snapshot) != len(self.naval_tokens):
+            raise ValueError("Invalid naval token snapshot")
 
-    def refresh_ships(self) -> None:
-        for ship in self.ships:
-            ship.refresh()
+        for token, exhausted in zip(self.naval_tokens, snapshot):
+            token.exhausted = exhausted
+
+    def refresh_naval_tokens(self) -> None:
+        for token in self.naval_tokens:
+            token.refresh()
+
+    def add_naval_tokens(self, token_type: NavalTokenType, amount: int = 1) -> None:
+        if amount <= 0:
+            raise ValueError("Amount must be positive")
+
+        for _ in range(amount):
+            self.naval_tokens.append(NavalToken(token_type=token_type))
 
     def add_new_world_island(self, island: NewWorldIsland) -> None:
         self.new_world_islands.append(island)

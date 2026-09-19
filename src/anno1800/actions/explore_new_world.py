@@ -2,7 +2,7 @@ from anno1800.actions.base import ActionResult, GameAction, InvalidActionError
 from anno1800.models.deck import PopulationCardDeck
 from anno1800.models.new_world import NewWorldIsland
 from anno1800.models.player import PlayerState
-from anno1800.models.ship import ShipType
+from anno1800.models.ship import NavalTokenType
 from anno1800.services.shipping import ShippingService
 from anno1800.actions.context import ActionContext
 
@@ -20,7 +20,7 @@ class ExploreNewWorldAction(GameAction):
         self._validate(context)
 
         exploration_cost = self._exploration_cost(player)
-        ship_snapshot = player.ship_usage_snapshot()
+        naval_token_snapshot = (player.naval_token_snapshot())
         islands_snapshot = (player.new_world_islands.copy())
         hand_snapshot = player.hand.copy()
         deck_snapshot = deck.new_world_cards.copy()
@@ -28,7 +28,7 @@ class ExploreNewWorldAction(GameAction):
 
         try:
             island = (state.draw_new_world_island())
-            ShippingService.use_capacity(player, ShipType.EXPLORATION, exploration_cost)
+            ShippingService.use_capacity(player, NavalTokenType.EXPLORATION, exploration_cost)
             player.add_new_world_island(island)
 
             for _ in range(NEW_WORLD_CARDS_PER_ISLAND):
@@ -41,7 +41,7 @@ class ExploreNewWorldAction(GameAction):
                 )
             )
         except Exception:
-            player.restore_ship_usage(ship_snapshot)
+            player.restore_naval_token(naval_token_snapshot)
             player.new_world_islands = islands_snapshot
             player.hand = hand_snapshot
             deck.new_world_cards = deck_snapshot
@@ -66,7 +66,7 @@ class ExploreNewWorldAction(GameAction):
 
         required = self._exploration_cost(player)
 
-        if not ShippingService.can_use_capacity(player, ShipType.EXPLORATION, required):
+        if not ShippingService.can_use_capacity(player, NavalTokenType.EXPLORATION, required):
             raise InvalidActionError("Not enough exploration capacity")
 
     def _exploration_cost(self, player: PlayerState) -> int:

@@ -1,36 +1,44 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from .goods import Good
 from enum import Enum
 
 class ShipType(str, Enum):
     TRADE = "trade"
     EXPLORATION = "exploration"
 
+class NavalTokenType(str, Enum):
+    TRADE = "trade"
+    EXPLORATION = "exploration"
+
 @dataclass
+class NavalToken:
+    token_type: NavalTokenType
+    exhausted: bool = False
+
+    @property
+    def available(self) -> bool:
+        return not self.exhausted
+
+    def use(self) -> None:
+        if self.exhausted:
+            raise ValueError(
+                f"{self.token_type.value} token is already exhausted"
+            )
+
+    def refresh(self) -> None:
+        self.exhausted = False
+
+@dataclass(frozen=True)
 class Ship:
     name: str
     ship_type: ShipType
-    capacity: int
-    used: int = 0
 
-    @property
-    def available_capacity(self) -> int:
-        return self.capacity - self.used
+    trade_token: int = 0
+    exploration_tokens: int = 0
 
-    def can_use(self, amount: int = 1) -> bool:
-        if amount <= 0:
-            return False
+    build_cost: dict[Good, int] = field(default_factory=dict)
+    requires_shipyard: bool = True
 
-        return self.available_capacity >= amount
-
-    def use(self, amount: int = 1) -> None:
-        if amount <= 0:
-            raise ValueError("Amount must be positive")
-
-        if not self.can_use(amount):
-            raise ValueError(
-                f"Ship {self.name} does not have enough capacity"
-            )
-        self.used += amount
-
-    def refresh(self) -> None:
-        self.used = 0
+    def __post_init__(self) -> None:
+        if (self.trade_token < 0 or self.exploration_tokens < 0):
+            raise ValueError("Ship token counts cannot be negative")
