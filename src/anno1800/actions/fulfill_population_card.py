@@ -4,7 +4,7 @@ from anno1800.models.cards import PopulationCard
 from anno1800.models.industry import OwnedIndustry
 from anno1800.models.player import PlayerState
 from anno1800.services.production import ProductionResolver
-from anno1800.models.trade import ForeignProduction
+from anno1800.models.trade import TradeRequest
 from anno1800.services.trade import TradeResolver
 from anno1800.actions.context import ActionContext
 
@@ -12,7 +12,7 @@ from anno1800.actions.context import ActionContext
 class FulfillPopulationCardAction(GameAction):
     card: PopulationCard
     production_plan: list[OwnedIndustry] = field(default_factory=list)
-    foreign_production: list[ForeignProduction] = field(default_factory=list)
+    trade_plan: list[TradeRequest] = field(default_factory=list)
 
     def execute(self, context: ActionContext) -> ActionResult:
         player = context.player
@@ -23,22 +23,18 @@ class FulfillPopulationCardAction(GameAction):
         island_snapshot = player.island.snapshot()
         hand_snapshot = player.hand.copy()
         completed_snapshot = player.completed_cards.copy()
-        naval_token_snapshot = (player.naval_token_snapshot())
-        trade_history_snapshot = player.traded_goods_this_turn.copy()
-        trade_owner_gold_snapshots = {id(trade.owner): (trade.owner, trade.owner.gold) for trade in self.foreign_production}
         resolver = player.start_production()
+        trade_resolver = TradeResolver(player=player, production=resolver)
 
         production_snapshot = resolver.snapshot()
+        trade_snapshot = trade_resolver.snapshot()
 
         try:
             for industry in self.production_plan:
                 resolver.produce(industry)
 
-            trade_resolver = TradeResolver(buyer=player)
-
-            traded_goods = trade_resolver.execute(self.foreign_production)
-            for good in traded_goods:
-                resolver.add_external_good(good)
+            for request in self.trade_plan:
+                trade_resolver.trade(partner=request.partner, good=request.good)
 
             if not resolver.can_pay(self.card.requirements):
                 raise InvalidActionError(self._missing_goods_message(resolver))
@@ -51,15 +47,12 @@ class FulfillPopulationCardAction(GameAction):
                 )
             )
         except Exception:
+            trade_resolver.rollback(trade_snapshot)
             resolver.rollback(production_snapshot)
             player.population.restore(population_snapshot)
             player.island.restore(island_snapshot)
             player.hand = hand_snapshot
             player.completed_cards = completed_snapshot
-            player.restore_naval_token(naval_token_snapshot)
-            player.traded_goods_this_turn = trade_history_snapshot
-            for owner, gold in (trade_owner_gold_snapshots.values):
-                owner.gold = gold
             raise
 
         finally:
@@ -74,7 +67,7 @@ class FulfillPopulationCardAction(GameAction):
 
     def _validate_industries(self, player: PlayerState) -> None:
         for industry in self.production_plan:
-            if industry not in player.island.industries:
+            if not any(owned is industry for owned in player.island.industries):
                 raise InvalidActionError(
                     f"{player.name} does not own {industry.industry.name}"
                 )
@@ -82,10 +75,10 @@ class FulfillPopulationCardAction(GameAction):
     def _missing_goods_message(self, resolver: ProductionResolver) -> str:
         missing: list[str] = []
         for (good, required) in self.card.requirements.items():
-            available = resolver.goods.count(good)
+            available = resolver.context.goods.count(good)
             if available < required:
                 missing.append(
-                    f"{good.value}: {available}/required"
+                    f"{good.value}: {available}/{required}"
                 )
 
         return (

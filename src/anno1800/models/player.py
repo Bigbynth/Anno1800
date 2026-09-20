@@ -244,3 +244,29 @@ class PlayerState:
             raise ValueError("Unknown construction type")
 
         return removed
+
+    def available_naval_tokens(self, token_type: NavalTokenType) -> list[NavalToken]:
+        return [token for token in self.naval_tokens if token.token_type == token_type and token.available]
+
+    def use_naval_tokens(self, token_type: NavalTokenType, amount: int) -> list[NavalToken]:
+        if amount < 0:
+            raise ValueError("Naval token amount cannot be negative")
+
+        available = (self.available_naval_tokens(token_type))
+        if len(available) < amount:
+            raise ValueError(f"Not enough available {token_type.value} tokens")
+
+        selected = available[:amount]
+        for token in selected:
+            token.use()
+
+        return selected
+
+    def remove_gold(self, amount: int) -> None:
+        if amount < 0:
+            raise ValueError("Gold amount cannot be negative")
+
+        if self.gold < amount:
+            raise ValueError("Not enough gold")
+
+        self.gold -= amount

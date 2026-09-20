@@ -9,7 +9,8 @@ from anno1800.models.production import ProductionContext
 @dataclass(frozen=True)
 class ProductionResolverSnapshot:
     goods: tuple[Good, ...]
-    record_count: int
+    production_record_count: int
+    trade_record_count: int
 
 class ProductionResolver:
     def __init__(self, population: Population):
@@ -75,16 +76,16 @@ class ProductionResolver:
 
     def snapshot(self) -> ProductionResolverSnapshot:
         self._ensure_active()
-        return ProductionResolverSnapshot(goods=tuple(self.context.goods), record_count=len(self.context.records))
+        return ProductionResolverSnapshot(goods=tuple(self.context.goods), production_record_count=len(self.context.production_records), trade_record_count=len(self.context.trade_records))
 
     def rollback(self, snapshot: ProductionResolverSnapshot) -> None:
         self._ensure_active()
 
-        new_records = self.context.records[snapshot.record_count:]
+        new_records = self.context.production_records[snapshot.production_record_count:]
         for record in reversed(new_records):
             if record.industry.workplace.worker is record.worker:
                 record.industry.clear_worker(exhaust=False)
 
         self.context.goods = list(snapshot.goods)
 
-        del self.context.records[snapshot.record_count:]
+        del self.context.production_records[snapshot.production_record_count:]
