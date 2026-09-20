@@ -1,53 +1,79 @@
-from collections import Counter
 from dataclasses import dataclass, field
+from typing import TypeAlias
 
 from anno1800.actions.base import ActionResult, GameAction, InvalidActionError
 from anno1800.data.population import UPGRADE_COST
-from anno1800.models.goods import Good
+from anno1800.models.population import PopulationCube
 from anno1800.models.industry import OwnedIndustry
 from anno1800.models.player import PlayerState
-from anno1800.models.population_upgrade import PopulationUpgrade
 from anno1800.actions.context import ActionContext
+from anno1800.services.production import ProductionResolver
 
 MAX_UPGRADES_PER_ACTION = 3
 
+
+@dataclass(frozen=True)
+class PopulationUpgradeStep:
+    cube: PopulationCube
+
+
+
+@dataclass(frozen=True)
+class ProduceForUpgradeStep:
+    industry: OwnedIndustry
+
+
+UpgradeActionStep: TypeAlias = (
+    ProduceForUpgradeStep
+    | PopulationUpgradeStep
+)
+
 @dataclass
 class UpgradePopulationAction(GameAction):
-    upgrades: list[PopulationUpgrade]
-
-    production_plan: list[OwnedIndustry] = field(default_factory=list)
+    steps: list[UpgradeActionStep] = field(default_factory=list)
 
     def execute(self, context: ActionContext) -> ActionResult:
+
+        upgrade_count = sum(isinstance(step, PopulationUpgradeStep) for step in self.steps)
+
+        if upgrade_count == 0:
+            raise InvalidActionError("Upgrade action requires at least one upgrade")
+
+        if upgrade_count > MAX_UPGRADES_PER_ACTION:
+            raise InvalidActionError("Upgrade action allows at most 3 upgrades")
+        
         player = context.player
-        self._validate_upgrade_count()
-        self._validate_industries(player)
 
         population_snapshot = player.population.snapshot()
         island_snapshot = player.island.snapshot()
 
         resolver = player.start_production()
 
+        production_snapshot = resolver.snapshot()
+
         try:
-            for industry in self.production_plan:
-                resolver.produce(industry)
+            for step in self.steps:
+                if isinstance(step, ProduceForUpgradeStep):
+                    if not any(owned is step.industry for owned in player.island.industries):
+                        raise InvalidActionError("Player does not own this industry")
 
-            total_cost = self._calculate_cost()
+                    resolver.produce(step.industry)
 
-            if not resolver.can_pay(total_cost):
-                raise InvalidActionError(
-                    "Not enough goods"
-                    "for population upgrade"
-                )
+                elif isinstance(step, PopulationUpgradeStep):
+                    self._upgrade(player, resolver, step)
 
-            resolver.pay(total_cost)
-
-            self._apply_upgrades(player)
+                else:
+                    raise TypeError("Unsupported upgrade step: "
+                                    f"{type(step).__name__}")
 
             return ActionResult(
-                message=self._result_message(player)
+                message=(
+                    f"{player.name} completed {upgrade_count} population upgrade {'s' if upgrade_count != 1 else ''}"
+                )
             )
 
         except Exception:
+            resolver.rollback(production_snapshot)
             player.population.restore(population_snapshot)
             player.island.restore(island_snapshot)
             raise
@@ -56,56 +82,17 @@ class UpgradePopulationAction(GameAction):
             if not resolver.finished:
                 resolver.finish()
 
-    def _validate_upgrade_count(self) -> None:
-        if not self.upgrades:
-            raise InvalidActionError(
-                "At leaste one upgrade "
-                "is required"
-            )
 
-        if len(self.upgrades) > MAX_UPGRADES_PER_ACTION:
-            raise InvalidActionError(
-                "A maximum of 3 upgrades"
-                "can be performed"
-                "in one action"
-            )
+    def _upgrade(self, player: PlayerState, resolver: ProductionResolver, step: PopulationUpgradeStep) -> None:
+        cube = step.cube
 
-    def _validate_industries(self, player: PlayerState) -> None:
-        for industry in self.production_plan:
-            if industry not in player.island.industries:
-                raise InvalidActionError(
-                    f"{player.name} does not"
-                    f"own"
-                    f"{industry.industry.name}"
-                )
+        if not player.population.can_upgrade_cube(cube):
+            raise InvalidActionError("Population cube cannot be upgraded")
 
-    def _calculate_cost(self) -> dict[Good, int]:
-        total: Counter[Good] = Counter()
+        cost = UPGRADE_COST[cube.population_type]
 
-        for upgrade in self.upgrades:
-            cost = UPGRADE_COST[upgrade.from_type]
-            total.update(cost)
+        if not resolver.can_pay(cost):
+            raise InvalidActionError(f"Not enough resources to upgrade {cube.population_type.value}")
 
-        return dict(total)
-
-    def _apply_upgrades(self, player: PlayerState) -> None:
-
-        for upgrade in self.upgrades:
-
-            player.population.upgrade_available(upgrade.from_type)
-
-    def _result_message(self, player: PlayerState) -> str:
-        description = [
-            (
-                f"{upgrade.from_type.value}"
-                "- >"
-                f"{upgrade.to_type.value}"
-            )
-            for upgrade in self.upgrades
-        ]
-
-        return (
-            f"{player.name} upgraded:"
-            + ", ".join(description)
-            + "."
-        )
+        resolver.pay(cost)
+        player.population.upgrade_cube(cube)

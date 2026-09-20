@@ -98,8 +98,6 @@ class Population:
             created.append(cube)
         return created
 
-        self.avalable[population_type] += amount
-
     def can_use(self, population_type: PopulationType, amount: int = 1) -> bool:
         return (self.available_count(population_type) >= amount)
 
@@ -118,7 +116,7 @@ class Population:
                 cube.refresh()
 
     def snapshot(self) -> PopulationSnapshot:
-        return PopulationSnapshot(cubes=tuple(PopulationCubeSnapshot(cube=cube, population_type=(cube.population_type), state=cube.state) for cube in self.cubes))
+        return PopulationSnapshot(cubes=tuple(PopulationCubeSnapshot(cube=cube, population_type=(cube.population_type), state=cube.state) for cube in self.cubes), next_cube_id=self._next_cube_id)
 
     def restore(self, snapshot: PopulationSnapshot) -> None:
         original_cubes: list[PopulationCube] = []
@@ -132,27 +130,6 @@ class Population:
         self.cubes = original_cubes
         self._next_cube_id = (snapshot.next_cube_id)
 
-    def can_upgrade_available(self, from_type: PopulationType) -> bool:
-        return bool(self.available_cubes(from_type))
-
-    def upgrade_available(self, from_type: PopulationType) -> PopulationCube:
-        to_type = next_population_type(from_type)
-
-        if to_type is None:
-            raise ValueError(
-                f"{from_type.value} cannot"
-                f"be upgraded"
-            )
-
-        cubes = self.available_cubes(from_type)
-
-        if not cubes:
-            raise ValueError(f"No available {from_type.value} population to upgrade")
-
-        cube = cubes[0]
-        cube.population_type = (to_type)
-        return cube
-
     def available_count(self, population_type: PopulationType) -> int:
         return sum(1 for cube in self.cubes if (cube.population_type == population_type and cube.is_available))
 
@@ -164,23 +141,23 @@ class Population:
 
     def get_cube(self, cube_id: int) -> PopulationCube:
         for cube in self.cubes:
-            if cube.i == cube_id:
+            if cube.id == cube_id:
                 return cube
 
         raise ValueError(f"Unknown population cube: {cube_id}")
 
-    def upgrade_cube(self, cube: PopulationCube) -> None:
-        if not any(owned_cube is cube for owned_cube in self.cubes):
-            raise ValueError("Population cube does not belong to this population")
+    def upgrade_cube(self, cube: PopulationCube) -> PopulationCube:
+        if not self.can_upgrade_cube(cube):
+            raise ValueError("Population cube cannot be upgraded")
 
-        if not cube.is_available:
-            raise ValueError(f"Population cube {cube.id} is not available")
+        next_type = next_population_type(cube.population_type)
 
-        next_type = (next_population_type(cube.population_type))
         if next_type is None:
             raise ValueError(f"{cube.population_type.value} cannot be upgraded")
 
-        cube.population_type = (next_type)
+        cube.population_type = next_type
+
+        return cube
 
     def acquire_available(self, population_type: PopulationType) -> PopulationCube:
         cubes = self.available_cubes(population_type)
@@ -191,6 +168,17 @@ class Population:
         cube = cubes[0]
         cube.assign()
         return cube
+
+    def can_upgrade_cube(self, cube: PopulationCube) -> bool:
+        owns_cube = any(owned_cube is cube for owned_cube in self.cubes)
+
+        if not owns_cube:
+            return False
+
+        if cube.is_exhausted:
+            return False
+
+        return (next_population_type(cube.population_type))
     
     
     
