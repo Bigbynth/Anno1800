@@ -1,29 +1,50 @@
-from collections import Counter
 from dataclasses import dataclass, field
+from typing import TypeAlias
 
 from anno1800.actions.base import ActionResult, GameAction, InvalidActionError
 from anno1800.data.workforce import WORKFORCE_COSTS
-from anno1800.models.goods import Good
 from anno1800.models.industry import OwnedIndustry
 from anno1800.models.player import PlayerState
-from anno1800.models.workforce import WorkforceIncrease
 from anno1800.actions.context import ActionContext
-from anno1800.models.deck import PopulationCardDeck
+from anno1800.models.population import PopulationType
+from anno1800.services.production import ProductionResolver
 
 MAX_WORKFORCE_INCREASES = 3
 
-@dataclass
-class IncreaseWorkforceACtion(GameAction):
-    increases: list[WorkforceIncrease]
 
-    production_plan: list[OwnedIndustry] = field(default_factory=list)
+@dataclass(frozen=True)
+class ProduceForWorkforceStep:
+    industry: OwnedIndustry
+
+
+@dataclass(frozen=True)
+class IncreaseWorkforceStep:
+    population_type: PopulationType
+
+WorkforceActionStep: TypeAlias = (
+    ProduceForWorkforceStep
+    | IncreaseWorkforceStep
+)
+
+
+
+
+@dataclass
+class IncreaseWorkforceAction(GameAction):
+    steps: list[WorkforceActionStep] = field(default_factory=list)
 
     def execute(self, context: ActionContext) -> ActionResult:
         player = context.player
         deck = context.state.population_deck
-        self._validate_count()
 
-        self._validate_industries(player)
+        increase_count = sum(isinstance(step, IncreaseWorkforceStep) for step in self.steps)
+
+        if increase_count == 0:
+            raise InvalidActionError("Increase workforce action requires at least one population increase")
+
+        if increase_count > MAX_WORKFORCE_INCREASES:
+            raise InvalidActionError("Increase workforce action allows at most 3 new population cubes")
+        
 
         population_snapshot = player.population.snapshot()
 
@@ -40,34 +61,34 @@ class IncreaseWorkforceACtion(GameAction):
 
         resolver = player.start_production()
 
+        production_snapshot = resolver.snapshot()
+
         try:
-            for industry in self.production_plan:
-                resolver.produce(industry)
+            for step in self.steps:
+                if isinstance(step, ProduceForWorkforceStep):
+                    if not any(owned is step.industry for owned in player.island.industries):
+                        raise InvalidActionError("Player does not own this industry")
 
-            total_cost = self._calculate_cost()
+                    resolver.produce(step.industry)
 
-            if not resolver.can_pay(total_cost):
-                raise InvalidActionError(
-                    "Not enough goods to increase workforce"
-                )
+                elif isinstance(step, IncreaseWorkforceStep):
+                    self._increase(context, resolver, step)
 
-            missing_cards = self._count_missing_cards(deck)
+                else:
+                    raise TypeError(f"Unsupported workforce step: {type(step).__name__}")
 
-            if missing_cards > 0 and not player.can_spend_gold(missing_cards):
-                raise InvalidActionError("Not enough gold to cover missing population cards")
 
-            resolver.pay(total_cost)
-
-            self._apply_increases(player, deck)
+        
 
             return ActionResult(
                 message=(
                     f"{player.name} increased"
                     f"workforce by "
-                    f"{len(self.increases)}"
+                    f"{increase_count}"
                 )
             )
         except Exception:
+            resolver.rollback(production_snapshot)
             player.population.restore(population_snapshot)
             player.island.restore(island_snapshot)
             player.hand = hand_snapshot
@@ -83,43 +104,29 @@ class IncreaseWorkforceACtion(GameAction):
             if not resolver.finished:
                 resolver.finish()
 
-    def _validate_count(self) -> None:
-        if not self.increases:
-            raise InvalidActionError("At least one population cube must be added")
+    def _increase(self, context: ActionContext, resolver: ProductionResolver, step: IncreaseWorkforceStep) -> None:
+        player = context.player
 
-        if len(self.increases) > MAX_WORKFORCE_INCREASES:
-            raise InvalidActionError("A maximum of 3 population cubes can be added")
+        cost = WORKFORCE_COSTS[step.population_type]
 
-    def _validate_industries(self, player: PlayerState) -> None:
-        for industry in self.production_plan:
-            if industry not in player.island.industries:
-                raise InvalidActionError("Production plan contains an industry not owned by the player")
+        if not resolver.can_pay(cost):
+            raise InvalidActionError(f"Not enough resources to add {step.population_type.value}")
 
-    def _calculate_cost(self) -> dict[Good, int]:
-        total: Counter[Good] = Counter()
-        for increase in self.increases:
-            total.update(WORKFORCE_COSTS[increase.population_type])
+        resolver.pay(cost)
 
-        return dict(total)
+        cubes = player.add_population(step.population_type)
+        cube = cubes[0]
 
-    def _count_missing_cards(self, deck: PopulationCardDeck) -> int:
-        requested = Counter(increase.population_type for increase in self.increases)
-        missing = 0
+        self._draw_population_card(context, player, cube.population_type)
 
-        for (population_type, amount) in requested.items():
-            available = deck.remaining(population_type)
-            missing += max(0, amount - available)
-        return missing
+    def _draw_population_card(self, context: ActionContext, player: PlayerState, population_type: PopulationType) -> None:
+        deck = context.state.population_deck
 
-    def _apply_increases(self, player: PlayerState, deck: PopulationCardDeck) -> None:
-        for increase in self.increases:
-            population_type = increase.population_type
+        if not deck.is_empty(population_type):
+            card = deck.draw(population_type)
 
-            player.add_population(population_type)
+            player.add_card(card)
 
-            if not deck.is_empty(population_type):
-                card = deck.draw(population_type)
-                player.add_card(card)
+        else:
+            player.spend_gold(1)
 
-            else:
-                player.spend_gold(1)
