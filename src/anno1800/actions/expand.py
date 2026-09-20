@@ -51,6 +51,8 @@ class ExpandAction(GameAction):
         naval_tokens_snapshot = (player.naval_tokens.copy())
         resolver = (player.start_production())
 
+        production_snapshot = (resolver.snapshot())
+
         try:
             for owned_industry in self.production_plan:
                 resolver.produce(owned_industry)
@@ -86,6 +88,7 @@ class ExpandAction(GameAction):
                 message=(self._result_message(player))
             )
         except Exception:
+            resolver.rollback(production_snapshot)
             player.population.restore(population_snapshot)
             player.island.restore(island_snapshot)
             player.shipyards = (shipyards_snapshot)

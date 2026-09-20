@@ -28,6 +28,8 @@ class FulfillPopulationCardAction(GameAction):
         trade_owner_gold_snapshots = {id(trade.owner): (trade.owner, trade.owner.gold) for trade in self.foreign_production}
         resolver = player.start_production()
 
+        production_snapshot = resolver.snapshot()
+
         try:
             for industry in self.production_plan:
                 resolver.produce(industry)
@@ -49,6 +51,7 @@ class FulfillPopulationCardAction(GameAction):
                 )
             )
         except Exception:
+            resolver.rollback(production_snapshot)
             player.population.restore(population_snapshot)
             player.island.restore(island_snapshot)
             player.hand = hand_snapshot

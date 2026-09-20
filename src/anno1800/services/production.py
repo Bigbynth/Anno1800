@@ -1,7 +1,15 @@
+from dataclasses import dataclass
+
 from anno1800.models.goods import Good
 from anno1800.models.industry import OwnedIndustry
 from anno1800.models.population import Population
 from anno1800.models.production import ProductionContext
+
+
+@dataclass(frozen=True)
+class ProductionResolverSnapshot:
+    goods: tuple[Good, ...]
+    record_count: int
 
 class ProductionResolver:
     def __init__(self, population: Population):
@@ -16,11 +24,10 @@ class ProductionResolver:
     def produce(self, industry: OwnedIndustry) -> Good:
         self._ensure_active()
 
-        good = industry.produce(self.population)
+        production = industry.produce(self.population)
 
-        self.context.add(good)
-
-        return good
+        self.context.add_production(industry=industry, worker=production.worker, good=production.good)
+        return production.good
 
     def consume(self, good: Good, amount: int = 1) -> None:
         self._ensure_active()
@@ -31,8 +38,9 @@ class ProductionResolver:
         return self.context.has(good, amount)
 
     def finish(self) -> None:
-        self._ensure_active()
-
+        if self.finished:
+            return
+        
         self.context.clear()
         self.finished = True
 
@@ -64,3 +72,19 @@ class ProductionResolver:
     def add_external_good(self, good: Good, amount: int = 1) -> None:
         self._ensure_active()
         self.context.add(good, amount)
+
+    def snapshot(self) -> ProductionResolverSnapshot:
+        self._ensure_active()
+        return ProductionResolverSnapshot(goods=tuple(self.context.goods), record_count=len(self.context.records))
+
+    def rollback(self, snapshot: ProductionResolverSnapshot) -> None:
+        self._ensure_active()
+
+        new_records = self.context.records[snapshot.record_count:]
+        for record in reversed(new_records):
+            if record.industry.workplace.worker is record.worker:
+                record.industry.clear_worker(exhaust=False)
+
+        self.context.goods = list(snapshot.goods)
+
+        del self.context.records[snapshot.record_count:]

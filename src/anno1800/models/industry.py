@@ -18,6 +18,11 @@ class WrongWorkerError(Exception):
     pass
 
 
+@dataclass(frozen=True)
+class IndustryProduction:
+    good: Good
+    worker: PopulationCube
+
 @dataclass
 class Workplace:
     worker: PopulationCube | None = None
@@ -69,7 +74,7 @@ class OwnedIndustry():
             and population.can_use(self.industry.worker_type)
         )
 
-    def produce(self, population: Population) -> Good:
+    def produce(self, population: Population) -> IndustryProduction:
 
         if not self.can_produce(population):
             raise ValueError(f"{self.industry.name} cannot produce")
@@ -83,7 +88,7 @@ class OwnedIndustry():
             worker.refresh()
             raise
 
-        return self.industry.good
+        return IndustryProduction(good=self.industry.good, worker=worker)
 
     def clear_worker(self, *, exhaust: bool = False)  -> PopulationCube | None:
         return self.workplace.release(exhaust=exhaust)

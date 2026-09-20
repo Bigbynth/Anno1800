@@ -21,10 +21,10 @@ class ProduceAction(GameAction):
             )
 
         resolver = player.start_production()
-
-        good = resolver.produce(self.industry)
-
-        resolver.finish()
+        try:
+            good = resolver.produce(self.industry)
+        finally:
+            resolver.finish()
 
         return ActionResult(
             message=(
