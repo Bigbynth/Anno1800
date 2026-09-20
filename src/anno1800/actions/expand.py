@@ -1,4 +1,4 @@
-from collections import Counter
+from typing import TypeAlias
 from dataclasses import dataclass, field
 
 from anno1800.actions.base import ActionResult, GameAction, InvalidActionError
@@ -8,41 +8,80 @@ from anno1800.models.goods import Good
 from anno1800.models.industry import Industry, OwnedIndustry
 from anno1800.models.player import PlayerState
 from anno1800.models.ship import Ship, Shipyard
+from anno1800.models.trade import TradeRequest
+from anno1800.models.new_world import NewWorldProductionRequest
 
 from anno1800.services.production import ProductionResolver
+from anno1800.services.trade import TradeResolver
+from anno1800.services.new_world import NewWorldResolver
 
 
 @dataclass(frozen=True)
-class ConstructionTarget:
+class ProduceStep:
+    industry: OwnedIndustry
+
+@dataclass(frozen=True)
+class TradeStep:
+    request: TradeRequest
+
+@dataclass(frozen=True)
+class NewWorldStep:
+    request: NewWorldProductionRequest
+
+@dataclass(frozen=True)
+class BuildIndustryStep:
+    industry: Industry
     space_id: str
     build_over: bool = False
 
 @dataclass(frozen=True)
-class ShipBuild:
+class BuildShipyardStep:
+    shipyard: Shipyard
+    space_id: str
+    build_over: bool = False
+
+
+@dataclass(frozen=True)
+class BuildShipStep:
     shipyard: Shipyard
     ship: Ship
     space_id: str
     build_over: bool = False
 
+@dataclass(frozen=True)
+class RemoveConstructionStep:
+    space_id: str
+
+ExpandStep: TypeAlias = (
+    ProduceStep
+    | TradeStep
+    | NewWorldStep
+    | BuildIndustryStep
+    | BuildShipyardStep
+    | BuildShipStep
+    | RemoveConstructionStep
+)
+
+
+@dataclass
+class ExpandExecutionState:
+    industries_built: int = 0
+    shipyards_built: int = 0
+    removed_constructions: int = 0
+
+    used_shipyards: set[int] = field(default_factory=set)
+    initial_shipyards: set[int] = field(default_factory=set)
+
+
 @dataclass
 class ExpandAction(GameAction):
-    industry: Industry | None = None
-    shipyard: Shipyard | None = None
-    industry_space_id: str | None = None
-    shipyard_space_id: str | None = None
-
-    industry_build_over: bool = False
-    shipyard_build_over: bool = False
-
-    remove_space_id: str | None = None
-
-    ships: list[ShipBuild] = field(default_factory=list)
-    production_plan: list[OwnedIndustry] = field(default_factory=list)
+    steps: list[ExpandStep] = field(default_factory=list)
 
     def execute(self, context: ActionContext) -> ActionResult:
         player = context.player
 
-        self._validate(player)
+        if not self.steps:
+            raise InvalidActionError("Expand action requires at least one step")
 
         population_snapshot = (player.population.snapshot())
         island_snapshot = (player.island.snapshot())
@@ -51,43 +90,47 @@ class ExpandAction(GameAction):
         naval_tokens_snapshot = (player.naval_tokens.copy())
         resolver = (player.start_production())
 
+        trade = TradeResolver(player=player, production=resolver)
+
+        new_world = NewWorldResolver(player=player, production=resolver)
+
         production_snapshot = (resolver.snapshot())
-
+        trade_snapshot = trade.snapshot()
+        new_world_snapshot = new_world.snapshot()
+        execution = ExpandExecutionState(initial_shipyards={id(shipyard) for shipyard in player.shipyards})
         try:
-            for owned_industry in self.production_plan:
-                resolver.produce(owned_industry)
+            for step in self.steps:
+                if isinstance(step, ProduceStep):
+                    resolver.produce(step.industry)
 
-            total_cost = self._total_cost()
+                elif isinstance(step, TradeStep):
+                    trade.trade(partner=step.request.partner, good=step.request.good)
 
-            if not resolver.can_pay(total_cost):
-                raise InvalidActionError(self._missing_goods_message(resolver, total_cost))
+                elif isinstance(step, NewWorldStep):
+                    new_world.produce(island=step.request.island, good=step.request.good)
 
-            resolver.pay(total_cost)
-            if self.remove_space_id is not None:
-                player.remove_construction(self.remove_space_id)
+                elif isinstance(step, BuildIndustryStep):
+                    self._build_industry(player, resolver, execution, step)
 
-            if self.industry is not None and self.industry_space_id is not None:
-                owned_industry = (OwnedIndustry(self.industry))
-                if self.industry_build_over:
-                    player.replace_construction(self.industry_space_id, owned_industry)
+                elif isinstance(step, BuildShipyardStep):
+                    self._build_shipyard(player, resolver, execution, step)
+
+                elif isinstance(step, BuildShipStep):
+                    self._build_ship(player, resolver, execution, step)
+
+                elif isinstance(step, RemoveConstructionStep):
+                    self._remove_construction(player, execution, step)
+
                 else:
-                    player.add_industry(self.industry, space_id=(self.industry_space_id))
-            if self.shipyard is not None and self.shipyard_space_id is not None:
-                if self.shipyard_build_over:
-                    player.replace_construction(self.shipyard_space_id, self.shipyard)
-                else:
-                    player.add_shipyard(self.shipyard, space_id=(self.shipyard_space_id))
-
-            for ship_build in self.ships:
-                if ship_build.build_over:
-                    player.replace_construction(ship_build.space_id, ship_build.ship)
-                else:
-                    player.add_ship(ship_build.ship, space_id=(ship_build.space_id))
+                    raise TypeError(f"Unsupported Expand step: {type(step).__name__}")
 
             return ActionResult(
-                message=(self._result_message(player))
-            )
+                message=self._result_message(player)
+            ) 
+                
         except Exception:
+            new_world.rollback(new_world_snapshot)
+            trade.rollback(trade_snapshot)
             resolver.rollback(production_snapshot)
             player.population.restore(population_snapshot)
             player.island.restore(island_snapshot)
@@ -99,161 +142,116 @@ class ExpandAction(GameAction):
             if not resolver.finished:
                 resolver.finish()
 
-    def _validate(self, player: PlayerState) -> None:
-        if self.industry is None and self.shipyard is None and not self.ships:
-            raise InvalidActionError("Expand action must build at least one construction")
 
-        self._validate_production_plan(player)
-        self._validate_industry(player)
-        self._validate_shipyard()
-        self._validate_ships(player)
-        self._validate_target_spaces(player)
-        self._validate_removal(player)
+    def _pay_cost(self, production: ProductionResolver, cost: dict[Good, int]) -> None:
+        if not production.can_pay(cost):
+            raise InvalidActionError("Not enough resources for construction")
+        production.pay(cost)
 
-    def _validate_production_plan(self, player: PlayerState) -> None:
-        for owned_industry in self.production_plan:
-            if owned_industry not in player.island.industries:
-                raise InvalidActionError(f"{player.name} does not own {owned_industry.industry.name}")
+    def _build_industry(self, player: PlayerState, production: ProductionResolver, execution: ExpandExecutionState, step: BuildIndustryStep) -> None:
+        if execution.industries_built >= 1:
+            raise InvalidActionError("Only one industry may be built per Expand action")
 
-    def _validate_industry(self, player: PlayerState) -> None:
-        if self.industry is None:
-            if self.industry_space_id is not None:
-                raise InvalidActionError("Industry space was provided without an industry")
-            return
+        if player.get_industries(step.industry):
+            raise InvalidActionError(f"{player.name} already owns {step.industry.name}")
+        owned = OwnedIndustry(step.industry)
+        self._validate_build_target(player, step.space_id, owned, step.build_over)
+        self._pay_cost(production, step.industry.build_cost)
+        if step.build_over:
+            player.replace_construction(step.space_id, owned)
+        else:
+            player.add_industry(step.industry, space_id=step.space_id)
 
-        if self.industry_space_id is None:
-            raise InvalidActionError("Industry requires an island space")
+        execution.industries_built += 1
 
-        if player.has_industry(self.industry):
-            raise InvalidActionError(f"{player.name} already owns {self.industry.name}")
 
-    def _validate_shipyard(self) -> None:
-        if self.shipyard is None:
-            if self.shipyard_space_id is not None:
-                raise InvalidActionError("Shipyard space was provided without a shipyard")
-            return
+    def _build_shipyard(self, player: PlayerState, production: ProductionResolver, execution: ExpandExecutionState, step: BuildShipyardStep) -> None:
+        if execution.shipyards_built >= 1:
+            raise InvalidActionError("Only one shipyard may be built per Expand action")
 
-        if self.shipyard_space_id is None:
-            raise InvalidActionError("Shipyardd requires an island space")
+        self._validate_build_target(player, step.space_id, step.shipyard, step.build_over)
+        self._pay_cost(production, step.shipyard.build_cost)
 
-    def _validate_ships(self, player: PlayerState) -> None:
-        used_shipyards: set[int] = set()
+        if step.build_over:
+            player.replace_construction(step.space_id, step.shipyard)
+        else:
+            player.add_shipyard(step.shipyard, space_id=step.space_id)
 
-        for ship_build in self.ships:
-            shipyard = (ship_build.shipyard)
-            ship = ship_build.ship
+        execution.shipyards_built += 1
 
-            if not player.has_shipyard(shipyard):
-                raise InvalidActionError(f"{player.name} does not own {shipyard.name}")
 
-            shipyard_id = id(shipyard)
-            if shipyard_id in used_shipyards:
-                raise InvalidActionError("A shipyard can build only one ship during an expand action")
+    def _build_ship(self, player: PlayerState, production: ProductionResolver, execution: ExpandExecutionState, step: BuildShipStep) -> None:
+        if not any(owned is step.shipyard for owned in player.shipyards):
+            raise InvalidActionError("Player does not own this shipyard")
 
-            used_shipyards.add(shipyard_id)
+        shipyard_id = id(step.shipyard)
+        if shipyard_id not in execution.initial_shipyards:
+            raise InvalidActionError("A shipyard built during this Expand cannot build a ship.")
+        if shipyard_id in execution.used_shipyards:
+            raise InvalidActionError("This shipyard has already built a ship this Expand")
 
-            if not shipyard.can_build(ship):
-                raise InvalidActionError(
-                    f"{shipyard.name} cannot build strength-{ship.strength} {ship.name}"
-                )
+        if not step.shipyard.can_build(step.ship):
+            raise InvalidActionError(f"{step.shipyard.name} cannot build {step.ship.name}")
 
-    def _validate_target_spaces(self, player: PlayerState):
-        island = player.island
+        self._validate_build_target(player, step.space_id, step.ship, step.build_over)
+        self._pay_cost(production, step.ship.build_cost)
 
-        targets: list[tuple[str, object, bool]] = []
+        if step.build_over:
+            player.replace_construction(step.space_id, step.ship)
+        else:
+            player.add_ship(step.ship, space_id=step.space_id)
 
-        if self.industry is not None and self.industry_space_id is not None:
-            targets.append((self.industry_space_id, OwnedIndustry(self.industry), self.industry_build_over))
+        execution.used_shipyards.add(shipyard_id)
 
-        if self.shipyard is not None and self.shipyard_space_id is not None:
-            targets.append((self.shipyard_space_id, self.shipyard, self.shipyard_build_over))
 
-        for ship_build in self.ships:
-            targets.append((ship_build.space_id, ship_build.ship, ship_build.build_over))
+    def _remove_construction(self, player: PlayerState, execution: ExpandExecutionState, step: RemoveConstructionStep) -> None:
+        if execution.removed_constructions >= 1:
+            raise InvalidActionError("Only one construction may be voluntarily removed per Expand action")
 
-        used_space_ids: set[str] = set()
+        space = player.island.get_space(step.space_id)
+        if space.construction is None:
+            raise InvalidActionError("Cannot remove from an empty space")
 
-        for space_id, construction, build_over in targets:
-            if space_id in used_space_ids:
-                raise InvalidActionError(f"Island space {space_id} is targeted more than once")
+        player.remove_construction(step.space_id)
+        execution.removed_constructions += 1
 
-            used_space_ids.add(space_id)
-            try:
-                space = island.get_space(space_id)
-            except ValueError as exc:
-                raise InvalidActionError(str(exc)) from exc
 
-            if space.is_empty:
-                if build_over:
-                    raise InvalidActionError(f"Cannot build over empty space {space_id}")
+    def _validate_build_target(self, player: PlayerState, space_id: str, construction, build_over: bool) -> None:
+        try:
+            space = player.island.get_space(space_id)
+        except ValueError as exc:
+            raise InvalidActionError(f"Unknown island space {space_id}") from exc
 
-            else:
-                if not build_over:
-                    raise InvalidActionError(f"Island space {space_id} is already occupied")
+        if space.is_empty and build_over:
+            raise InvalidActionError("Cannot build over an empty space")
 
-            existing = space.construction
+        if not space.is_empty and not build_over:
+            raise InvalidActionError(f"Space {space_id} is already occupied")
+
+        previous = space.construction
+
+        if build_over:
             space.construction = None
-            try:
-                can_place = space.can_place(construction)
-            finally:
-                space.construction = existing
-
-
-            if not can_place:
-                raise InvalidActionError(f"Cannot place {type(construction).__name__} on {space.space_type.value} space {space_id}")
-
-        if self.remove_space_id is not None and self.remove_space_id in used_space_ids:
-            raise InvalidActionError(f"Space {self.remove_space_id}  cannot be both removed and targeted for construction")
-
-    def _validate_removal(self, player: PlayerState) -> None:
-        if self.remove_space_id is None:
-            return
 
         try:
-            space = (player.island.get_space(self.remove_space_id))
+            if not space.can_place(construction):
+                raise InvalidActionError(f"Cannot place construction on space {space_id}")
 
-        except ValueError as exc:
-            raise InvalidActionError(str(exc)) from exc
-
-        if space.is_empty:
-            raise InvalidActionError(f"Cannot remove construction from empty space {self.remove_space_id}")
-
-    def _total_cost(self) -> dict[Good, int]:
-        total: Counter[Good] = Counter()
-
-        if self.industry is not None:
-            total.update(self.industry.build_cost)
-
-        if self.shipyard is not None:
-            total.update(self.shipyard.build_cost)
-
-        for ship_build in self.ships:
-            total.update(ship_build.ship.build_cost)
-
-        return dict(total)
-
-    def _missing_goods_message(self, resolver: ProductionResolver, cost: dict[Good, int]) -> str:
-        missing: list[str] = []
-
-        for good, required in cost.items():
-            available = (resolver.goods.count(good))
-
-            if available < required:
-                missing.append(f"{good.value}: {available}/{required}")
-
-        return ("Cannot expand. Missing"
-                f"{', '.join(missing)}")
+        finally:
+            space.construction = previous
 
     def _result_message(self, player: PlayerState) -> str:
         built: list[str] = []
 
-        if self.industry is not None:
-            built.append(self.industry.name)
+        for step in self.steps:
+            if isinstance(step, BuildIndustryStep):
+                built.append(step.industry.name)
 
-        if self.shipyard is not None:
-            built.append(self.shipyard.name)
+            elif isinstance(step, BuildShipyardStep):
+                built.append(step.shipyard.name)
 
-        built.extend(ship_build.ship.name for ship_build in self.ships)
+            elif isinstance(step, BuildShipStep):
+                built.append(step.ship.name)
 
         return (
             f"{player.name} expanded: "

@@ -7,7 +7,6 @@ from anno1800.services.production import ProductionResolver
 from anno1800.models.trade import TradeRequest
 from anno1800.services.trade import TradeResolver
 from anno1800.actions.context import ActionContext
-from anno1800.models.goods import Good
 from anno1800.models.new_world import NewWorldProductionRequest
 from anno1800.services.new_world import NewWorldResolver
 
