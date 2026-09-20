@@ -102,7 +102,9 @@ class PlayerState:
     def total_victory_points(self) -> int:
         return self.victory_points + self.card_victory_points()
 
-    def add_ship(self, ship: Ship) -> None:
+    def add_ship(self, ship: Ship, space_id: str | None = None) -> None:
+        if space_id is not None:
+            self.island.place(space_id, ship)
         self.ships.append(ship)
 
         for _ in range(ship.trade_token):
@@ -160,7 +162,9 @@ class PlayerState:
             )
         card.activate()
 
-    def add_shipyard(self, shipyard: Shipyard) -> None:
+    def add_shipyard(self, shipyard: Shipyard, space_id: str | None = None) -> None:
+        if space_id is not None:
+            self.island.place(space_id, shipyard)
         self.shipyards.append(shipyard)
 
     def has_shipyard(self, shipyard: Shipyard) -> bool:

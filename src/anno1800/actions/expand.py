@@ -15,11 +15,14 @@ from anno1800.services.production import ProductionResolver
 class ShipBuild:
     shipyard: Shipyard
     ship: Ship
+    space_id: str
 
 @dataclass
 class ExpandAction(GameAction):
     industry: Industry | None = None
     shipyard: Shipyard | None = None
+    industry_space_id: str | None = None
+    shipyard_space_id: str | None = None
 
     ships: list[ShipBuild] = field(default_factory=list)
     production_plan: list[OwnedIndustry] = field(default_factory=list)
@@ -47,14 +50,14 @@ class ExpandAction(GameAction):
 
             resolver.pay(total_cost)
 
-            if self.industry is not None:
-                player.add_industry(self.industry)
+            if self.industry is not None and self.industry_space_id is not None:
+                player.add_industry(self.industry, space_id=(self.industry_space_id))
 
-            if self.shipyard is not None:
-                player.add_shipyard(self.shipyard)
+            if self.shipyard is not None and self.shipyard_space_id is not None:
+                player.add_shipyard(self.shipyard, space_id=(self.shipyard_space_id))
 
             for ship_build in self.ships:
-                player.add_ship(ship_build.ship)
+                player.add_ship(ship_build.ship, space_id=(ship_build.space_id))
 
             return ActionResult(
                 message=(self._result_message(player))
@@ -76,7 +79,9 @@ class ExpandAction(GameAction):
 
         self._validate_production_plan(player)
         self._validate_industry(player)
+        self._validate_shipyard()
         self._validate_ships(player)
+        self._validate_target_spaces(player)
 
     def _validate_production_plan(self, player: PlayerState) -> None:
         for owned_industry in self.production_plan:
@@ -85,10 +90,24 @@ class ExpandAction(GameAction):
 
     def _validate_industry(self, player: PlayerState) -> None:
         if self.industry is None:
+            if self.industry_space_id is not None:
+                raise InvalidActionError("Industry space was provided without an industry")
             return
+
+        if self.industry_space_id is None:
+            raise InvalidActionError("Industry requires an island space")
 
         if player.has_industry(self.industry):
             raise InvalidActionError(f"{player.name} already owns {self.industry.name}")
+
+    def _validate_shipyard(self) -> None:
+        if self.shipyard is None:
+            if self.shipyard_space_id is not None:
+                raise InvalidActionError("Shipyard space was provided without a shipyard")
+            return
+
+        if self.shipyard_space_id is None:
+            raise InvalidActionError("Shipyardd requires an island space")
 
     def _validate_ships(self, player: PlayerState) -> None:
         used_shipyards: set[int] = set()
@@ -110,6 +129,39 @@ class ExpandAction(GameAction):
                 raise InvalidActionError(
                     f"{shipyard.name} cannot build strength-{ship.strength} {ship.name}"
                 )
+
+    def _validate_target_spaces(self, player: PlayerState):
+        island = player.island
+
+        targets: list[tuple[str, object]] = []
+
+        if self.industry is not None:
+            owned_industry = (OwnedIndustry(self.industry))
+            targets.append((self.industry_space_id, owned_industry),)
+
+        if self.shipyard is not None:
+            targets.append((self.shipyard_space_id, self.shipyard))
+
+        for ship_build in self.ships:
+            targets.append((ship_build.space_id, ship_build.ship))
+
+        used_space_ids: set[str] = set()
+
+        for space_id, construction in targets:
+            if space_id in used_space_ids:
+                raise InvalidActionError(f"Island space {space_id} is targeted more than once")
+
+            used_space_ids.add(space_id)
+            try:
+                space = island.get_space(space_id)
+            except ValueError as exc:
+                raise InvalidActionError(str(exc)) from exc
+
+            if not space.is_empty:
+                raise InvalidActionError(f"Island space {space_id} is alreay occupied")
+
+            if not space.can_place(construction):
+                raise InvalidActionError(f"Cannot place {type(construction).__name__} on {space.space_type.value} space {space_id}")
 
     def _total_cost(self) -> dict[Good, int]:
         total: Counter[Good] = Counter()
