@@ -11,6 +11,7 @@ class PopulationType(str, Enum):
 class PopulationCubeState(str, Enum):
     AVAILABLE = "available"
     EXHAUSTED = "exhausted"
+    ASSIGNED = "assigned"
 
 POPULATION_ORDER  = (
     PopulationType.FARMER,
@@ -38,16 +39,26 @@ class PopulationCube:
     state: PopulationCubeState = (PopulationCubeState.AVAILABLE)
 
     @property
-    def is_availble(self) -> bool:
+    def is_available(self) -> bool:
         return (self.state == PopulationCubeState.AVAILABLE)
 
     @property
     def is_exhausted(self) -> bool:
         return (self.state == PopulationCubeState.EXHAUSTED)
 
-    def exhaust(self) -> None:
-        if not self.is_availble:
+    @property
+    def is_assigned(self) -> bool:
+        return self.state == PopulationCubeState.ASSIGNED
+
+    def assign(self) -> None:
+        if not self.is_available:
             raise ValueError(f"Population cube {self.id} is not available")
+
+        self.state = PopulationCubeState.ASSIGNED
+
+    def exhaust(self) -> None:
+        if self.is_exhausted:
+            raise ValueError(f"Population cube {self.id} is already exhausted")
 
         self.state = (PopulationCubeState.EXHAUSTED)
 
@@ -103,7 +114,8 @@ class Population:
 
     def refresh_all(self) -> None:
         for cube in self.cubes:
-            cube.refresh()
+            if cube.is_exhausted:
+                cube.refresh()
 
     def snapshot(self) -> PopulationSnapshot:
         return PopulationSnapshot(cubes=tuple(PopulationCubeSnapshot(cube=cube, population_type=(cube.population_type), state=cube.state) for cube in self.cubes))
@@ -142,13 +154,13 @@ class Population:
         return cube
 
     def available_count(self, population_type: PopulationType) -> int:
-        return sum(1 for cube in self.cubes if (cube.population_type == population_type and cube.is_availble))
+        return sum(1 for cube in self.cubes if (cube.population_type == population_type and cube.is_available))
 
     def exhausted_count(self, population_type: PopulationType) -> int:
         return sum(1 for cube in self.cubes if (cube.population_type == population_type and cube.is_exhausted))
 
     def available_cubes(self, population_type: PopulationType) -> list[PopulationCube]:
-        return [cube for cube in self.cubes if (cube.population_type == population_type and cube.is_availble)]
+        return [cube for cube in self.cubes if (cube.population_type == population_type and cube.is_available)]
 
     def get_cube(self, cube_id: int) -> PopulationCube:
         for cube in self.cubes:
@@ -161,7 +173,7 @@ class Population:
         if not any(owned_cube is cube for owned_cube in self.cubes):
             raise ValueError("Population cube does not belong to this population")
 
-        if not cube.is_availble:
+        if not cube.is_available:
             raise ValueError(f"Population cube {cube.id} is not available")
 
         next_type = (next_population_type(cube.population_type))
@@ -169,6 +181,17 @@ class Population:
             raise ValueError(f"{cube.population_type.value} cannot be upgraded")
 
         cube.population_type = (next_type)
+
+    def acquire_available(self, population_type: PopulationType) -> PopulationCube:
+        cubes = self.available_cubes(population_type)
+
+        if not cubes:
+            raise ValueError(f"No available {population_type.value} population")
+
+        cube = cubes[0]
+        cube.assign()
+        return cube
+    
     
     
 

@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 
 from .industry import Industry, OwnedIndustry
 from .ship import Ship, Shipyard
+from .population import PopulationCube
 
 
 
@@ -12,6 +13,11 @@ class IslandSpaceType(str, Enum):
     SEA = "sea"
 
 Construction = (OwnedIndustry | Shipyard | Ship)
+
+@dataclass(frozen=True)
+class IndustryWorkplaceSnapshot:
+    industry: OwnedIndustry
+    worker: PopulationCube | None
 
 @dataclass
 class IslandSpace:
@@ -58,7 +64,7 @@ class IslandSpace:
 
 @dataclass
 class IslandSnapshot:
-    industries: list[OwnedIndustry]
+    industries: list[IndustryWorkplaceSnapshot]
 
     spaces: list[tuple[IslandSpace, Construction | None]]
 
@@ -122,15 +128,20 @@ class Island:
             industry.occupied = occupied
 
     def snapshot(self) -> IslandSnapshot:
-        return IslandSnapshot(industries=(self.industries.copy()), spaces=[(space, space.construction) for space in self.spaces])
+        return IslandSnapshot(industries=[IndustryWorkplaceSnapshot(industry=owned, worker=(owned.workplace.worker)) for owned in self.industries])
 
     def restore(self, snapshot: IslandSnapshot) -> None:
-        self.industries = (snapshot.industries.copy())
+        original_industries = [item.industry for item in snapshot.industries]
+        for item in snapshot.industries:
+            item.industry.workplace.worker = item.worker
+        self.industries = original_industries
         original_spaces = [space for space, _ in snapshot.spaces]
         for space, construction in snapshot.spaces:
             space.construction = construction
 
         self.spaces = (original_spaces)
+
+        
 
     def get_space(self, space_id: str) -> IslandSpace:
         for space in self.spaces:

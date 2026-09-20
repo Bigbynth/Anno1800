@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
 from .goods import Good
-from .population import Population, PopulationType
+from .population import Population, PopulationType, PopulationCube
 
 @dataclass(frozen=True)
 class Industry:
@@ -19,33 +19,71 @@ class WrongWorkerError(Exception):
 
 
 @dataclass
+class Workplace:
+    worker: PopulationCube | None = None
+
+    @property
+    def is_occupied(self) -> bool:
+        return self.worker is not None
+
+    @property
+    def is_empty(self) -> bool:
+        return self.worker is None
+
+    def assign(self, worker: PopulationCube) -> None:
+        if self.worker is not None:
+            raise ValueError("Workplace is already occupied")
+
+        if not worker.is_assigned:
+            raise ValueError(f"Population cube {worker.id} must be assigned first")
+
+        self.worker = worker
+
+    def release(self, *, exhaust: bool) -> PopulationCube | None:
+        worker = self.worker
+
+        if worker is None:
+            return None
+
+        self.worker = None
+
+        if exhaust:
+            worker.exhaust()
+        else:
+            worker.refresh()
+
+        return worker
+
+@dataclass
 class OwnedIndustry():
     industry: Industry
-    occupied: bool = False
+    workplace: Workplace = field(default_factory=Workplace)
+
+    @property
+    def occupied(self) -> bool:
+        return self.workplace.is_occupied
 
     def can_produce(self, population: Population) -> bool:
         return (
-            not self.occupied
+            self.workplace.is_empty
             and population.can_use(self.industry.worker_type)
         )
 
-    def produce(self, population: Population) -> bool:
-        if self.occupied:
-            raise IndustryNotAvailableError(
-                f"{self.industry.name} is already occupied"
-            )
+    def produce(self, population: Population) -> Good:
 
-        if not population.can_use(self.industry.worker_type):
-            raise WrongWorkerError(
-                f"{self.industry.name} requires"
-                f"{self.industry.worker_type.value}"
-            )
+        if not self.can_produce(population):
+            raise ValueError(f"{self.industry.name} cannot produce")
 
-        population.use(self.industry.worker_type)
+        worker = population.acquire_available(self.industry.worker_type)
 
-        self.occupied = True
+        try:
+            self.workplace.assign(worker)
+
+        except Exception:
+            worker.refresh()
+            raise
 
         return self.industry.good
 
-    def clear_worker(self) -> None:
-        self.occupied = False
+    def clear_worker(self, *, exhaust: bool = False)  -> PopulationCube | None:
+        return self.workplace.release(exhaust=exhaust)

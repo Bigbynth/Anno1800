@@ -49,6 +49,9 @@ class PlayerState:
     def get_industries(self, industry: Industry) -> list[OwnedIndustry]:
         return self.island.get_industries(industry)
 
+    def get_all_industries(self) -> list[OwnedIndustry]:
+        return self.island.industries.copy()
+
     def start_production(self) -> ProductionResolver:
         return ProductionResolver(self.population)
 
@@ -182,6 +185,7 @@ class PlayerState:
             raise ValueError(f"Island space {space_id} is empty")
 
         if isinstance(construction, OwnedIndustry):
+            construction.clear_worker(exhaust=True)
             self.island.remove_construction(space_id)
             return construction
 
