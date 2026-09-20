@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from .industry import Industry, OwnedIndustry
 from .island import Island
-from .population import Population, PopulationType
+from .population import Population, PopulationType, PopulationCube
 from .ship import NavalToken, NavalTokenType, Ship, Shipyard
 from .cards import PopulationCard
 from .new_world import NewWorldIsland
@@ -34,7 +34,7 @@ class PlayerState:
 
     gold: int = 0
 
-    def add_population(self, population_type: PopulationType, amount: int = 1) -> None:
+    def add_population(self, population_type: PopulationType, amount: int = 1) -> list[PopulationCube]:
         self.population.add(population_type, amount)
 
     def add_industry(self, industry: Industry, space_id: str | None = None) -> OwnedIndustry:
