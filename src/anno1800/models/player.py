@@ -62,8 +62,10 @@ class PlayerState:
         self.victory_points += amount
 
     def refresh_population(self) -> None: 
+        for industry in self.get_all_industries():
+            industry.clear_worker(exhaust=False)
+
         self.population.refresh_all()
-        self.island.clear_worker()
 
     def add_card(self, card: PopulationCard) -> None:
         self.hand.append(card)

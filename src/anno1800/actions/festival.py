@@ -6,15 +6,13 @@ class FestivalAction(GameAction):
     def execute(self, context: ActionContext) -> ActionResult:
         player = context.player
 
-        for industry in player.get_all_industries():
-            industry.clear_worker(exhaust=False)
-
         player.refresh_population()
+        player.refresh_naval_tokens()
 
         return ActionResult(
             message=(
                 f"{player.name} held a festival."
-                "Population is available again."
+                "Population cubes and naval tokens were refreshed."
             )
         )
 
