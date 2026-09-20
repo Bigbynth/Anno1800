@@ -37,8 +37,8 @@ class PlayerState:
     def add_population(self, population_type: PopulationType, amount: int = 1) -> None:
         self.population.add(population_type, amount)
 
-    def add_industry(self, industry: Industry) -> OwnedIndustry:
-        return self.island.add_industry(industry)
+    def add_industry(self, industry: Industry, space_id: str | None = None) -> OwnedIndustry:
+        return self.island.add_industry(industry, space_id=space_id)
 
     def has_industry(self, industry: Industry) -> bool:
         return self.island.has_industry(industry)

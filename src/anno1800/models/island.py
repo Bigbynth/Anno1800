@@ -1,11 +1,66 @@
+from enum import Enum
 from dataclasses import dataclass, field
 
 from .industry import Industry, OwnedIndustry
+from .ship import Ship, Shipyard
 
+
+
+class IslandSpaceType(str, Enum):
+    LAND =  "land"
+    COAST = "coast"
+    SEA = "sea"
+
+Construction = (OwnedIndustry | Shipyard | Ship)
+
+@dataclass
+class IslandSpace:
+    id: str
+    space_type: IslandSpaceType
+    construction: Construction | None = None
+
+    @property
+    def is_empty(self) -> bool:
+        return self.construcction is None
+
+    def can_place(self, construction: Construction) -> bool:
+        if not self.is_empty:
+            return False
+
+        if isinstance(construction, OwnedIndustry):
+            return self.space_type in (IslandSpaceType.LAND, IslandSpaceType.COAST)
+
+        if isinstance(construction, Shipyard):
+            return self.space_type == IslandSpaceType.COAST
+
+        if isinstance(construction, Ship):
+            return self.space_type == IslandSpaceType.SEA
+
+        return False
+
+    def place(self, construction: Construction) -> None:
+        if not self.is_empty:
+            raise ValueError(f"Island space {self.id} is alreay occupied")
+
+        if not self.can_place(construction):
+            raise ValueError(f"Cannot place {type(construction).__name__ } on {self.space_type.value} space {self.id}")
+
+        self.construction = construction
+
+    def remove(self) -> Construction:
+        if self.construction is None:
+            raise ValueError(f"Island space {self.id} is empty")
+        construction = (self.construction)
+        self.construction  = None
+        return construction
+
+        
 
 @dataclass
 class IslandSnapshot:
-    industries: list[tuple[OwnedIndustry, bool]]
+    industries: list[OwnedIndustry]
+
+    spaces: list[tuple[IslandSpace, Construction | None]]
 
 @dataclass
 class Island:
@@ -13,12 +68,17 @@ class Island:
     industries: list[OwnedIndustry] = field(
         default_factory=list
     )
+    spaces: list[IslandSpace] = field(default_factory=list)
 
     def add_industry(
             self,
-            industry: Industry
+            industry: Industry,
+            space_id: str | None = None
     ) -> OwnedIndustry:
         owned_industry = OwnedIndustry(industry)
+
+        if space_id is not None:
+            self.place(space_id, owned_industry)
 
         self.industries.append(owned_industry)
 
@@ -62,13 +122,39 @@ class Island:
             industry.occupied = occupied
 
     def snapshot(self) -> IslandSnapshot:
-        return IslandSnapshot(industries=[(owned, owned.occupied) for owned in self.industries])
+        return IslandSnapshot(industries=(self.industries.copy()), spaces=[(space, space.construction) for space in self.spaces])
 
     def restore(self, snapshot: IslandSnapshot) -> None:
+        self.industries = (snapshot.industries.copy())
+        original_spaces = [space for space, _ in snapshot.spaces]
+        for space, construction in snapshot.spaces:
+            space.construction = construction
 
-        original_industries = [owned for owned, _ in snapshot.industries]
-        for owned, occupied in snapshot.industries:
-            owned.occupied = occupied
-        self.industries = (original_industries)
-        
-        
+        self.spaces = (original_spaces)
+
+    def get_space(self, space_id: str) -> IslandSpace:
+        for space in self.spaces:
+            if space.id == space_id:
+                return space
+
+        raise ValueError(f"Unknown island place: {space_id}")
+
+    def available_space_for(self, construction: Construction) -> list[IslandSpace]:
+        return [space for space in self.spaces if space.can_place(construction)]
+
+    def place(self, space_id: str, construction: Construction) -> None:
+        space = self.get_space(space_id)
+
+        space.place(construction)
+
+    def remove_from_space(self, space_id: str) -> Construction:
+        space = self.get_space(space_id)
+        return space.remove()
+
+    def find_construction_space(self, construction: Construction) -> IslandSpace | None:
+        for space in self.spaces:
+            if space.construction is construction:
+                return space
+
+        return None
+
