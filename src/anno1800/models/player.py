@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from .industry import Industry, OwnedIndustry
 from .island import Island
 from .population import Population, PopulationType
-from .ship import NavalToken, NavalTokenType, Ship
+from .ship import NavalToken, NavalTokenType, Ship, Shipyard
 from .cards import PopulationCard
 from .new_world import NewWorldIsland
 from .goods import Good
@@ -25,6 +25,7 @@ class PlayerState:
 
     victory_points: int = 0
     ships: list[Ship] = field(default_factory=list)
+    shipyards: list[Shipyard] = field(default_factory=list)
     naval_tokens: list[NavalToken] = field(default_factory=list)
     new_world_islands: list[NewWorldIsland] = field(default_factory=list)
     hand: list[PopulationCard] = field(default_factory=list)
@@ -158,3 +159,12 @@ class PlayerState:
                 f"Card {card.id} has not been completed"
             )
         card.activate()
+
+    def add_shipyard(self, shipyard: Shipyard) -> None:
+        self.shipyards.append(shipyard)
+
+    def has_shipyard(self, shipyard: Shipyard) -> bool:
+        return (shipyard in self.shipyards)
+
+    def available_shipyards_for(self, ship: Ship) -> list[Shipyard]:
+        return [shipyard for shipyard in self.shipyards if shipyard.can_build(ship)]
