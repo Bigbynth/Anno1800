@@ -11,11 +11,18 @@ from anno1800.models.ship import Ship, Shipyard
 
 from anno1800.services.production import ProductionResolver
 
+
+@dataclass(frozen=True)
+class ConstructionTarget:
+    space_id: str
+    build_over: bool = False
+
 @dataclass(frozen=True)
 class ShipBuild:
     shipyard: Shipyard
     ship: Ship
     space_id: str
+    build_over: bool = False
 
 @dataclass
 class ExpandAction(GameAction):
@@ -23,6 +30,11 @@ class ExpandAction(GameAction):
     shipyard: Shipyard | None = None
     industry_space_id: str | None = None
     shipyard_space_id: str | None = None
+
+    industry_build_over: bool = False
+    shipyard_build_over: bool = False
+
+    remove_space_id: str | None = None
 
     ships: list[ShipBuild] = field(default_factory=list)
     production_plan: list[OwnedIndustry] = field(default_factory=list)
@@ -49,15 +61,26 @@ class ExpandAction(GameAction):
                 raise InvalidActionError(self._missing_goods_message(resolver, total_cost))
 
             resolver.pay(total_cost)
+            if self.remove_space_id is not None:
+                player.remove_construction(self.remove_space_id)
 
             if self.industry is not None and self.industry_space_id is not None:
-                player.add_industry(self.industry, space_id=(self.industry_space_id))
-
+                owned_industry = (OwnedIndustry(self.industry))
+                if self.industry_build_over:
+                    player.replace_construction(self.industry_space_id, owned_industry)
+                else:
+                    player.add_industry(self.industry, space_id=(self.industry_space_id))
             if self.shipyard is not None and self.shipyard_space_id is not None:
-                player.add_shipyard(self.shipyard, space_id=(self.shipyard_space_id))
+                if self.shipyard_build_over:
+                    player.replace_construction(self.shipyard_space_id, self.shipyard)
+                else:
+                    player.add_shipyard(self.shipyard, space_id=(self.shipyard_space_id))
 
             for ship_build in self.ships:
-                player.add_ship(ship_build.ship, space_id=(ship_build.space_id))
+                if ship_build.build_over:
+                    player.replace_construction(ship_build.space_id, ship_build.ship)
+                else:
+                    player.add_ship(ship_build.ship, space_id=(ship_build.space_id))
 
             return ActionResult(
                 message=(self._result_message(player))
@@ -82,6 +105,7 @@ class ExpandAction(GameAction):
         self._validate_shipyard()
         self._validate_ships(player)
         self._validate_target_spaces(player)
+        self._validate_removal(player)
 
     def _validate_production_plan(self, player: PlayerState) -> None:
         for owned_industry in self.production_plan:
@@ -133,21 +157,20 @@ class ExpandAction(GameAction):
     def _validate_target_spaces(self, player: PlayerState):
         island = player.island
 
-        targets: list[tuple[str, object]] = []
+        targets: list[tuple[str, object, bool]] = []
 
-        if self.industry is not None:
-            owned_industry = (OwnedIndustry(self.industry))
-            targets.append((self.industry_space_id, owned_industry),)
+        if self.industry is not None and self.industry_space_id is not None:
+            targets.append((self.industry_space_id, OwnedIndustry(self.industry), self.industry_build_over))
 
-        if self.shipyard is not None:
-            targets.append((self.shipyard_space_id, self.shipyard))
+        if self.shipyard is not None and self.shipyard_space_id is not None:
+            targets.append((self.shipyard_space_id, self.shipyard, self.shipyard_build_over))
 
         for ship_build in self.ships:
-            targets.append((ship_build.space_id, ship_build.ship))
+            targets.append((ship_build.space_id, ship_build.ship, ship_build.build_over))
 
         used_space_ids: set[str] = set()
 
-        for space_id, construction in targets:
+        for space_id, construction, build_over in targets:
             if space_id in used_space_ids:
                 raise InvalidActionError(f"Island space {space_id} is targeted more than once")
 
@@ -157,11 +180,40 @@ class ExpandAction(GameAction):
             except ValueError as exc:
                 raise InvalidActionError(str(exc)) from exc
 
-            if not space.is_empty:
-                raise InvalidActionError(f"Island space {space_id} is alreay occupied")
+            if space.is_empty:
+                if build_over:
+                    raise InvalidActionError(f"Cannot build over empty space {space_id}")
 
-            if not space.can_place(construction):
+            else:
+                if not build_over:
+                    raise InvalidActionError(f"Island space {space_id} is already occupied")
+
+            existing = space.construction
+            space.construction = None
+            try:
+                can_place = space.can_place(construction)
+            finally:
+                space.construction = existing
+
+
+            if not can_place:
                 raise InvalidActionError(f"Cannot place {type(construction).__name__} on {space.space_type.value} space {space_id}")
+
+        if self.remove_space_id is not None and self.remove_space_id in used_space_ids:
+            raise InvalidActionError(f"Space {self.remove_space_id}  cannot be both removed and targeted for construction")
+
+    def _validate_removal(self, player: PlayerState) -> None:
+        if self.remove_space_id is None:
+            return
+
+        try:
+            space = (player.island.get_space(self.remove_space_id))
+
+        except ValueError as exc:
+            raise InvalidActionError(str(exc)) from exc
+
+        if space.is_empty:
+            raise InvalidActionError(f"Cannot remove construction from empty space {self.remove_space_id}")
 
     def _total_cost(self) -> dict[Good, int]:
         total: Counter[Good] = Counter()

@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from __future__ import annotations
 from .goods import Good
 from enum import Enum
 
@@ -13,6 +14,7 @@ class NavalTokenType(str, Enum):
 @dataclass
 class NavalToken:
     token_type: NavalTokenType
+    ship: Ship | None = None
     exhausted: bool = False
 
     @property

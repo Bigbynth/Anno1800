@@ -158,3 +158,36 @@ class Island:
 
         return None
 
+    def remove_construction(self, space_id: str) -> Construction:
+        construction = (self.remove_from_space(space_id))
+        if isinstance(construction, OwnedIndustry):
+            self.industries.remove(construction)
+
+        return construction
+
+    def replace_construction(self, space_id: str, construction: Construction) -> Construction:
+        space = self.get_space(space_id)
+        existing = (space.construction)
+
+        if existing is None:
+            raise ValueError(f"Island space {space_id} is empty")
+
+        original = space.construction
+        space.construction = None
+
+        try:
+            if not space.can_place(construction):
+                raise ValueError(f"Cannot place {type(construction).__name__} on {space.space_type.value} space {space_id}")
+
+        finally:
+            space.construction = original
+
+        removed = (self.remove_construction(space_id))
+
+        space.place(construction)
+
+        if isinstance(construction, OwnedIndustry):
+            self.industries.append(construction)
+
+        return removed
+

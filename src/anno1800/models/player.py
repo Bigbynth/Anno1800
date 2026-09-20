@@ -108,10 +108,10 @@ class PlayerState:
         self.ships.append(ship)
 
         for _ in range(ship.trade_token):
-            self.naval_tokens.append(NavalToken(token_type=(NavalTokenType.TRADE)))
+            self.naval_tokens.append(NavalToken(token_type=NavalTokenType.TRADE, ship=ship))
 
         for _ in range(ship.exploration_tokens):
-            self.naval_tokens.append(NavalToken(token_type=NavalTokenType.EXPLORATION))
+            self.naval_tokens.append(NavalToken(token_type=NavalTokenType.EXPLORATION, ship=ship))
 
     def available_ship_capacity(self, token_type: NavalTokenType) -> int:
         return sum(1 for token in self.naval_tokens if (token.token_type == token_type and token.available))
@@ -172,3 +172,71 @@ class PlayerState:
 
     def available_shipyards_for(self, ship: Ship) -> list[Shipyard]:
         return [shipyard for shipyard in self.shipyards if shipyard.can_build(ship)]
+
+    def remove_construction(self, space_id: str):
+        space = self.island.get_space(space_id)
+
+        construction = space.construction
+
+        if construction is None:
+            raise ValueError(f"Island space {space_id} is empty")
+
+        if isinstance(construction, OwnedIndustry):
+            self.island.remove_construction(space_id)
+            return construction
+
+        if isinstance(construction, Shipyard):
+            self.island.remove_from_space(space_id)
+            self._remove_by_identity(self.shipyards, construction)
+            return construction
+
+        if isinstance(construction, Ship):
+            self.island.remove_from_space(space_id)
+            self._remove_by_identity(self.ships, construction)
+            self._remove_ship_naval_tokens(construction)
+            return construction
+        raise ValueError("Unknown construction type")
+
+    @staticmethod
+    def _remove_by_identity(items: list, target) -> None:
+        for index, item in enumerate(items):
+            if item is target:
+                items.pop(index)
+                return
+
+        raise ValueError("Construction is not owned by this player")
+
+    def _remove_ship_naval_tokens(self, ship: Ship) -> None:
+        self.naval_tokens = [token for token in self.naval_tokens if token.ship is not ship]
+
+    def replace_construction(self, space_id: str, construction) -> object:
+        space = self.island.get_space(space_id)
+
+        existing = (space.construction)
+
+        if existing is None:
+            raise ValueError(f"Island space {space_id} is empty")
+
+        try:
+            if not space.can_place(construction):
+                raise ValueError(f"Cannot place construction on space {space.id}")
+
+        finally:
+            space.construction = (existing)
+
+        removed = (self.remove_construction(space_id))
+        if isinstance(construction, OwnedIndustry):
+            space.place(construction)
+            self.island.industries.append(construction)
+
+        elif isinstance(construction, Shipyard):
+            space.place(construction)
+            self.shipyards.append(construction)
+
+        elif isinstance(construction, Ship):
+            self.add_ship(construction, space_id=space_id)
+
+        else:
+            raise ValueError("Unknown construction type")
+
+        return removed
