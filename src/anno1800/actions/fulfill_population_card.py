@@ -7,12 +7,16 @@ from anno1800.services.production import ProductionResolver
 from anno1800.models.trade import TradeRequest
 from anno1800.services.trade import TradeResolver
 from anno1800.actions.context import ActionContext
+from anno1800.models.goods import Good
+from anno1800.models.new_world import NewWorldProductionRequest
+from anno1800.services.new_world import NewWorldResolver
 
 @dataclass
 class FulfillPopulationCardAction(GameAction):
     card: PopulationCard
     production_plan: list[OwnedIndustry] = field(default_factory=list)
     trade_plan: list[TradeRequest] = field(default_factory=list)
+    new_world_plan: list[NewWorldProductionRequest] = field(default_factory=list)
 
     def execute(self, context: ActionContext) -> ActionResult:
         player = context.player
@@ -25,9 +29,11 @@ class FulfillPopulationCardAction(GameAction):
         completed_snapshot = player.completed_cards.copy()
         resolver = player.start_production()
         trade_resolver = TradeResolver(player=player, production=resolver)
+        new_world_resolver = NewWorldResolver(player=player, production=resolver)
 
         production_snapshot = resolver.snapshot()
         trade_snapshot = trade_resolver.snapshot()
+        new_world_snapshot = new_world_resolver.snapshot()
 
         try:
             for industry in self.production_plan:
@@ -35,6 +41,9 @@ class FulfillPopulationCardAction(GameAction):
 
             for request in self.trade_plan:
                 trade_resolver.trade(partner=request.partner, good=request.good)
+
+            for request in self.new_world_plan:
+                new_world_resolver.produce(island=request.island, good=request.good)
 
             if not resolver.can_pay(self.card.requirements):
                 raise InvalidActionError(self._missing_goods_message(resolver))
@@ -47,6 +56,7 @@ class FulfillPopulationCardAction(GameAction):
                 )
             )
         except Exception:
+            new_world_resolver.rollback(new_world_snapshot)
             trade_resolver.rollback(trade_snapshot)
             resolver.rollback(production_snapshot)
             player.population.restore(population_snapshot)

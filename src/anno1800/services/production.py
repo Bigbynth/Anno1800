@@ -11,6 +11,7 @@ class ProductionResolverSnapshot:
     goods: tuple[Good, ...]
     production_record_count: int
     trade_record_count: int
+    new_world_record_count: int
 
 class ProductionResolver:
     def __init__(self, population: Population):
@@ -76,7 +77,7 @@ class ProductionResolver:
 
     def snapshot(self) -> ProductionResolverSnapshot:
         self._ensure_active()
-        return ProductionResolverSnapshot(goods=tuple(self.context.goods), production_record_count=len(self.context.production_records), trade_record_count=len(self.context.trade_records))
+        return ProductionResolverSnapshot(goods=tuple(self.context.goods), production_record_count=len(self.context.production_records), trade_record_count=len(self.context.trade_records), new_world_record_count=len(self.context.new_world_records))
 
     def rollback(self, snapshot: ProductionResolverSnapshot) -> None:
         self._ensure_active()

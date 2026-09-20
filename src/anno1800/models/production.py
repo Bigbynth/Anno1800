@@ -3,6 +3,7 @@ from .goods import Good
 from .industry import OwnedIndustry
 from .population import PopulationCube
 from .trade import TradeRecord
+from .new_world import NewWorldProductionRecord
 
 @dataclass(frozen=True)
 class ProductionRecord:
@@ -13,6 +14,7 @@ class ProductionRecord:
 @dataclass
 class ProductionContext:
     goods: list[Good] = field(default_factory=list)
+    new_world_records: list[NewWorldProductionRecord] = field(default_factory=list)
     production_records: list[ProductionRecord] = field(default_factory=list)
 
     trade_records: list[TradeRecord] = field(default_factory=list)
@@ -43,7 +45,12 @@ class ProductionContext:
 
         self.trade_records.append(record)
 
+    def add_new_world_production(self, record: NewWorldProductionRecord) -> None:
+        self.goods.append(record.good)
+        self.new_world_records.append(record)
+
     def clear(self) -> None:
         self.goods.clear()
         self.production_records.clear()
         self.trade_records.clear()
+        self.new_world_records.clear()

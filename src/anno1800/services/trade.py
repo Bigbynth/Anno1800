@@ -111,7 +111,7 @@ class TradeResolver:
 
         tokens = self.player.use_naval_tokens(NavalTokenType.TRADE, token_cost)
         partner.add_gold(1)
-        self.player.mark_good_traded(good)
+        self.player.traded_goods_this_turn.add(good)
 
         record = TradeRecord(good=good, partner=partner, industry=industry, tokens=tuple(tokens))
 
