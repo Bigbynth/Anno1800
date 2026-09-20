@@ -5,7 +5,7 @@ from .industry import Industry, OwnedIndustry
 
 @dataclass
 class IslandSnapshot:
-    industries: list[tuple[Industry, bool]]
+    industries: list[tuple[OwnedIndustry, bool]]
 
 @dataclass
 class Island:
@@ -62,9 +62,13 @@ class Island:
             industry.occupied = occupied
 
     def snapshot(self) -> IslandSnapshot:
-        return IslandSnapshot(industries=[(owned.industry, owned.occupied) for owned in self.industries])
+        return IslandSnapshot(industries=[(owned, owned.occupied) for owned in self.industries])
 
     def restore(self, snapshot: IslandSnapshot) -> None:
-        self.industries = [OwnedIndustry(industry=industry, occupied=occupied) for industry, occupied in snapshot.industries]
+
+        original_industries = [owned for owned, _ in snapshot.industries]
+        for owned, occupied in snapshot.industries:
+            owned.occupied = occupied
+        self.industries = (original_industries)
         
         
