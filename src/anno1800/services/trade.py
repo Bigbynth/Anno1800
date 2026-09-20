@@ -27,7 +27,7 @@ class TradeResolver:
         self.player = player
         self.production = production
 
-    def validate(self, trades: list[ForeignProduction]) -> None:
+    def validate(self, trades: list[TradeRecord]) -> None:
         if not trades:
             return
 
@@ -61,7 +61,7 @@ class TradeResolver:
         if not ShippingService.can_use_capacity(self.buyer, NavalTokenType.TRADE, required_capacity):
             raise InvalidActionError("Not enough trade ship capacity")
 
-    def execute(self, trades: list[ForeignProduction]) -> list[Good]:
+    def execute(self, trades: list[TradeRecord]) -> list[Good]:
         self.validate(trades)
 
         if not trades:
@@ -79,7 +79,7 @@ class TradeResolver:
 
         return goods
 
-    def _trade_cost(self, trade: ForeignProduction) -> int:
+    def _trade_cost(self, trade: TradeRecord) -> int:
         worker_type = (trade.industry.industry.worker_type)
         cost = TRADE_COSTS.get(worker_type)
         if cost is None:
