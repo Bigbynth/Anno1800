@@ -26,9 +26,17 @@ class NavalToken:
             raise ValueError(
                 f"{self.token_type.value} token is already exhausted"
             )
+        self.exhausted = True
 
     def refresh(self) -> None:
         self.exhausted = False
+
+
+@dataclass(frozen=True)
+class NavalTokenSnapshot:
+    token: NavalToken
+    exhausted: bool
+
 
 @dataclass(frozen=True)
 class Ship:

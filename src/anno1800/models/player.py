@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from .industry import Industry, OwnedIndustry
 from .island import Island
 from .population import Population, PopulationType, PopulationCube
-from .ship import NavalToken, NavalTokenType, Ship, Shipyard
+from .ship import NavalToken, NavalTokenType, Ship, Shipyard, NavalTokenSnapshot
 from .cards import PopulationCard
 from .new_world import NewWorldIsland
 from .goods import Good
@@ -35,7 +35,7 @@ class PlayerState:
     gold: int = 0
 
     def add_population(self, population_type: PopulationType, amount: int = 1) -> list[PopulationCube]:
-        self.population.add(population_type, amount)
+        return self.population.add(population_type, amount)
 
     def add_industry(self, industry: Industry, space_id: str | None = None) -> OwnedIndustry:
         return self.island.add_industry(industry, space_id=space_id)
@@ -118,20 +118,6 @@ class PlayerState:
 
     def available_ship_capacity(self, token_type: NavalTokenType) -> int:
         return sum(1 for token in self.naval_tokens if (token.token_type == token_type and token.available))
-
-    def naval_token_snapshot(self) -> list[bool]:
-        return [token.exhausted for token in self.naval_tokens]
-
-    def restore_naval_token(self, snapshot: list[bool]) -> None:
-        if len(snapshot) != len(self.naval_tokens):
-            raise ValueError("Invalid naval token snapshot")
-
-        for token, exhausted in zip(self.naval_tokens, snapshot):
-            token.exhausted = exhausted
-
-    def refresh_naval_tokens(self) -> None:
-        for token in self.naval_tokens:
-            token.refresh()
 
     def add_naval_tokens(self, token_type: NavalTokenType, amount: int = 1) -> None:
         if amount <= 0:
@@ -270,3 +256,21 @@ class PlayerState:
             raise ValueError("Not enough gold")
 
         self.gold -= amount
+
+    def naval_token_snapshot(self) -> list[NavalTokenSnapshot]:
+        return [NavalTokenSnapshot(token=token, exhausted=token.exhausted) for token in self.naval_tokens]
+
+    def restore_naval_tokens(self, snapshot: list[NavalTokenSnapshot]) -> None:
+        original_tokens: list[NavalToken] = []
+
+        for item in snapshot:
+            item.token.exhausted = item.exhausted
+
+            original_tokens.append(item.token)
+
+        self.naval_tokens = original_tokens
+
+    def refresh_naval_tokens(self) -> None:
+        for token in self.naval_tokens:
+            if token.exhausted:
+                token.refresh()

@@ -87,7 +87,7 @@ class ExpandAction(GameAction):
         island_snapshot = (player.island.snapshot())
         shipyards_snapshot = (player.shipyards.copy())
         ships_snapshot = (player.ships.copy())
-        naval_tokens_snapshot = (player.naval_tokens.copy())
+        naval_tokens_snapshot = (player.naval_token_snapshot())
         resolver = (player.start_production())
 
         trade = TradeResolver(player=player, production=resolver)
@@ -136,7 +136,7 @@ class ExpandAction(GameAction):
             player.island.restore(island_snapshot)
             player.shipyards = (shipyards_snapshot)
             player.ships = (ships_snapshot)
-            player.naval_tokens = (naval_tokens_snapshot)
+            player.restore_naval_tokens(naval_tokens_snapshot)
             raise
         finally:
             if not resolver.finished:
