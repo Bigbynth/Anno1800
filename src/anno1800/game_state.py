@@ -5,6 +5,7 @@ from anno1800.models.deck import PopulationCardDeck, ExpeditionDeck
 from anno1800.models.player import PlayerState
 from anno1800.data.new_world import NEW_WORLD_CARDS, NEW_WORLD_ISLANDS
 from anno1800.models.new_world import NewWorldIsland
+from anno1800.models.old_world import OldWorldIsland
 
 
 def create_default_deck() -> PopulationCardDeck:
@@ -28,6 +29,7 @@ class GameState:
     expedition_deck: ExpeditionDeck = field(default_factory=ExpeditionDeck)
     population_deck: PopulationCardDeck = field(default_factory=create_default_deck)
     new_world_islands: list[NewWorldIsland] = field(default_factory=lambda: NEW_WORLD_ISLANDS.copy())
+    old_world_islands: list[OldWorldIsland] = field(default_factory=list)
 
     @property
     def current_player(self) -> PlayerState:
@@ -42,4 +44,9 @@ class GameState:
 
         return self.new_world_islands.pop()
 
+    def draw_old_world_island(self) -> OldWorldIsland:
+        if not self.old_world_islands:
+            raise RuntimeError("No Old World islands remaining")
+
+        return self.old_world_islands.pop()
     

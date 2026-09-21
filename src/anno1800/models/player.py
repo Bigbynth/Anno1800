@@ -8,6 +8,7 @@ from .cards import PopulationCard
 from .new_world import NewWorldIsland
 from .goods import Good
 from .expedition import ExpeditionCard
+from .old_world import OldWorldIsland
 from anno1800.services.production import ProductionResolver
 
 @dataclass
@@ -28,7 +29,10 @@ class PlayerState:
     ships: list[Ship] = field(default_factory=list)
     shipyards: list[Shipyard] = field(default_factory=list)
     naval_tokens: list[NavalToken] = field(default_factory=list)
+
     new_world_islands: list[NewWorldIsland] = field(default_factory=list)
+    old_world_islands: list[OldWorldIsland] = field(default_factory=list)
+
     hand: list[PopulationCard] = field(default_factory=list)
 
     expedition_cards: list[ExpeditionCard] = field(default_factory=list)
@@ -44,16 +48,26 @@ class PlayerState:
         return self.island.add_industry(industry, space_id=space_id)
 
     def has_industry(self, industry: Industry) -> bool:
-        return self.island.has_industry(industry)
+        return bool(self.get_industries(industry))
 
     def get_industry(self, industry: Industry) -> OwnedIndustry:
         return self.island.get_industry(industry)
 
     def get_industries(self, industry: Industry) -> list[OwnedIndustry]:
-        return self.island.get_industries(industry)
+        result = self.island.get_industries(industry)
+        for old_world in self.old_world_islands:
+            result.extend(old_world.island.get_industries(industry))
+
+        return result
 
     def get_all_industries(self) -> list[OwnedIndustry]:
-        return self.island.industries.copy()
+        industries = self.island.industries.copy()
+
+        for old_world in self.old_world_islands:
+            industries.extend(old_world.island.industries)
+
+        return industries
+
 
     def start_production(self) -> ProductionResolver:
         return ProductionResolver(self.population)
@@ -279,3 +293,9 @@ class PlayerState:
 
     def add_expedition_cards(self, cards: list[ExpeditionCard]) -> None:
         self.expedition_cards.extend(cards)
+
+    def add_old_world_island(self, island: OldWorldIsland) -> None:
+        if len(self.old_world_islands) >= 4:
+            raise ValueError("Cannot own more than 4 Old World Islands")
+
+        self.old_world_islands.append(island)
