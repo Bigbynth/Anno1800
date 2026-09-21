@@ -2,9 +2,32 @@ from dataclasses import dataclass, field
 
 from .cards import PopulationCard
 from .population import PopulationType
+from .expedition import ExpeditionCard
 
 class EmptyDeckError(Exception):
     pass
+
+
+@dataclass
+class ExpeditionDeck:
+    cards: list[ExpeditionCard] = field(default_factory=list)
+
+    def remaining(self) -> int:
+        return len(self.cards)
+
+    def is_empty(self) -> bool:
+        return not self.cards
+
+
+    def draw(self, amount: int) -> list[ExpeditionCard]:
+        if amount < 0:
+            raise ValueError("Draw amount cannot be negative")
+
+        amount = min(amount, len(self.cards))
+
+        return [self.cards.pop() for _ in range(amount)]
+
+
 
 @dataclass
 class PopulationCardDeck:
@@ -36,4 +59,3 @@ class PopulationCardDeck:
             raise EmptyDeckError("No New World cards remaining")
 
         return self.new_world_cards.pop()
-    

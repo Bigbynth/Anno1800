@@ -7,6 +7,7 @@ from .ship import NavalToken, NavalTokenType, Ship, Shipyard, NavalTokenSnapshot
 from .cards import PopulationCard
 from .new_world import NewWorldIsland
 from .goods import Good
+from .expedition import ExpeditionCard
 from anno1800.services.production import ProductionResolver
 
 @dataclass
@@ -29,6 +30,8 @@ class PlayerState:
     naval_tokens: list[NavalToken] = field(default_factory=list)
     new_world_islands: list[NewWorldIsland] = field(default_factory=list)
     hand: list[PopulationCard] = field(default_factory=list)
+
+    expedition_cards: list[ExpeditionCard] = field(default_factory=list)
     completed_cards: list[PopulationCard] = field(default_factory=list)
     traded_goods_this_turn: set[Good] = field(default_factory=set)
 
@@ -273,3 +276,6 @@ class PlayerState:
                 return
 
         raise ValueError("Population card is not in hand")
+
+    def add_expedition_cards(self, cards: list[ExpeditionCard]) -> None:
+        self.expedition_cards.extend(cards)

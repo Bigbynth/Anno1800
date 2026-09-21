@@ -1,14 +1,14 @@
 from dataclasses import dataclass, field
 
 from anno1800.data.cards import create_population_deck
-from anno1800.models.deck import PopulationCardDeck
+from anno1800.models.deck import PopulationCardDeck, ExpeditionDeck
 from anno1800.models.player import PlayerState
 from anno1800.data.new_world import NEW_WORLD_CARDS, NEW_WORLD_ISLANDS
 from anno1800.models.new_world import NewWorldIsland
 
 
 def create_default_deck() -> PopulationCardDeck:
-    deck = create_default_deck()
+    deck = create_population_deck()
 
     deck.new_world_cards = NEW_WORLD_CARDS.copy()
 
@@ -25,7 +25,8 @@ class GameState:
 
     game_over: bool = False
 
-    population_deck: PopulationCardDeck = field(default_factory=create_population_deck)
+    expedition_deck: ExpeditionDeck = field(default_factory=ExpeditionDeck)
+    population_deck: PopulationCardDeck = field(default_factory=create_default_deck)
     new_world_islands: list[NewWorldIsland] = field(default_factory=lambda: NEW_WORLD_ISLANDS.copy())
 
     @property
