@@ -11,17 +11,17 @@ class ActivatePopulationCardAction(GameAction):
 
     def execute(self, context: ActionContext) -> ActionResult:
         player = context.player
-        if not player.can_activate_card(self.card):
-            raise InvalidActionError(
-                f"Card {self.card.id} cannot be activated"
-            )
+        if not any(owned is self.card for owned in player.completed_cards):
+            raise InvalidActionError("Population card has not been played")
+
+        if self.card.activated:
+            raise InvalidActionError("Population card effect has already been activated")
 
         self._validate_effects()
 
         gold_snapshot = player.gold
         population_snapshot = (player.population.snapshot())
-        ships_snapshot = (player.ships.copy())
-        naval_tokens_snapshot = (player.naval_tokens.copy())
+        naval_tokens_snapshot = (player.naval_token_snapshot())
         activated_snapshot = (self.card.activated)
 
         try:
@@ -38,8 +38,7 @@ class ActivatePopulationCardAction(GameAction):
         except Exception:
             player.gold = gold_snapshot
             player.population.restore(population_snapshot)
-            player.ships = (ships_snapshot)
-            player.naval_tokens = (naval_tokens_snapshot)
+            player.restore_naval_tokens(naval_tokens_snapshot)
             self.card.activated = (activated_snapshot)
             raise
 

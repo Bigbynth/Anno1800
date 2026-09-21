@@ -35,7 +35,7 @@ class CardEffect:
     population_type: PopulationType | None = None
 
     def __post_init__(self) -> None:
-        if self.amount <= 9:
+        if self.amount <= 0:
             raise ValueError("Effect amount must be positive")
 
         if self.effect_type == CardEffectType.GAIN_POPULATION and self.population_type is None:

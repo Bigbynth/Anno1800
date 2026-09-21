@@ -1,4 +1,6 @@
 from dataclasses import dataclass, field
+from typing import TypeAlias
+
 from anno1800.actions.base import ActionResult, GameAction, InvalidActionError
 from anno1800.models.cards import PopulationCard
 from anno1800.models.industry import OwnedIndustry
@@ -10,17 +12,40 @@ from anno1800.actions.context import ActionContext
 from anno1800.models.new_world import NewWorldProductionRequest
 from anno1800.services.new_world import NewWorldResolver
 
+
+@dataclass(frozen=True)
+class ProduceForCardStep:
+    industry: OwnedIndustry
+
+
+@dataclass(frozen=True)
+class TradeForCardStep:
+    request: TradeRequest
+
+
+@dataclass(frozen=True)
+class NewWorldForCardStep:
+    request: NewWorldProductionRequest
+
+PopulationCardActionStep: TypeAlias = (
+    ProduceForCardStep
+    | TradeForCardStep
+    | NewWorldForCardStep
+)
+
+
+
+
 @dataclass
 class FulfillPopulationCardAction(GameAction):
     card: PopulationCard
-    production_plan: list[OwnedIndustry] = field(default_factory=list)
-    trade_plan: list[TradeRequest] = field(default_factory=list)
-    new_world_plan: list[NewWorldProductionRequest] = field(default_factory=list)
+    steps: list[PopulationCardActionStep] = field(default_factory=list)
 
     def execute(self, context: ActionContext) -> ActionResult:
         player = context.player
-        self._validate_card(player)
-        self._validate_industries(player)
+
+        if not any(owned is self.card for owned in player.hand):
+            raise InvalidActionError("Population card is not in player's hand")
 
         population_snapshot = player.population.snapshot()
         island_snapshot = player.island.snapshot()
@@ -35,23 +60,36 @@ class FulfillPopulationCardAction(GameAction):
         new_world_snapshot = new_world_resolver.snapshot()
 
         try:
-            for industry in self.production_plan:
-                resolver.produce(industry)
+            for step in self.steps:
+                if isinstance(step, ProduceForCardStep):
+                    if not any(owned is step.industry for owned in player.island.industries):
+                        raise InvalidActionError("Player does not own this industry")
 
-            for request in self.trade_plan:
-                trade_resolver.trade(partner=request.partner, good=request.good)
+                    resolver.produce(step.industry)
 
-            for request in self.new_world_plan:
-                new_world_resolver.produce(island=request.island, good=request.good)
+                elif isinstance(step, TradeForCardStep):
+                    trade_resolver.trade(step.request)
 
-            if not resolver.can_pay(self.card.requirements):
+                elif isinstance(step, NewWorldForCardStep):
+                    new_world_resolver.produce(step.request)
+
+                else:
+                    raise TypeError(f"Unsupported population card step: {type(step).__name__}")
+
+            requirements = self.card.requirements
+
+            if not resolver.can_pay(requirements):
                 raise InvalidActionError(self._missing_goods_message(resolver))
 
-            resolver.pay(self.card.requirements)
-            player.complete_card(self.card)
+            resolver.pay(requirements)
+
+            player.play_population_card(self.card)
+
+
+                    
             return ActionResult(
                 message=(
-                    f"{player.name} fulfilled population card {self.card.id} for {self.card.victory_points} VP"
+                    f"{player.name} played population card {self.card.name}"
                 )
             )
         except Exception:
@@ -68,18 +106,6 @@ class FulfillPopulationCardAction(GameAction):
             if not resolver.finished:
                 resolver.finish()
 
-    def _validate_card(self, player: PlayerState) -> None:
-        if not player.has_card(self.card):
-            raise InvalidActionError(
-                f"{player.name} does not have card {self.card.id}"
-            )
-
-    def _validate_industries(self, player: PlayerState) -> None:
-        for industry in self.production_plan:
-            if not any(owned is industry for owned in player.island.industries):
-                raise InvalidActionError(
-                    f"{player.name} does not own {industry.industry.name}"
-                )
 
     def _missing_goods_message(self, resolver: ProductionResolver) -> str:
         missing: list[str] = []

@@ -89,18 +89,6 @@ class PlayerState:
 
         self.gold -= amount
 
-    def has_card(self, card: PopulationCard) -> bool:
-        return card in self.hand
-
-    def complete_card(self, card: PopulationCard) -> None:
-        if card not in self.hand:
-            raise ValueError(
-                f"Card {card.id} is not in player's hand"
-            )
-
-        self.hand.remove(card)
-        self.completed_cards.append(card)
-
     def card_victory_points(self) -> int:
         return sum(card.victory_points for card in self.completed_cards)
 
@@ -144,10 +132,10 @@ class PlayerState:
         self.traded_goods_this_turn.clear()
 
     def can_activate_card(self, card: PopulationCard) -> bool:
-        return (card in self.completed_cards and not card.activated)
+        return any(owned is card for owned in self.completed_cards) and not card.activated
 
     def activate_card(self, card: PopulationCard) -> None:
-        if card not in self.completed_cards:
+        if not any(owned is card for owned in self.completed_cards):
             raise ValueError(
                 f"Card {card.id} has not been completed"
             )
@@ -276,3 +264,12 @@ class PlayerState:
         for token in self.naval_tokens:
             if token.exhausted:
                 token.refresh()
+
+    def play_population_card(self, card: PopulationCard) -> None:
+        for index, owned in enumerate(self.hand):
+            if owned is card:
+                self.hand.pop(index)
+                self.completed_cards.append(card)
+                return
+
+        raise ValueError("Population card is not in hand")
