@@ -1,6 +1,6 @@
 from anno1800.actions.base import ActionResult, GameAction, ActionTiming, InvalidActionError
 
-from anno1800.game_state import GameState
+from anno1800.game_state import GameState, EndGamePhase
 from anno1800.models.player import PlayerState
 from anno1800.actions.context import ActionContext
 from anno1800.turn import TurnState
@@ -33,11 +33,11 @@ class Game:
             raise InvalidActionError("Main action has already been used this turn")
 
         context = ActionContext(state=self.state, player=self.current_player)
-
+        hand_size_before = len(self.current_player.hand)
         result = action.execute(context)
-
+        
         self.turn_state.consume_main_action()
-
+        self._check_end_game_trigger(player=self.current_player, hand_size_before=hand_size_before)
         return result
 
     def end_turn(self) -> None:
@@ -48,9 +48,14 @@ class Game:
         player_count = len(self.state.players)
 
         self.state.current_player_index += 1
-        if (self.state.current_player_index >= player_count):
+
+        round_finished = (self.state.current_player_index) >= player_count
+
+        if round_finished:
             self.state.current_player_index = 0
             self.state.turn_number += 1
+
+            self._handle_round_end()
 
         self.turn_state.reset()
 
@@ -62,6 +67,31 @@ class Game:
             raise InvalidActionError("Expected a free action")
 
         context = ActionContext(state=self.state, player=self.current_player)
-        return action.execute(context)
+        hand_size_before = len(self.current_player.hand)
+        result = action.execute(context)
+        self._check_end_game_trigger(player=self.current_player, hand_size_before=hand_size_before)
+
+        return result
+
+    def _check_end_game_trigger(self, player: PlayerState, hand_size_before: int) -> None:
+        if (self.state.end_game_phase) != EndGamePhase.NORMAL:
+            return
+
+        if (hand_size_before > 0 and not player.hand):
+            self.state.trigger_end_game(player)
+
+
+    def _handle_round_end(self) -> None:
+         phase = self.state.end_game_phase
+
+         if phase == EndGamePhase.CURRENT_ROUND_ENDING:
+             self.state.end_game_phase = EndGamePhase.FINAL_ROUND
+             return
+
+         if phase == EndGamePhase.FINAL_ROUND:
+             self.state.end_game_phase = (EndGamePhase.FINISHED)
+             self.state.game_over = True
+
+        
 
     
