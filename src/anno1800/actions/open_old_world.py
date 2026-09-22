@@ -43,7 +43,7 @@ class OpenOldWorldAction(GameAction):
             island = state.draw_old_world_island()
 
             player.add_old_world_island(island)
-            
+
             return ActionResult(
                 message=(f"{player.name} opened Old World island {island.id}")
             )

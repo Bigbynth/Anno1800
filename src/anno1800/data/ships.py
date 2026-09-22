@@ -24,3 +24,31 @@ EXPLORATION_SHIP = Ship(
     exploration_tokens=2,
     build_cost={Good.STEEL: 1, Good.WINDOWS: 1}
 )
+
+def create_starting_ships() -> list[Ship]:
+    return [
+        Ship(
+            name="Starting Trade Ship",
+            ship_type=ShipType.TRADE,
+            strength=1,
+            trade_token=1,
+            build_cost={},
+            requires_shipyard=False
+        ),
+        Ship(
+            name="Starting Trade Ship",
+            ship_type=ShipType.TRADE,
+            strength=1,
+            trade_token=1,
+            build_cost={},
+            requires_shipyard=False
+        ),
+        Ship(
+            name="Starting Exploration Ship",
+            ship_type=ShipType.EXPLORATION,
+            strength=1,
+            exploration_tokens=1,
+            build_cost={},
+            requires_shipyard=False
+        )
+    ]

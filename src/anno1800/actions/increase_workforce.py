@@ -122,8 +122,8 @@ class IncreaseWorkforceAction(GameAction):
     def _draw_population_card(self, context: ActionContext, player: PlayerState, population_type: PopulationType) -> None:
         deck = context.state.population_deck
 
-        if not deck.is_empty(population_type):
-            card = deck.draw(population_type)
+        if not deck.is_empty_for_population(population_type):
+            card = deck.draw_for_population(population_type)
 
             player.add_card(card)
 

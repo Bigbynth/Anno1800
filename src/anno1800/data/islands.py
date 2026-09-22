@@ -5,7 +5,7 @@ from anno1800.models.island import (
 )
 
 
-def create_test_home_island() -> Island:
+def create_home_island() -> Island:
 
     return Island(
         name="Home Island",
