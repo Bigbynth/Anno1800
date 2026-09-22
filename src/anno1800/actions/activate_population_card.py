@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from anno1800.actions.base import ActionResult, GameAction, InvalidActionError
+from anno1800.actions.base import ActionResult, GameAction, InvalidActionError, ActionTiming
 from anno1800.models.cards import CardEffect, CardEffectType, PopulationCard
 from anno1800.models.player import PlayerState
 from anno1800.models.ship import NavalTokenType
@@ -8,6 +8,7 @@ from anno1800.actions.context import ActionContext
 @dataclass
 class ActivatePopulationCardAction(GameAction):
     card: PopulationCard
+    timing = ActionTiming.FREE
 
     def execute(self, context: ActionContext) -> ActionResult:
         player = context.player
