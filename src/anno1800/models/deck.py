@@ -68,12 +68,6 @@ class PopulationCardDeck:
     def remaining_new_world(self) -> int:
         return len(self.new_world_cards)
 
-    def draw_new_world(self) -> PopulationCard:
-        if not self.new_world_cards:
-            raise EmptyDeckError("No New World cards remaining")
-
-        return self.new_world_cards.pop()
-
     def draw_for_population(self, population_type: PopulationType) -> PopulationCard:
         if population_type in {PopulationType.FARMER, PopulationType.WORKER}:
             return self.draw_farmer_worker()

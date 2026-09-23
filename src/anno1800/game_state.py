@@ -4,10 +4,17 @@ from enum import Enum
 from anno1800.data.cards import create_population_deck
 from anno1800.models.deck import PopulationCardDeck, ExpeditionDeck
 from anno1800.models.player import PlayerState
+from anno1800.models.industry import Industry
+
 from anno1800.data.new_world import NEW_WORLD_CARDS, NEW_WORLD_ISLANDS
+from anno1800.data.industries import create_industry_supply, get_industry_definition
+from anno1800.data.ships import create_ship_supply, get_ship_definition
+from anno1800.data.shipyards import create_shipyard_supply, get_shipyard_definition
+
 from anno1800.models.new_world import NewWorldIsland
 from anno1800.models.old_world import OldWorldIsland
-
+from anno1800.models.objective import ObjectiveCard
+from anno1800.models.ship import Ship, Shipyard
 
 def create_default_deck() -> PopulationCardDeck:
     deck = create_population_deck()
@@ -30,12 +37,17 @@ class GameState:
         default_factory=list
     )
 
+    industry_supply: dict[str, int] = field(default_factory=create_industry_supply)
+    ship_supply: dict[str, int] = field(default_factory=create_ship_supply)
+    shipyard_supply: dict[str, int] = field(default_factory=create_shipyard_supply)
+
     current_player_index: int = 0
 
     turn_number: int = 1
 
     game_over: bool = False
 
+    objective_cards: list[ObjectiveCard] = field(default_factory=list)
     expedition_deck: ExpeditionDeck = field(default_factory=ExpeditionDeck)
     population_deck: PopulationCardDeck = field(default_factory=create_default_deck)
     new_world_islands: list[NewWorldIsland] = field(default_factory=lambda: NEW_WORLD_ISLANDS.copy())
@@ -72,5 +84,79 @@ class GameState:
 
         self.end_game_triggered_by = player
         self.fireworks_holder = player
+
+    def industry_remaining(self, industry: Industry) -> int:
+        definition = get_industry_definition(industry)
+        return self.industry_supply.get(definition.id, 0,)
+
+    def take_industry(self, industry: Industry,) -> None:
+        definition = get_industry_definition(industry)
+
+        remaining = self.industry_supply.get(definition.id, 0)
+        if remaining <= 0:
+            raise ValueError(f"No {industry.name} remaining")
+
+        self.industry_supply[definition.id] = (remaining -1)
+
+    def return_industry(self, industry: Industry) -> None:
+        definition = get_industry_definition(industry)
+
+        current = self.industry_supply.get(definition.id, 0)
+
+        if current >= definition.supply:
+            raise ValueError(f"Cannot return {industry.name} supply is already full")
+
+        self.industry_supply[definition.id] = (current + 1)
+
+    def ship_remaining(self, ship: Ship) -> int:
+        definition = get_ship_definition(ship)
+
+        return self.ship_supply.get(definition.id, 0,)
+
+    def take_ship(self, ship: Ship) -> None:
+        definition = get_ship_definition(ship)
+
+        remaining = self.ship_supply.get(definition.id, 0,)
+
+        if remaining <= 0:
+            raise ValueError(f"No {ship.name} remaining")
+
+        self.ship_supply[definition.id] = (remaining - 1)
+
+    def return_ship(self, ship: Ship) -> None:
+        definition = get_ship_definition(ship)
+
+        current = self.ship_supply.get(definition.id, 0,)
+
+        if current >= definition.supply:
+            raise ValueError(f"Cannot return {ship.name}: supply is already full")
+
+        self.ship_supply[definition.id] = (current + 1)
+
+    def shipyard_remaining(self, shipyard: Shipyard) -> int:
+        definition = get_shipyard_definition(shipyard)
+
+        return self.shipyard_supply.get(definition.id, 0,)
+
+    def take_shipyard(self, shipyard: Shipyard) -> None:
+        definition = get_shipyard_definition(shipyard)
+
+        remaining = self.shipyard_supply.get(definition.id, 0,)
+
+        if remaining <= 0:
+            raise ValueError(f"No {shipyard.name} remaining")
+
+        self.shipyard_supply[definition.id] = (remaining - 1)
+
+    def return_shipyard(self, shipyard: Shipyard) -> None:
+        definition = get_shipyard_definition(shipyard)
+
+        current = self.shipyard_supply.get(definition.id, 0,)
+
+        if current >= definition.supply:
+            raise ValueError(f"Cannot return {shipyard.name} supply is already full")
+
+        self.shipyard_supply[definition.id] = (current + 1)
+
 
     

@@ -1,6 +1,8 @@
 from anno1800.models.ship import Ship, ShipType
 from anno1800.models.goods import Good
 
+from dataclasses import dataclass
+
 SMALL_TRADE_SHIP = Ship(
     name="Small Trade Ship",
     ship_type=ShipType.TRADE,
@@ -24,6 +26,33 @@ EXPLORATION_SHIP = Ship(
     exploration_tokens=2,
     build_cost={Good.STEEL: 1, Good.WINDOWS: 1}
 )
+
+
+@dataclass(frozen=True)
+class ShipDefinition:
+    id: str
+    ship: Ship
+    supply: int
+
+SHIP_CATALOGUE: tuple[ShipDefinition, ...] = (
+    ShipDefinition(
+        id="small-trade-ship",
+        ship=SMALL_TRADE_SHIP,
+        supply=6,
+    ),
+    ShipDefinition(
+        id="large-trade-ship",
+        ship=LARGE_TRADE_SHIP,
+        supply=6,
+    ),
+    ShipDefinition(
+        id="exploration-ship",
+        ship=EXPLORATION_SHIP,
+        supply=6,
+    ),
+)
+
+
 
 def create_starting_ships() -> list[Ship]:
     return [
@@ -52,3 +81,16 @@ def create_starting_ships() -> list[Ship]:
             requires_shipyard=False
         )
     ]
+
+def create_ship_supply() -> dict[str, int]:
+    return {
+        definition.id: definition.supply for definition in SHIP_CATALOGUE
+    }
+
+def get_ship_definition(ship: Ship) -> ShipDefnition:
+    for definition in SHIP_CATALOGUE:
+        if definition.ship is ship:
+            return definition
+
+    raise ValueError(f"Unknown ship: {ship.name}")
+

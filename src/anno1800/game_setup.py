@@ -70,7 +70,7 @@ class GameSetup:
 
         return state
 
-    def _create_player(self, state: GameState, name: str, position: str) -> PlayerState:
+    def _create_player(self, state: GameState, name: str, position: int) -> PlayerState:
         player = PlayerState(name=name, island=create_home_island())
 
         self._add_starting_population(player)
@@ -79,5 +79,7 @@ class GameSetup:
 
         self._add_starting_gold(player, position)
 
-        self._add_starting_construction(player)
+        self._add_starting_constructions(player)
+
+        return player
 

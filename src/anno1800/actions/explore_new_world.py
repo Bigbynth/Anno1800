@@ -1,6 +1,4 @@
 from anno1800.actions.base import ActionResult, GameAction, InvalidActionError
-from anno1800.models.deck import PopulationCardDeck
-from anno1800.models.new_world import NewWorldIsland
 from anno1800.models.player import PlayerState
 from anno1800.models.ship import NavalTokenType
 from anno1800.services.shipping import ShippingService
@@ -41,7 +39,7 @@ class ExploreNewWorldAction(GameAction):
                 )
             )
         except Exception:
-            player.restore_naval_token(naval_token_snapshot)
+            player.restore_naval_tokens(naval_token_snapshot)
             player.new_world_islands = islands_snapshot
             player.hand = hand_snapshot
             deck.new_world_cards = deck_snapshot
