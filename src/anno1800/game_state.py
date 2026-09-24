@@ -53,6 +53,7 @@ class GameState:
     game_over: bool = False
 
     objective_cards: list[ObjectiveCard] = field(default_factory=list)
+    objective_effect_cards: list[ObjectiveCard] = field(default_factory=list)
     objective_deck: list[ObjectiveCard] = field(default_factory=create_objective_cards)
     expedition_deck: ExpeditionDeck = field(default_factory=create_expedition_deck)
     population_deck: PopulationCardDeck = field(default_factory=create_default_deck)

@@ -78,16 +78,16 @@ class GameSetup:
         random.shuffle(state.expedition_deck.cards)
         random.shuffle(state.objective_deck)
 
-        eligible = [card for card in state.objective_deck if card.objective_type == ObjectiveType.END_GAME
-                    and not isinstance(card.rule, ResourceObjectiveRule)]
+        if len(state.objective_deck) < 5:
+            raise ValueError("At least file objective cards are required")
 
-        if len(eligible) < 3:
-            raise ValueError("Not enough supported end-game objectives")
+        selected = state.objective_deck[:5]
 
-        state.objective_cards = eligible[:3]
-        selected_ids = {card.id for card in state.objective_cards}
+        state.objective_cards = [card for card in selected if card.objective_type == ObjectiveType.END_GAME]
 
-        state.objective_deck = [card for card in state.objective_deck if card.id not in selected_ids]
+        state.objective_effect_cards = [card for card in selected if card.objective_type == ObjectiveType.EFFECT]
+
+        state.objective_deck = state.objective_deck[5:]
 
 
         return state
