@@ -93,7 +93,7 @@ class GameState:
 
     def industry_remaining(self, industry: Industry) -> int:
         definition = get_industry_definition(industry)
-        return self.industry_supply.get(definition.id, 0,)
+        return self.industry_supply[definition.id]
 
     def take_industry(self, industry: Industry,) -> None:
         definition = get_industry_definition(industry)
@@ -117,7 +117,7 @@ class GameState:
     def ship_remaining(self, ship: Ship) -> int:
         definition = get_ship_definition(ship)
 
-        return self.ship_supply.get(definition.id, 0,)
+        return self.ship_supply[definition.id]
 
     def take_ship(self, ship: Ship) -> None:
         definition = get_ship_definition(ship)
@@ -142,7 +142,7 @@ class GameState:
     def shipyard_remaining(self, shipyard: Shipyard) -> int:
         definition = get_shipyard_definition(shipyard)
 
-        return self.shipyard_supply.get(definition.id, 0,)
+        return self.shipyard_supply[definition.id]
 
     def take_shipyard(self, shipyard: Shipyard) -> None:
         definition = get_shipyard_definition(shipyard)

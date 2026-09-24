@@ -19,13 +19,20 @@ class ProductionContext:
 
     trade_records: list[TradeRecord] = field(default_factory=list)
 
-    def add(self, good: Good) -> None:
-        self.goods.append(good)
+    def add(self, good: Good, amount: int = 1) -> None:
+        if amount < 0:
+            raise ValueError("Resource amount cannot be negative")
+        self.goods.extend([good] * amount)
 
     def has(self, good: Good, amount: int = 1) -> bool:
+        if amount < 0:
+            raise ValueError("Resource amount cannot be negative")
         return self.goods.count(good) >= amount
 
     def consume(self, good: Good, amount: int = 1) -> None:
+        if amount < 0:
+            raise ValueError("Resource amount annot be native")
+        
         if not self.has(good, amount):
             raise ValueError(
                 f"Not enough {good.value}"

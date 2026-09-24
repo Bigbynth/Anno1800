@@ -55,6 +55,9 @@ class ProductionResolver:
     def can_pay(self, cost: dict[Good, int]) -> bool:
         self._ensure_active()
 
+        if any(amount < 0 for amount in cost.values()):
+            raise ValueError("Resource costs cannot be negative")
+
         return all(
             self.context.has(good, amount)
             for good, amount in cost.items()
@@ -73,6 +76,10 @@ class ProductionResolver:
 
     def add_external_good(self, good: Good, amount: int = 1) -> None:
         self._ensure_active()
+
+        if amount < 0:
+            raise ValueError("Resource amount cannot be negative")
+
         self.context.add(good, amount)
 
     def snapshot(self) -> ProductionResolverSnapshot:

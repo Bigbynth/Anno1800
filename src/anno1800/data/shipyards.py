@@ -60,7 +60,7 @@ def create_shipyard_supply() -> dict[str, int]:
 
 def get_shipyard_definition(shipyard: Shipyard) -> ShipyardDefinition:
     for definition in SHIPYARD_CATALOGUE:
-        if definition.shipyard is shipyard:
+        if definition.shipyard is shipyard or definition.shipyard == shipyard:
             return definition
 
     raise ValueError(f"Unknown shipyard: {shipyard.name}")

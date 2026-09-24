@@ -89,7 +89,7 @@ def create_ship_supply() -> dict[str, int]:
 
 def get_ship_definition(ship: Ship) -> ShipDefinition:
     for definition in SHIP_CATALOGUE:
-        if definition.ship is ship:
+        if definition.ship is ship or definition.ship == ship:
             return definition
 
     raise ValueError(f"Unknown ship: {ship.name}")
