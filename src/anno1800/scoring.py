@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 
 from anno1800.game_state import GameState
@@ -146,8 +147,3 @@ class PlayerScore:
 class GameResult:
     scores: tuple[PlayerScore, ...]
     winners: tuple[PlayerState, ...]
-
-
-
-    
-    

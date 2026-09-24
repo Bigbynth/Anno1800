@@ -76,7 +76,7 @@ def create_industry_supply() -> dict[str, int]:
 
 def get_industry_definition(industry: Industry) -> IndustryDefinition:
     for definition in INDUSTRY_CATALOGUE:
-        if definition.industry is industry:
+        if definition.industry is industry or definition.industry == industry:
             return definition
 
     raise ValueError(f"Unknown industry: {industry.name}")

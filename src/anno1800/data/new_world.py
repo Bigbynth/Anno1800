@@ -60,14 +60,21 @@ def create_new_world_islands() -> list[NewWorldIsland]:
         ) for definition in NEW_WORLD_ISLAND_CATALOGUE
     ]
 
+# ENGINE TEST FIXTURES — 24 unique cards, not official card text.
+_NEW_WORLD_REQUIREMENTS = (
+    (Good.COTTON,), (Good.COFFEE,), (Good.TOBACCO,),
+    (Good.SUGAR_CANE,), (Good.COCOA,), (Good.RUBBER,),
+    (Good.COTTON, Good.COFFEE), (Good.TOBACCO, Good.SUGAR_CANE),
+    (Good.COCOA, Good.RUBBER), (Good.COTTON, Good.COCOA),
+    (Good.COFFEE, Good.SUGAR_CANE), (Good.TOBACCO, Good.RUBBER),
+)
 NEW_WORLD_CARDS = [
-    PopulationCard(id="new-world-001", population_type=None, requirements={Good.COTTON: 1}, victory_points=5, is_new_world=True),
-    PopulationCard(id="new-world-002", population_type=None, requirements={Good.COFFEE: 1}, victory_points=5, is_new_world=True),
-    PopulationCard(id="new-world-003", population_type=None, requirements={Good.TOBACCO: 1}, victory_points=5, is_new_world=True),
-    PopulationCard(id="new-world-004", population_type=None, requirements={Good.SUGAR_CANE: 1}, victory_points=5, is_new_world=True),
-    PopulationCard(id="new-world-005", population_type=None, requirements={Good.COCOA: 1}, victory_points=5, is_new_world=True),
-    PopulationCard(id="new-world-006", population_type=None, requirements={Good.RUBBER: 1}, victory_points=5, is_new_world=True)
-
-
-    
+    PopulationCard(
+        id=f"fixture-new-world-{i+1:03d}",
+        population_type=None,
+        requirements={good: 1 for good in _NEW_WORLD_REQUIREMENTS[i % 12]},
+        victory_points=5,
+        is_new_world=True,
+    )
+    for i in range(24)
 ]
