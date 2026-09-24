@@ -24,10 +24,11 @@ class IslandSpace:
     id: str
     space_type: IslandSpaceType
     construction: Construction | None = None
+    construction_from_supply: bool = False
 
     @property
     def is_empty(self) -> bool:
-        return self.construcction is None
+        return self.construction is None
 
     def can_place(self, construction: Construction) -> bool:
         if not self.is_empty:
@@ -58,6 +59,8 @@ class IslandSpace:
             raise ValueError(f"Island space {self.id} is empty")
         construction = (self.construction)
         self.construction  = None
+        self.construction_from_supply = False
+
         return construction
 
         
@@ -66,7 +69,7 @@ class IslandSpace:
 class IslandSnapshot:
     industries: list[IndustryWorkplaceSnapshot]
 
-    spaces: list[tuple[IslandSpace, Construction | None]]
+    spaces: list[tuple[IslandSpace, Construction | None, bool,]]
 
 @dataclass
 class Island:
@@ -128,20 +131,20 @@ class Island:
             industry.occupied = occupied
 
     def snapshot(self) -> IslandSnapshot:
-        return IslandSnapshot(industries=[IndustryWorkplaceSnapshot(industry=owned, worker=(owned.workplace.worker)) for owned in self.industries])
+        return IslandSnapshot(industries=[IndustryWorkplaceSnapshot(industry=owned, worker=(owned.workplace.worker)) for owned in self.industries],
+                              spaces=[(space, space.construction, space.construction_from_supply,) for space in self.spaces],)
 
     def restore(self, snapshot: IslandSnapshot) -> None:
-        original_industries = [item.industry for item in snapshot.industries]
+        self.industries = [item.industry for item in snapshot.industries]
+
         for item in snapshot.industries:
             item.industry.workplace.worker = item.worker
-        self.industries = original_industries
-        original_spaces = [space for space, _ in snapshot.spaces]
-        for space, construction in snapshot.spaces:
+
+        for space, construction, from_supply in snapshot.spaces:
             space.construction = construction
+            space.construction_from_supply = from_supply
 
-        self.spaces = (original_spaces)
-
-        
+        self.spaces = [space for space, _, _ in snapshot.spaces]
 
     def get_space(self, space_id: str) -> IslandSpace:
         for space in self.spaces:

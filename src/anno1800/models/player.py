@@ -44,8 +44,13 @@ class PlayerState:
     def add_population(self, population_type: PopulationType, amount: int = 1) -> list[PopulationCube]:
         return self.population.add(population_type, amount)
 
-    def add_industry(self, industry: Industry, space_id: str | None = None) -> OwnedIndustry:
-        return self.island.add_industry(industry, space_id=space_id)
+    def add_industry(self, industry: Industry, space_id: str | None = None, from_supply: bool = True) -> OwnedIndustry:
+        owned = self.island.add_industry(industry, space_id=space_id)
+
+        if space_id is not None:
+            self.island.get_space(space_id).construction_from_supply = from_supply
+
+        return owned
 
     def has_industry(self, industry: Industry) -> bool:
         return bool(self.get_industries(industry))
@@ -112,9 +117,10 @@ class PlayerState:
     def total_victory_points(self) -> int:
         return self.victory_points + self.card_victory_points()
 
-    def add_ship(self, ship: Ship, space_id: str | None = None) -> None:
+    def add_ship(self, ship: Ship, space_id: str | None = None, from_supply: bool = True) -> None:
         if space_id is not None:
             self.island.place(space_id, ship)
+            self.island.get_space(space_id).construction_from_supply = from_supply
         self.ships.append(ship)
 
         for _ in range(ship.trade_token):
@@ -158,9 +164,10 @@ class PlayerState:
             )
         card.activate()
 
-    def add_shipyard(self, shipyard: Shipyard, space_id: str | None = None) -> None:
+    def add_shipyard(self, shipyard: Shipyard, space_id: str | None = None, from_supply: bool = True) -> None:
         if space_id is not None:
             self.island.place(space_id, shipyard)
+            self.island.get_space(space_id).construction_from_supply = from_supply
         self.shipyards.append(shipyard)
 
     def has_shipyard(self, shipyard: Shipyard) -> bool:
@@ -214,12 +221,18 @@ class PlayerState:
         if existing is None:
             raise ValueError(f"Island space {space_id} is empty")
 
+        previous_from_supply = space.construction_from_supply
+
+        space.construction = None
+        space.construction_from_supply = False
+
         try:
             if not space.can_place(construction):
                 raise ValueError(f"Cannot place construction on space {space.id}")
 
         finally:
             space.construction = (existing)
+            space.construction_from_supply = previous_from_supply
 
         removed = (self.remove_construction(space_id))
         if isinstance(construction, OwnedIndustry):
@@ -235,6 +248,8 @@ class PlayerState:
 
         else:
             raise ValueError("Unknown construction type")
+
+        space.construction_from_supply = True
 
         return removed
 

@@ -3,6 +3,13 @@ from anno1800.models.island import (
     IslandSpace,
     IslandSpaceType,
 )
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class HomeIslandDefinition:
+    id: str
+    name: str
 
 
 def create_home_island() -> Island:
@@ -48,3 +55,13 @@ def create_home_island() -> Island:
             ),
         ],
     )
+
+HOME_ISLAND_CATALOGUE: tuple[
+    HomeIslandDefinition,
+    ...
+] = (
+    HomeIslandDefinition(
+        id="home-island",
+        name="Home Island",
+    ),
+)

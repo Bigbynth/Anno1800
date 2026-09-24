@@ -171,11 +171,14 @@ class ExpandAction(GameAction):
         owned = OwnedIndustry(step.industry)
         self._validate_build_target(player, step.space_id, owned, step.build_over)
         self._pay_cost(production, step.industry.build_cost)
-        previous = player.island.get_space(step.space_id).construction
+        space = player.island.get_space(step.space_id)
+        previous = space.construction
+        previous_from_supply = space.construction_from_supply
         state.take_industry(step.industry)
         if step.build_over:
             player.replace_construction(step.space_id, owned)
-            self._return_construction_to_supply(state, previous)
+            if previous_from_supply:
+                self._return_construction_to_supply(state, previous,)
         else:
             player.add_industry(step.industry, space_id=step.space_id)
 
@@ -188,11 +191,15 @@ class ExpandAction(GameAction):
 
         self._validate_build_target(player, step.space_id, step.shipyard, step.build_over)
         self._pay_cost(production, step.shipyard.build_cost)
-        previous = player.island.get_space(step.space_id).construction
+        space = player.island.get_space(step.space_id)
+
+        previous = space.construction
+        previous_from_supply = space.construction_from_supply
         state.take_shipyard(step.shipyard)
         if step.build_over:
             player.replace_construction(step.space_id, step.shipyard)
-            self._return_construction_to_supply(state, previous)
+            if previous_from_supply:
+                self._return_construction_to_supply(state, previous)
         else:
             player.add_shipyard(step.shipyard, space_id=step.space_id)
 
@@ -214,11 +221,15 @@ class ExpandAction(GameAction):
 
         self._validate_build_target(player, step.space_id, step.ship, step.build_over)
         self._pay_cost(production, step.ship.build_cost)
-        previous = player.island.get_space(step.space_id).construction
+        space = player.island.get_space(step.space_id)
+
+        previous = space.construction
+        previous_from_supply = space.construction_from_supply
         state.take_ship(step.ship)
         if step.build_over:
             player.replace_construction(step.space_id, step.ship)
-            self._return_construction_to_supply(state, previous)
+            if previous_from_supply:
+                self._return_construction_to_supply(state, previous)
         else:
             player.add_ship(step.ship, space_id=step.space_id)
 
@@ -234,13 +245,12 @@ class ExpandAction(GameAction):
             raise InvalidActionError("Cannot remove from an empty space")
 
         removed = space.construction
+        removed_from_supply = space.construction_from_supply
         player.remove_construction(step.space_id)
-
-        if isinstance(removed, OwnedIndustry):
-            state.return_industry(removed.industry)
+        if removed_from_supply:
+            self._return_construction_to_supply(state, removed)
 
         execution.removed_constructions += 1
-
 
     def _validate_build_target(self, player: PlayerState, space_id: str, construction, build_over: bool) -> None:
         try:
@@ -255,9 +265,11 @@ class ExpandAction(GameAction):
             raise InvalidActionError(f"Space {space_id} is already occupied")
 
         previous = space.construction
+        previous_from_supply = space.construction_from_supply
 
         if build_over:
             space.construction = None
+            space.construction_from_supply = False
 
         try:
             if not space.can_place(construction):
@@ -265,6 +277,7 @@ class ExpandAction(GameAction):
 
         finally:
             space.construction = previous
+            space.construction_from_supply = previous_from_supply
 
     def _result_message(self, player: PlayerState) -> str:
         built: list[str] = []
