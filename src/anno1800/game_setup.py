@@ -72,6 +72,7 @@ class GameSetup:
         random.shuffle(state.old_world_islands)
         random.shuffle(state.new_world_islands)
         random.shuffle(state.population_deck.new_world_cards)
+        random.shuffle(state.expedition_deck.cards)
 
         return state
 

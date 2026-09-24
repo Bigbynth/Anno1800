@@ -8,7 +8,7 @@ EXPLORATION_TOKEN_COST = 2
 MAX_EXPEDITION_CARDS = 3
 
 @dataclass
-class TakeExpeitionCardsAction(GameAction):
+class TakeExpeditionCardsAction(GameAction):
     def execute(self, context: ActionContext) -> ActionResult:
         player = context.player
         deck = context.state.expedition_deck
@@ -18,7 +18,7 @@ class TakeExpeitionCardsAction(GameAction):
         if len(available_tokens) < EXPLORATION_TOKEN_COST:
             raise InvalidActionError("Not enough exploration tokens")
 
-        if deck.remaining() == 0:
+        if deck.is_empty():
             raise InvalidActionError("No expedition cards remaining")
 
         naval_snapshot = (player.naval_token_snapshot())
@@ -37,5 +37,6 @@ class TakeExpeitionCardsAction(GameAction):
 
         except Exception:
             player.restore_naval_tokens(naval_snapshot)
-
+            deck.cards = deck_snapshot
+            player.expedition_cards = expedition_snapshot
             raise

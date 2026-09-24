@@ -11,6 +11,7 @@ from anno1800.data.industries import create_industry_supply, get_industry_defini
 from anno1800.data.ships import create_ship_supply, get_ship_definition
 from anno1800.data.shipyards import create_shipyard_supply, get_shipyard_definition
 from anno1800.data.old_world import create_old_world_islands
+from anno1800.data.expeditions import create_expedition_deck
 
 from anno1800.models.new_world import NewWorldIsland
 from anno1800.models.old_world import OldWorldIsland
@@ -51,7 +52,7 @@ class GameState:
     game_over: bool = False
 
     objective_cards: list[ObjectiveCard] = field(default_factory=list)
-    expedition_deck: ExpeditionDeck = field(default_factory=ExpeditionDeck)
+    expedition_deck: ExpeditionDeck = field(default_factory=create_expedition_deck)
     population_deck: PopulationCardDeck = field(default_factory=create_default_deck)
     new_world_islands: list[NewWorldIsland] = field(default_factory=create_new_world_islands)
     old_world_islands: list[OldWorldIsland] = field(default_factory=create_old_world_islands)
