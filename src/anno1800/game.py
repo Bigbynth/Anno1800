@@ -29,8 +29,11 @@ class Game:
         if not (cls.MIN_PLAYERS <= len(state.players) <= cls.MAX_PLAYERS):
             raise ValueError("Anno 1800 requires 2 to 4 players")
 
-        if state.game_over:
+        if state.game_over or state.end_game_phase == EndGamePhase.FINISHED:
             raise ValueError("Cannot start from an already finished game")
+
+        if not 0 <= state.current_player_index < len(state.players):
+            raise ValueError("Invalid current player index")
 
         game = cls.__new__(cls)
         game.state = state

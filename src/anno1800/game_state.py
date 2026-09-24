@@ -83,6 +83,13 @@ class GameState:
         return self.old_world_islands.pop()
 
     def trigger_end_game(self, player: PlayerState) -> None:
+
+        if not any(existing is player for existing in self.players):
+            raise ValueError("End-game trigger must be a player in this game.")
+
+        if self.game_over:
+            raise RuntimeError("The game is already over")
+        
         if self.end_game_phase != EndGamePhase.NORMAL:
             return
 
