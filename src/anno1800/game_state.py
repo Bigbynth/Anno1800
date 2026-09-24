@@ -6,7 +6,7 @@ from anno1800.models.deck import PopulationCardDeck, ExpeditionDeck
 from anno1800.models.player import PlayerState
 from anno1800.models.industry import Industry
 
-from anno1800.data.new_world import NEW_WORLD_CARDS, NEW_WORLD_ISLANDS
+from anno1800.data.new_world import NEW_WORLD_CARDS, create_new_world_islands
 from anno1800.data.industries import create_industry_supply, get_industry_definition
 from anno1800.data.ships import create_ship_supply, get_ship_definition
 from anno1800.data.shipyards import create_shipyard_supply, get_shipyard_definition
@@ -17,10 +17,12 @@ from anno1800.models.old_world import OldWorldIsland
 from anno1800.models.objective import ObjectiveCard
 from anno1800.models.ship import Ship, Shipyard
 
+from copy import deepcopy
+
 def create_default_deck() -> PopulationCardDeck:
     deck = create_population_deck()
 
-    deck.new_world_cards = NEW_WORLD_CARDS.copy()
+    deck.new_world_cards = deepcopy(NEW_WORLD_CARDS)
 
     return deck
 
@@ -51,7 +53,7 @@ class GameState:
     objective_cards: list[ObjectiveCard] = field(default_factory=list)
     expedition_deck: ExpeditionDeck = field(default_factory=ExpeditionDeck)
     population_deck: PopulationCardDeck = field(default_factory=create_default_deck)
-    new_world_islands: list[NewWorldIsland] = field(default_factory=lambda: NEW_WORLD_ISLANDS.copy())
+    new_world_islands: list[NewWorldIsland] = field(default_factory=create_new_world_islands)
     old_world_islands: list[OldWorldIsland] = field(default_factory=create_old_world_islands)
 
     end_game_phase: EndGamePhase = EndGamePhase.NORMAL
