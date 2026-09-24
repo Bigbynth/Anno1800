@@ -4,6 +4,8 @@ from anno1800.game_state import GameState, EndGamePhase
 from anno1800.models.player import PlayerState
 from anno1800.actions.context import ActionContext
 from anno1800.turn import TurnState
+from anno1800.game_setup import GameSetup
+from anno1800.scoring import ScoringEngine, GameResult
 
 class Game: 
 
@@ -17,6 +19,27 @@ class Game:
 
         self.state = GameState(players=players)
         self.turn_state = TurnState()
+
+    @classmethod
+    def from_names(cls, player_names: list[str]) -> "Game":
+        return cls.from_state(GameSetup().create_game(player_names))
+
+    @classmethod
+    def from_state(cls, state: GameState) -> "Game":
+        if not (cls.MIN_PLAYERS <= len(state.players) <= cls.MAX_PLAYERS):
+            raise ValueError("Anno 1800 requires 2 to 4 players")
+
+        if state.game_over:
+            raise ValueError("Cannot start from an already finished game")
+
+        game = cls.__new__(cls)
+        game.state = state
+        game.turn_state = TurnState()
+
+        return game
+
+    def result(self) -> GameResult:
+        return ScoringEngine().calculate_result(self.state)
 
     @property
     def current_player(self) -> PlayerState:
@@ -41,6 +64,10 @@ class Game:
         return result
 
     def end_turn(self) -> None:
+
+        if self.state.game_over:
+            raise RuntimeError("The game is already over.")
+
         if not self.turn_state.main_action_used:
             raise InvalidActionError("Player must perform a main action before ending the turn")
         current_player = self.current_player
