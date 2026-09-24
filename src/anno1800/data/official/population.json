@@ -1,0 +1,1580 @@
+[
+  {
+    "id": "custom-farmer-001",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "grain": 1
+    },
+    "victory_points": 3,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-002",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "wool": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-003",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "grain": 1,
+      "wool": 1
+    },
+    "victory_points": 3,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-004",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "grain": 1,
+      "bread": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-005",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "wool": 1,
+      "clothing": 1
+    },
+    "victory_points": 3,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-006",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "bread": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-007",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "clothing": 1
+    },
+    "victory_points": 3,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-008",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "grain": 1,
+      "coal": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-009",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "wool": 1,
+      "bread": 1
+    },
+    "victory_points": 3,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-010",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "grain": 1,
+      "clothing": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 2
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-011",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "wool": 1,
+      "coal": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_trade_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-012",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "bread": 1,
+      "clothing": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-013",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "grain": 1,
+      "brick": 1
+    },
+    "victory_points": 3,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-014",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "wool": 1,
+      "brick": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 2
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-015",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "bread": 1,
+      "coal": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_trade_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-016",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "clothing": 1,
+      "coal": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-017",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "grain": 1,
+      "beer": 1
+    },
+    "victory_points": 3,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-018",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "wool": 1,
+      "beer": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 2
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-019",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "bread": 1,
+      "brick": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-020",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "clothing": 1,
+      "brick": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_population",
+        "amount": 1,
+        "population_type": "farmer"
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-021",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "beer": 1
+    },
+    "victory_points": 3,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-022",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "wool": 1,
+      "coal": 1,
+      "bread": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 2
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-farmer-023",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "farmer",
+    "requirements": {
+      "grain": 1,
+      "wool": 1,
+      "bread": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_trade_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-001",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "beer": 1
+    },
+    "victory_points": 3,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-002",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "brick": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-003",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "coal": 1,
+      "brick": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_trade_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-004",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "bread": 1,
+      "beer": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_exploration_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-005",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "clothing": 1,
+      "beer": 1
+    },
+    "victory_points": 3,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-006",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "coal": 1,
+      "beer": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 2
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-007",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "bread": 1,
+      "brick": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_trade_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-008",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "wool": 1,
+      "beer": 1,
+      "coal": 1
+    },
+    "victory_points": 3,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-009",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "grain": 1,
+      "brick": 1,
+      "coal": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 2
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-010",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "bread": 1,
+      "clothing": 1,
+      "coal": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_trade_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-011",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "beer": 1,
+      "brick": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_exploration_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-012",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "coal": 1,
+      "steel": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 3
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-013",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "bread": 1,
+      "beer": 1,
+      "brick": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_population",
+        "amount": 1,
+        "population_type": "farmer"
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-014",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "clothing": 1,
+      "coal": 1,
+      "brick": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_population",
+        "amount": 1,
+        "population_type": "worker"
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-015",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "grain": 1,
+      "beer": 1,
+      "brick": 1
+    },
+    "victory_points": 3,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-016",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "wool": 1,
+      "brick": 1,
+      "bread": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 2
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-017",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "beer": 1,
+      "clothing": 1,
+      "brick": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_trade_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-018",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "bread": 1,
+      "coal": 1,
+      "beer": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_exploration_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-019",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "brick": 1,
+      "steel": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 3
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-020",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "beer": 1,
+      "steel": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_population",
+        "amount": 1,
+        "population_type": "farmer"
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-021",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "clothing": 1,
+      "windows": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_population",
+        "amount": 1,
+        "population_type": "worker"
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-022",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "bread": 1,
+      "brick": 1,
+      "coal": 1
+    },
+    "victory_points": 3,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-worker-023",
+    "record_type": "custom_game_card",
+    "deck": "farmer_worker",
+    "category": "worker",
+    "requirements": {
+      "beer": 1,
+      "brick": 1,
+      "coal": 1
+    },
+    "victory_points": 3,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 2
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-artisan-001",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "artisan",
+    "requirements": {
+      "steel": 1,
+      "brick": 1
+    },
+    "victory_points": 8,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-artisan-002",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "artisan",
+    "requirements": {
+      "windows": 1,
+      "brick": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 3
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-artisan-003",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "artisan",
+    "requirements": {
+      "sewing_machine": 1,
+      "clothing": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_trade_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-artisan-004",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "artisan",
+    "requirements": {
+      "steel": 1,
+      "beer": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_exploration_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-artisan-005",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "artisan",
+    "requirements": {
+      "windows": 1,
+      "bread": 1,
+      "coal": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_population",
+        "amount": 1,
+        "population_type": "worker"
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-artisan-006",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "artisan",
+    "requirements": {
+      "steel": 1,
+      "bread": 1,
+      "brick": 1
+    },
+    "victory_points": 8,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-artisan-007",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "artisan",
+    "requirements": {
+      "sewing_machine": 1,
+      "beer": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 3
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-artisan-008",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "artisan",
+    "requirements": {
+      "steel": 1,
+      "windows": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_trade_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-artisan-009",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "artisan",
+    "requirements": {
+      "windows": 1,
+      "clothing": 1,
+      "brick": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_exploration_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-artisan-010",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "artisan",
+    "requirements": {
+      "sewing_machine": 1,
+      "steel": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_population",
+        "amount": 1,
+        "population_type": "worker"
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-artisan-011",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "artisan",
+    "requirements": {
+      "steel": 1,
+      "brick": 1,
+      "beer": 1
+    },
+    "victory_points": 8,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-artisan-012",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "artisan",
+    "requirements": {
+      "windows": 1,
+      "steel": 1,
+      "coal": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 3
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-engineer-001",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "engineer",
+    "requirements": {
+      "bicycle": 1,
+      "steel": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 3
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-engineer-002",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "engineer",
+    "requirements": {
+      "sewing_machine": 1,
+      "windows": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_exploration_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-engineer-003",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "engineer",
+    "requirements": {
+      "bicycle": 1,
+      "beer": 1,
+      "steel": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_trade_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-engineer-004",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "engineer",
+    "requirements": {
+      "gramophone": 1,
+      "brick": 1
+    },
+    "victory_points": 8,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-engineer-005",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "engineer",
+    "requirements": {
+      "windows": 1,
+      "steel": 1,
+      "bread": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_population",
+        "amount": 1,
+        "population_type": "worker"
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-engineer-006",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "engineer",
+    "requirements": {
+      "bicycle": 1,
+      "sewing_machine": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 4
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-engineer-007",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "engineer",
+    "requirements": {
+      "gramophone": 1,
+      "coal": 1,
+      "windows": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 3
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-engineer-008",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "engineer",
+    "requirements": {
+      "bicycle": 1,
+      "windows": 1,
+      "clothing": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_exploration_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-engineer-009",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "engineer",
+    "requirements": {
+      "sewing_machine": 1,
+      "steel": 1,
+      "brick": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_trade_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-engineer-010",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "engineer",
+    "requirements": {
+      "gramophone": 1,
+      "beer": 1,
+      "steel": 1
+    },
+    "victory_points": 8,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-engineer-011",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "engineer",
+    "requirements": {
+      "bicycle": 1,
+      "gramophone": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_population",
+        "amount": 1,
+        "population_type": "worker"
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-investor-001",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "investor",
+    "requirements": {
+      "gramophone": 1,
+      "bicycle": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 4
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-investor-002",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "investor",
+    "requirements": {
+      "gramophone": 1,
+      "sewing_machine": 1,
+      "windows": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_exploration_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-investor-003",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "investor",
+    "requirements": {
+      "bicycle": 1,
+      "steel": 1,
+      "windows": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_trade_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-investor-004",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "investor",
+    "requirements": {
+      "gramophone": 1,
+      "bicycle": 1,
+      "beer": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_population",
+        "amount": 1,
+        "population_type": "artisan"
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-investor-005",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "investor",
+    "requirements": {
+      "gramophone": 1,
+      "sewing_machine": 1,
+      "steel": 1
+    },
+    "victory_points": 8,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-investor-006",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "investor",
+    "requirements": {
+      "bicycle": 1,
+      "windows": 1,
+      "brick": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 3
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-investor-007",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "investor",
+    "requirements": {
+      "gramophone": 1,
+      "bicycle": 1,
+      "steel": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 4
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-investor-008",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "investor",
+    "requirements": {
+      "gramophone": 1,
+      "windows": 1,
+      "clothing": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_exploration_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  },
+  {
+    "id": "custom-investor-009",
+    "record_type": "custom_game_card",
+    "deck": "advanced",
+    "category": "investor",
+    "requirements": {
+      "gramophone": 1,
+      "bicycle": 1,
+      "sewing_machine": 1
+    },
+    "victory_points": 8,
+    "effects": [
+      {
+        "type": "gain_trade_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT a verified official card. Balance is provisional pending playtesting."
+  }
+]

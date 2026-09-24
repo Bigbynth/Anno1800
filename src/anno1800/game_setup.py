@@ -12,6 +12,7 @@ from anno1800.data.setup import (
 from anno1800.data.islands import create_home_island
 from anno1800.data.ships import create_starting_ships
 from anno1800.data.shipyards import create_starting_shipyard
+from anno1800.data.catalogue_validation import validate_catalogues
 
 from anno1800.game_state import GameState
 from anno1800.models.player import PlayerState
@@ -22,6 +23,7 @@ class GameSetup:
 
     def create_game(self, player_names: list[str]) -> GameState:
         self._validate_players(player_names)
+        validate_catalogues()
 
         state = self._create_state()
 

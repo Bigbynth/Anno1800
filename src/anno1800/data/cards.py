@@ -5,6 +5,8 @@ from anno1800.models.deck import PopulationCardDeck
 
 from copy import deepcopy
 
+
+CATALOGUE_SOURCE = "engine_test_fixture"
 # ENGINE TEST FIXTURES: invented combinations, not official printed cards.
 # Match the rulebook's 46 Farmer/Worker and 32 advanced cards.
 _FARMER_WORKER_GOODS = [
