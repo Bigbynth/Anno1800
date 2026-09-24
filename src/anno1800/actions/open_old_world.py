@@ -28,7 +28,7 @@ class OpenOldWorldAction(GameAction):
 
         available_tokens = (player.available_naval_tokens(NavalTokenType.EXPLORATION))
 
-        if len(available_tokens) <= token_cost:
+        if len(available_tokens) < token_cost:
             raise InvalidActionError("Not enough exploration tokens")
 
         naval_snapshot = (player.naval_token_snapshot())

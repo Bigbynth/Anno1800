@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import random
 
 from anno1800.data.setup import (
     MAX_PLAYERS,
@@ -67,6 +68,8 @@ class GameSetup:
 
     def _create_state(self) -> GameState:
         state = GameState()
+
+        random.shuffle(state.old_world_islands)
 
         return state
 
