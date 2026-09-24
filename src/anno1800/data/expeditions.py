@@ -6,7 +6,7 @@ from anno1800.models.deck import ExpeditionDeck
 from anno1800.models.population import PopulationType
 
 
-@dataclasss(frozen=True)
+@dataclass(frozen=True)
 class ExpeditionRewardDefinition:
     population_type: PopulationType
     victory_points: int

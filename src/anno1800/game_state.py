@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
 
-from anno1800.data.cards import create_population_deck
 from anno1800.models.deck import PopulationCardDeck, ExpeditionDeck
 from anno1800.models.player import PlayerState
 from anno1800.models.industry import Industry
@@ -12,6 +11,8 @@ from anno1800.data.ships import create_ship_supply, get_ship_definition
 from anno1800.data.shipyards import create_shipyard_supply, get_shipyard_definition
 from anno1800.data.old_world import create_old_world_islands
 from anno1800.data.expeditions import create_expedition_deck
+from anno1800.data.cards import create_population_deck
+from anno1800.data.objectives import create_objective_cards
 
 from anno1800.models.new_world import NewWorldIsland
 from anno1800.models.old_world import OldWorldIsland
@@ -52,6 +53,7 @@ class GameState:
     game_over: bool = False
 
     objective_cards: list[ObjectiveCard] = field(default_factory=list)
+    objective_deck: list[ObjectiveCard] = field(default_factory=create_objective_cards)
     expedition_deck: ExpeditionDeck = field(default_factory=create_expedition_deck)
     population_deck: PopulationCardDeck = field(default_factory=create_default_deck)
     new_world_islands: list[NewWorldIsland] = field(default_factory=create_new_world_islands)
