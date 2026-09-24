@@ -1,8 +1,12 @@
 from dataclasses import dataclass
 
 from anno1800.game_state import GameState
+
 from anno1800.models.player import PlayerState
 from anno1800.models.population import PopulationType
+from anno1800.models.objective import ObjectiveType
+
+from anno1800.services.objective_scoring import score_objectives
 
 FARMER_WORKER_CARD_POINTS = 3
 ADVANCED_CARD_POINTS = 8
@@ -45,8 +49,9 @@ class ScoringEngine:
             gold = self._score_gold(player)
 
             fireworks = self._score_fireworks(state, player)
+            objectives = score_objectives(state.objective_cards, player,)
 
-            return ScoreBreakdown(population_cards=population_cards, expeditions=expeditions, gold=gold, fireworks=fireworks)
+            return ScoreBreakdown(population_cards=population_cards, expeditions=expeditions, gold=gold, fireworks=fireworks, objectives=objectives)
     
     def _score_population_cards(self, player: PlayerState) -> int:
         score = 0

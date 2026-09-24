@@ -15,6 +15,7 @@ from anno1800.data.shipyards import create_starting_shipyard
 
 from anno1800.game_state import GameState
 from anno1800.models.player import PlayerState
+from anno1800.models.objective import ObjectiveType, ResourceObjectiveRule
 
 @dataclass
 class GameSetup:
@@ -74,6 +75,18 @@ class GameSetup:
         random.shuffle(state.population_deck.new_world_cards)
         random.shuffle(state.expedition_deck.cards)
         random.shuffle(state.objective_deck)
+
+        eligible = [card for card in state.objective_deck if card.objective_type == ObjectiveType.END_GAME
+                    and not isinstance(card.rule, ResourceObjectiveRule)]
+
+        if len(eligible) < 3:
+            raise ValueError("Not enough supported end-game objectives")
+
+        state.objective_cards = eligible[:3]
+        selected_ids = {card.id for card in state.objective_cards}
+
+        state.objective_deck = [card for card in state.objective_deck if card.id not in selected_ids]
+        
 
         return state
 
