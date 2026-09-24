@@ -37,7 +37,7 @@ class GameSetup:
         return state
 
     def _validate_players(self, player_names: list[str]) -> None:
-        if not (MIN_PLAYERS <= len(player_names) < MAX_PLAYERS):
+        if not (MIN_PLAYERS <= len(player_names) <= MAX_PLAYERS):
             raise ValueError("Anno 1800 requires 2 to 4 players")
 
         if any(not name.strip() for name in player_names):
@@ -86,7 +86,7 @@ class GameSetup:
         selected_ids = {card.id for card in state.objective_cards}
 
         state.objective_deck = [card for card in state.objective_deck if card.id not in selected_ids]
-        
+
 
         return state
 

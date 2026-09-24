@@ -8,7 +8,7 @@ class OldWorldIslandDefinition:
     id: str
     name: str
     land_spaces: int
-    coast_space: int
+    coast_spaces: int
     sea_spaces: int
 
 # Temporary engine fixtures, not verified official island layouts.

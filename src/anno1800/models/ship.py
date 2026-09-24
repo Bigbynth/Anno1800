@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
 from __future__ import annotations
+from dataclasses import dataclass, field
 from .goods import Good
 from enum import Enum
 

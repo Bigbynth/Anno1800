@@ -7,7 +7,7 @@ SMALL_TRADE_SHIP = Ship(
     name="Small Trade Ship",
     ship_type=ShipType.TRADE,
     strength=1,
-    trade_token=2,
+    trade_token=1,
     build_cost={Good.BRICK: 1, Good.STEEL: 1}
 )
 
@@ -87,7 +87,7 @@ def create_ship_supply() -> dict[str, int]:
         definition.id: definition.supply for definition in SHIP_CATALOGUE
     }
 
-def get_ship_definition(ship: Ship) -> ShipDefnition:
+def get_ship_definition(ship: Ship) -> ShipDefinition:
     for definition in SHIP_CATALOGUE:
         if definition.ship is ship:
             return definition
