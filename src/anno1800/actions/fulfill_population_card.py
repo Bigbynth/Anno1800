@@ -96,7 +96,7 @@ class FulfillPopulationCardAction(GameAction):
                     
             return ActionResult(
                 message=(
-                    f"{player.name} played population card {self.card.name}"
+                    f"{player.name} played population card {self.card.id}"
                 )
             )
         except Exception:
