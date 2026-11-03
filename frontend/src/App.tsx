@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { catalogue as fallbackCatalogue, deckLabels } from './data/catalogue';
-import { fetchGameData } from './api';
+
+import {
+  fetchGameData,
+  performFestival,
+  performProduction,
+  endTurn,
+} from './api';
+import type { GameActionResponse } from './api';
+
 import { CardFace, isPopulation, isExpedition } from './components/CardFace';
 import { IslandBoard, locations } from './components/IslandBoard';
 import { pretty } from './types';
@@ -34,6 +42,17 @@ function App() {
     fallbackCatalogue as Catalogue
   );
   const [game, setGame] = useState<GameSnapshot | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  
+  const [industryData, setIndustryData] =
+    useState<IndustryCatalogueSnapshot | null>(null);
+
+  const [selectedIndustryId, setSelectedIndustryId] =
+    useState('');
+
+  const [selectedBuildSpace, setSelectedBuildSpace] =
+    useState('');
+
   const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -112,6 +131,116 @@ function App() {
     setScreen('harbor');
   }
 
+  
+  async function runGameAction(
+    action: () => Promise<GameActionResponse>
+  ) {
+    if (!game || actionLoading || game.game_over) return;
+
+    setActionLoading(true);
+
+    try {
+      const result = await action();
+
+      setGame(result.game);
+      setActivePlayer(result.game.current_player_index);
+      setApiError(null);
+      setNotice(result.message);
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : 'Unable to perform game action'
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  function handleFestival() {
+    void runGameAction(performFestival);
+  }
+
+  function handleProduce(industryIndex: number) {
+    void runGameAction(
+      () => performProduction(industryIndex)
+    );
+  }
+
+  function handleEndTurn() {
+    void runGameAction(endTurn);
+  }
+
+
+  
+  async function loadIndustryData() {
+    try {
+      const data = await fetchIndustries();
+
+      setIndustryData(data);
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : 'Cannot load industry catalogue'
+      );
+    }
+  }
+
+  useEffect(() => {
+    if (!game) return;
+
+    void loadIndustryData();
+  }, [
+    game?.current_player_index,
+    game?.round,
+    game?.main_action_used,
+  ]);
+  
+
+  
+  async function handleBuildIndustry() {
+    if (
+      !game ||
+      !selectedIndustryId ||
+      !selectedBuildSpace ||
+      actionLoading ||
+      game.main_action_used ||
+      game.game_over
+    ) {
+      return;
+    }
+
+    setActionLoading(true);
+
+    try {
+      const result = await buildIndustry(
+        selectedIndustryId,
+        selectedBuildSpace
+      );
+
+      setGame(result.game);
+      setActivePlayer(
+        result.game.current_player_index
+      );
+
+      setSelectedIndustryId('');
+      setSelectedBuildSpace('');
+      setNotice(result.message);
+
+      // Refresh construction availability and supply.
+      await loadIndustryData();
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : 'Unable to construct industry'
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
 
   return <div className="app-shell">
     <aside className="sidebar">
@@ -168,6 +297,237 @@ function App() {
             <section className="hand-panel"><div className="hand-panel-heading"><div><div className="eyebrow">YOUR COLLECTION</div><h2>Preview hand</h2></div><span className="hand-count">{visibleHand.length} CARDS</span></div><div className="mini-card-stack">{handCards.map(card=><button key={card.id} className="mini-card" onClick={()=>{openDeck('population');setSelectedCardId(card.id);}}><span className={`mini-card-emblem ${card.category}`}>{card.category==='farmer'?'♧':'⚒'}</span><span><strong>{pretty(card.category)}</strong><small>{Object.entries(card.requirements).map(([good,amount])=>`${amount}× ${pretty(good)}`).join(' · ')}</small></span><b>{card.victory_points} VP</b></button>)}</div><button className="link-button" onClick={()=>openDeck('population')}>View complete card catalogue <span>→</span></button></section>
           </aside></div>
         <div className="bottom-strip"><div className="strip-intro"><span className="strip-icon">⚓</span><div><strong>Set sail for discovery</strong><p>Four custom decks are ready to explore.</p></div></div><div className="strip-decks">{deckCounts.map(({deck,count})=><button key={deck} onClick={()=>openDeck(deck)}><strong>{count}</strong><span>{deckLabels[deck]}</span><i>↗</i></button>)}</div></div>
+        
+{game && (
+  <section className="company-panel">
+    <div className="eyebrow">
+      GAMEPLAY CONTROLS
+    </div>
+
+    <h2>
+      {game.players[game.current_player_index]?.name}'s Turn
+    </h2>
+
+    <p>
+      Round {game.round} · {game.phase}
+    </p>
+
+    <p>
+      {game.game_over
+        ? 'Game finished'
+        : game.main_action_used
+          ? 'Main action completed'
+          : 'Choose your main action'}
+    </p>
+
+    <div className="page-intro-actions">
+      <button
+        className="gold-button"
+        onClick={handleFestival}
+        disabled={
+          actionLoading ||
+          game.main_action_used ||
+          game.game_over
+        }
+      >
+        Festival
+      </button>
+
+      <button
+        className="ghost-button"
+        onClick={handleEndTurn}
+        disabled={
+          actionLoading ||
+          !game.main_action_used ||
+          game.game_over
+        }
+      >
+        End Turn →
+      </button>
+    </div>
+
+    <div className="eyebrow">
+      AVAILABLE INDUSTRIES
+    </div>
+
+    <div className="mini-card-stack">
+      {game.players[game.current_player_index]
+        ?.industries.map(industry => (
+          <div
+            key={industry.index}
+            className="mini-card"
+          >
+            <span>
+              <strong>{industry.name}</strong>
+              <small>
+                {pretty(industry.good)} ·{' '}
+                {pretty(industry.worker_type)}
+              </small>
+            </span>
+
+            <button
+              className="ghost-button"
+              disabled={
+                actionLoading ||
+                game.main_action_used ||
+                game.game_over ||
+                !industry.can_produce
+              }
+              onClick={() =>
+                handleProduce(industry.index)
+              }
+            >
+              Produce
+            </button>
+          </div>
+        ))}
+    </div>
+
+    {game.players[game.current_player_index]
+      ?.industries.length === 0 && (
+      <p className="small-note">
+        No industries built yet.
+        Industry construction UI will be added later.
+      </p>
+    )}
+  </section>
+)}
+
+{game && industryData && (
+  <section className="company-panel">
+    <div className="eyebrow">
+      INDUSTRIAL DEVELOPMENT
+    </div>
+
+    <h2>Construct Industry</h2>
+
+    <p className="small-note">
+      Build one industry per Expand action.
+      Construction consumes your main action.
+    </p>
+
+    <div className="filters">
+      <label>
+        Industry
+
+        <select
+          value={selectedIndustryId}
+          onChange={event => {
+            setSelectedIndustryId(event.target.value);
+            setSelectedBuildSpace('');
+          }}
+          disabled={
+            actionLoading ||
+            game.main_action_used ||
+            game.game_over
+          }
+        >
+          <option value="">
+            Select industry
+          </option>
+
+          {industryData.industries.map(industry => (
+            <option
+              key={industry.id}
+              value={industry.id}
+              disabled={
+                industry.remaining === 0 ||
+                industry.already_owned ||
+                Object.keys(industry.build_cost).length > 0
+              }
+            >
+              {industry.name} ({industry.remaining} left)
+              {Object.keys(industry.build_cost).length > 0
+                ? ' — Requires resources'
+                : ''}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label>
+        Construction Space
+
+        <select
+          value={selectedBuildSpace}
+          onChange={event =>
+            setSelectedBuildSpace(event.target.value)
+          }
+          disabled={
+            !selectedIndustryId ||
+            actionLoading ||
+            game.main_action_used ||
+            game.game_over
+          }
+        >
+          <option value="">
+            Select space
+          </option>
+
+          {industryData.spaces
+            .filter(space =>
+              !space.occupied &&
+              ['land', 'coast'].includes(space.type)
+            )
+            .map(space => (
+              <option
+                key={space.id}
+                value={space.id}
+              >
+                {space.id} — {pretty(space.type)}
+              </option>
+            ))}
+        </select>
+      </label>
+    </div>
+
+    {selectedIndustryId && (
+      <div className="small-note">
+        {(() => {
+          const selected = industryData.industries.find(
+            item => item.id === selectedIndustryId
+          );
+
+          if (!selected) return null;
+
+          const cost = Object.entries(selected.build_cost);
+
+          return (
+            <>
+              Produces: {pretty(selected.good)}
+              {' · '}
+              Worker: {pretty(selected.worker_type)}
+              {' · '}
+              Cost:{' '}
+              {cost.length
+                ? cost.map(
+                    ([good, amount]) =>
+                      `${amount}× ${pretty(good)}`
+                  ).join(', ')
+                : 'Free'}
+            </>
+          );
+        })()}
+      </div>
+    )}
+
+    <button
+      className="gold-button"
+      onClick={() => void handleBuildIndustry()}
+      disabled={
+        !selectedIndustryId ||
+        !selectedBuildSpace ||
+        actionLoading ||
+        game.main_action_used ||
+        game.game_over
+      }
+    >
+      {actionLoading ? 'Building...' : 'Build Industry'}
+    </button>
+  </section>
+)}
+
+
         <div className="notice" role="status">✦ {notice}</div>
       </> : <>
         <div className="page-intro codex-intro"><div><div className="eyebrow">THE GRAND ARCHIVE</div><h1>Card <i>collection.</i></h1><p>Explore the custom cards powering your Anno 1800 prototype.</p></div><div className="catalogue-total"><strong>144</strong><span>CARDS ACROSS<br/>FOUR DECKS</span></div></div>

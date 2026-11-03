@@ -169,17 +169,13 @@ class Population:
         cube.assign()
         return cube
 
+    
     def can_upgrade_cube(self, cube: PopulationCube) -> bool:
-        owns_cube = any(owned_cube is cube for owned_cube in self.cubes)
+        return (
+            any(owned_cube is cube for owned_cube in self.cubes)
+            and cube.is_available
+            and next_population_type(cube.population_type) is not None
+        )
 
-        if not owns_cube:
-            return False
-
-        if cube.is_exhausted:
-            return False
-
-        return (next_population_type(cube.population_type))
-    
-    
     
 
