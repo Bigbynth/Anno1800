@@ -33,6 +33,7 @@ class PopulationObjectiveRule:
 
 @dataclass(frozen=True)
 class ResourceObjectiveRule:
+    """Score cumulative goods produced, not goods currently in storage."""
     resource: str
     minimum: int
     points: int
@@ -44,10 +45,21 @@ class ResourceObjectiveRule:
         if self.points < 0:
             raise ValueError("Objective points cannot be negative")
 
+@dataclass(frozen=True)
+class StartingGoldEffectRule:
+    """Test-only EFFECT objective: each player gains gold during setup."""
+    amount: int
+
+    def __post_init__(self) -> None:
+        if self.amount < 0:
+            raise ValueError("Starting gold bonus cannot be negative")
+
+
 ObjectiveRule: TypeAlias =(
     IndustryObjectiveRule
     | PopulationObjectiveRule
     | ResourceObjectiveRule
+    | StartingGoldEffectRule
 )
 
 @dataclass(frozen=True)

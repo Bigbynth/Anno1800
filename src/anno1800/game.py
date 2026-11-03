@@ -21,27 +21,42 @@ class Game:
         self.turn_state = TurnState()
 
     @classmethod
-    def from_names(cls, player_names: list[str]) -> "Game":
-        return cls.from_state(GameSetup().create_game(player_names))
+    def from_names(
+        cls,
+        player_names: list[str],
+        *,
+        use_custom_population: bool = False,
+        use_custom_new_world: bool = False,
+        use_custom_expeditions: bool = False,
+        use_custom_objectives: bool = False,
+    ) -> "Game":
+        """Create a game with optionally enabled homebrew card decks."""
+        setup = GameSetup(
+            use_custom_population=use_custom_population,
+            use_custom_new_world=use_custom_new_world,
+            use_custom_expeditions=use_custom_expeditions,
+            use_custom_objectives=use_custom_objectives,
+        )
+        return cls.from_state(setup.create_game(player_names))
 
     @classmethod
     def from_state(cls, state: GameState) -> "Game":
+        """Wrap an already initialized game state without replacing its decks."""
         if not (cls.MIN_PLAYERS <= len(state.players) <= cls.MAX_PLAYERS):
             raise ValueError("Anno 1800 requires 2 to 4 players")
-
         if state.game_over or state.end_game_phase == EndGamePhase.FINISHED:
             raise ValueError("Cannot start from an already finished game")
-
         if not 0 <= state.current_player_index < len(state.players):
             raise ValueError("Invalid current player index")
-
+        if state.turn_number < 1:
+            raise ValueError("Turn number must be positive")
         game = cls.__new__(cls)
         game.state = state
         game.turn_state = TurnState()
-
         return game
 
     def result(self) -> GameResult:
+        """Return final scores; rejects calls before the game has finished."""
         return ScoringEngine().calculate_result(self.state)
 
     @property
@@ -67,10 +82,8 @@ class Game:
         return result
 
     def end_turn(self) -> None:
-
         if self.state.game_over:
-            raise RuntimeError("The game is already over.")
-
+            raise RuntimeError("The game is already over")
         if not self.turn_state.main_action_used:
             raise InvalidActionError("Player must perform a main action before ending the turn")
         current_player = self.current_player
@@ -119,7 +132,7 @@ class Game:
              return
 
          if phase == EndGamePhase.FINAL_ROUND:
-             self.state.end_game_phase = (EndGamePhase.FINISHED)
+             self.state.end_game_phase = EndGamePhase.FINISHED
              self.state.game_over = True
 
         

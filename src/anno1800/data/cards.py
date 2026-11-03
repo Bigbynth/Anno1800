@@ -5,8 +5,6 @@ from anno1800.models.deck import PopulationCardDeck
 
 from copy import deepcopy
 
-
-CATALOGUE_SOURCE = "engine_test_fixture"
 # ENGINE TEST FIXTURES: invented combinations, not official printed cards.
 # Match the rulebook's 46 Farmer/Worker and 32 advanced cards.
 _FARMER_WORKER_GOODS = [
@@ -63,7 +61,12 @@ def _fixture_cards() -> list[PopulationCard]:
 
 POPULATION_CARD_TEMPLATES = _fixture_cards()
 
-def create_population_deck() -> PopulationCardDeck:
+def create_population_deck(use_custom: bool = False) -> PopulationCardDeck:
+    """Default: original test fixtures. Opt in to invented population.json."""
+    if use_custom:
+        from anno1800.data.official.catalogue import load_custom_population_deck
+        return load_custom_population_deck()
+
     farmer_worker_cards: list[PopulationCard] = []
 
     advanced_cards: list[PopulationCard] = []

@@ -37,12 +37,13 @@ class ScoreBreakdown:
 class ScoringEngine:
 
     def score_game(self, state: GameState) -> list[tuple[PlayerState, ScoreBreakdown]]:
-        if not state.game_over:
-            raise RuntimeError("Cannot score a game before it has finished")
-
-        return [(player, self.score_player(state, player,),) for player in state.players]
+        result = self.calculate_result(state)
+        return [(entry.player, entry.score) for entry in result.scores]
 
     def score_player(self, state: GameState, player: PlayerState) -> ScoreBreakdown:
+            if not any(existing is player for existing in state.players):
+                raise ValueError("Player does not belong to this game")
+
             population_cards = (self._score_population_cards(player))
 
             expeditions = (self._score_expeditions(player))
@@ -106,6 +107,9 @@ class ScoringEngine:
         return (len(player.get_all_industries()) + len(player.shipyards) + len(player.ships))
 
     def _resolve_winners(self, scores: list[PlayerScore]) -> tuple[PlayerState, ...]:
+        if not scores:
+            raise ValueError("Cannot determine a winner without players")
+
         highest_score = max(entry.score.total for entry in scores)
         tied = [entry.player for entry in scores if entry.score.total == highest_score]
 
@@ -147,3 +151,8 @@ class PlayerScore:
 class GameResult:
     scores: tuple[PlayerScore, ...]
     winners: tuple[PlayerState, ...]
+
+
+
+    
+    

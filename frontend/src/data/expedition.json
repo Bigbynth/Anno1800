@@ -1,0 +1,398 @@
+[
+  {
+    "id": "custom-expedition-001",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Scarlet Macaw",
+      "population_type": "artisan",
+      "victory_points": 2
+    },
+    "artifact": {
+      "name": "Bronze Compass",
+      "population_type": "engineer",
+      "victory_points": 3
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-002",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Jaguar",
+      "population_type": "engineer",
+      "victory_points": 3
+    },
+    "artifact": {
+      "name": "Celestial Chart",
+      "population_type": "artisan",
+      "victory_points": 3
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-003",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Toucan",
+      "population_type": "artisan",
+      "victory_points": 2
+    },
+    "artifact": {
+      "name": "Antique Sextant",
+      "population_type": "engineer",
+      "victory_points": 4
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-004",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Capybara",
+      "population_type": "engineer",
+      "victory_points": 4
+    },
+    "artifact": {
+      "name": "Ornate Spyglass",
+      "population_type": "artisan",
+      "victory_points": 3
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-005",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Ocelot",
+      "population_type": "artisan",
+      "victory_points": 4
+    },
+    "artifact": {
+      "name": "Engraved Sundial",
+      "population_type": "engineer",
+      "victory_points": 3
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-006",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Tapir",
+      "population_type": "engineer",
+      "victory_points": 5
+    },
+    "artifact": {
+      "name": "Explorer’s Logbook",
+      "population_type": "artisan",
+      "victory_points": 2
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-007",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Howler Monkey",
+      "population_type": "artisan",
+      "victory_points": 4
+    },
+    "artifact": {
+      "name": "Gilded Navigation Wheel",
+      "population_type": "engineer",
+      "victory_points": 4
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-008",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Poison Dart Frog",
+      "population_type": "engineer",
+      "victory_points": 5
+    },
+    "artifact": {
+      "name": "Carved Stone Tablet",
+      "population_type": "artisan",
+      "victory_points": 3
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-009",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Harpy Eagle",
+      "population_type": "artisan",
+      "victory_points": 2
+    },
+    "artifact": {
+      "name": "Jeweled Ceremonial Mask",
+      "population_type": "investor",
+      "victory_points": 4
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-010",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Green Anaconda",
+      "population_type": "investor",
+      "victory_points": 4
+    },
+    "artifact": {
+      "name": "Ancient Golden Idol",
+      "population_type": "artisan",
+      "victory_points": 3
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-011",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Giant Anteater",
+      "population_type": "artisan",
+      "victory_points": 2
+    },
+    "artifact": {
+      "name": "Pearl-Inlaid Chest",
+      "population_type": "investor",
+      "victory_points": 5
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-012",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Three-Toed Sloth",
+      "population_type": "investor",
+      "victory_points": 5
+    },
+    "artifact": {
+      "name": "Sunstone Amulet",
+      "population_type": "artisan",
+      "victory_points": 3
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-013",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Blue-and-Yellow Macaw",
+      "population_type": "artisan",
+      "victory_points": 4
+    },
+    "artifact": {
+      "name": "Emerald Scepter",
+      "population_type": "investor",
+      "victory_points": 4
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-014",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Pink River Dolphin",
+      "population_type": "investor",
+      "victory_points": 6
+    },
+    "artifact": {
+      "name": "Gold-Rimmed Chalice",
+      "population_type": "artisan",
+      "victory_points": 2
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-015",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Spectacled Bear",
+      "population_type": "artisan",
+      "victory_points": 4
+    },
+    "artifact": {
+      "name": "Royal Jade Pendant",
+      "population_type": "investor",
+      "victory_points": 5
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-016",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Caiman",
+      "population_type": "engineer",
+      "victory_points": 3
+    },
+    "artifact": {
+      "name": "Obsidian Dagger",
+      "population_type": "investor",
+      "victory_points": 4
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-017",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Leafcutter Ant Colony",
+      "population_type": "investor",
+      "victory_points": 4
+    },
+    "artifact": {
+      "name": "Silver Relief",
+      "population_type": "engineer",
+      "victory_points": 4
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-018",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Maned Wolf",
+      "population_type": "engineer",
+      "victory_points": 3
+    },
+    "artifact": {
+      "name": "Ceremonial Staff",
+      "population_type": "investor",
+      "victory_points": 5
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-019",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Giant Otter",
+      "population_type": "investor",
+      "victory_points": 5
+    },
+    "artifact": {
+      "name": "Ancient Mosaic",
+      "population_type": "engineer",
+      "victory_points": 4
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-020",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Tamarin",
+      "population_type": "engineer",
+      "victory_points": 5
+    },
+    "artifact": {
+      "name": "Crystal Reliquary",
+      "population_type": "investor",
+      "victory_points": 4
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-021",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Puma",
+      "population_type": "investor",
+      "victory_points": 6
+    },
+    "artifact": {
+      "name": "Gilded Crown",
+      "population_type": "engineer",
+      "victory_points": 3
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  },
+  {
+    "id": "custom-expedition-022",
+    "record_type": "custom_game_card",
+    "deck": "expedition",
+    "animal": {
+      "name": "Iguana",
+      "population_type": "engineer",
+      "victory_points": 4
+    },
+    "artifact": {
+      "name": "Ornamental Golden Disc",
+      "population_type": "investor",
+      "victory_points": 6
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1"
+  }
+]

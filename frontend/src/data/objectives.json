@@ -1,0 +1,347 @@
+[
+  {
+    "id": "custom-objective-001",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Rural Development",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "industry",
+      "industries": [
+        "sheep-farm",
+        "grain-farm"
+      ],
+      "points_per_industry": 2
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-002",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Heavy Industry",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "industry",
+      "industries": [
+        "coal-mine",
+        "brickworks"
+      ],
+      "points_per_industry": 2
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-003",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Food Supply Network",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "industry",
+      "industries": [
+        "grain-farm",
+        "bakery"
+      ],
+      "points_per_industry": 2
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-004",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Agricultural Estates",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "industry",
+      "industries": [
+        "grain-farm"
+      ],
+      "points_per_industry": 3
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-005",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Coal Consortium",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "industry",
+      "industries": [
+        "coal-mine"
+      ],
+      "points_per_industry": 3
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-006",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Brickworks Guild",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "industry",
+      "industries": [
+        "brickworks"
+      ],
+      "points_per_industry": 3
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-007",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Growing Villages",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "population",
+      "population_type": "farmer",
+      "minimum": 7,
+      "points": 4
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-008",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Thriving Workforce",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "population",
+      "population_type": "worker",
+      "minimum": 6,
+      "points": 5
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-009",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Artisan Districts",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "population",
+      "population_type": "artisan",
+      "minimum": 4,
+      "points": 6
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-010",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Engineering Academy",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "population",
+      "population_type": "engineer",
+      "minimum": 2,
+      "points": 7
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-011",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Investor Society",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "population",
+      "population_type": "investor",
+      "minimum": 1,
+      "points": 8
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-012",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Master Craftsmen",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "population",
+      "population_type": "artisan",
+      "minimum": 5,
+      "points": 8
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-013",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Granary Network",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "resource",
+      "resource": "grain",
+      "minimum": 3,
+      "points": 4
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-014",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Wool Merchants",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "resource",
+      "resource": "wool",
+      "minimum": 3,
+      "points": 4
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-015",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Coal Extraction",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "resource",
+      "resource": "coal",
+      "minimum": 3,
+      "points": 5
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-016",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Bakers Union",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "resource",
+      "resource": "bread",
+      "minimum": 2,
+      "points": 5
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-017",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Brick Production",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "resource",
+      "resource": "brick",
+      "minimum": 2,
+      "points": 6
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-018",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Great Bakeries",
+    "objective_type": "end_game",
+    "rule": {
+      "type": "resource",
+      "resource": "bread",
+      "minimum": 4,
+      "points": 7
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "End-game scoring objective."
+  },
+  {
+    "id": "custom-objective-019",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Merchant Subsidy",
+    "objective_type": "effect",
+    "rule": {
+      "type": "starting_gold",
+      "amount": 1
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Global setup effect; applied equally to all players."
+  },
+  {
+    "id": "custom-objective-020",
+    "record_type": "custom_game_card",
+    "deck": "objectives",
+    "name": "Imperial Treasury",
+    "objective_type": "effect",
+    "rule": {
+      "type": "starting_gold",
+      "amount": 2
+    },
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Global setup effect; applied equally to all players."
+  }
+]

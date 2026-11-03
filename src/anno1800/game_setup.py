@@ -12,18 +12,23 @@ from anno1800.data.setup import (
 from anno1800.data.islands import create_home_island
 from anno1800.data.ships import create_starting_ships
 from anno1800.data.shipyards import create_starting_shipyard
-from anno1800.data.catalogue_validation import validate_catalogues
 
-from anno1800.game_state import GameState
+from anno1800.game_state import GameState, create_default_deck
+from anno1800.data.expeditions import create_expedition_deck
+from anno1800.data.objectives import create_objective_cards
 from anno1800.models.player import PlayerState
-from anno1800.models.objective import ObjectiveType, ResourceObjectiveRule
+from anno1800.models.objective import ObjectiveType
+from anno1800.services.objective_scoring import apply_starting_objective_effects
 
 @dataclass
 class GameSetup:
+    use_custom_population: bool = False
+    use_custom_new_world: bool = False
+    use_custom_expeditions: bool = False
+    use_custom_objectives: bool = False
 
     def create_game(self, player_names: list[str]) -> GameState:
         self._validate_players(player_names)
-        validate_catalogues()
 
         state = self._create_state()
 
@@ -31,6 +36,8 @@ class GameSetup:
             player = self._create_player(state=state, name=name, position=position)
 
             state.players.append(player)
+
+        apply_starting_objective_effects(state.objective_effect_cards, state.players)
 
         state.current_player_index = 0
         state.turn_number = 1
@@ -71,6 +78,15 @@ class GameSetup:
 
     def _create_state(self) -> GameState:
         state = GameState()
+        if self.use_custom_population or self.use_custom_new_world:
+            state.population_deck = create_default_deck(
+                use_custom_population=self.use_custom_population,
+                use_custom_new_world=self.use_custom_new_world,
+            )
+        if self.use_custom_expeditions:
+            state.expedition_deck = create_expedition_deck(use_custom=True)
+        if self.use_custom_objectives:
+            state.objective_deck = create_objective_cards(use_custom=True)
 
         random.shuffle(state.old_world_islands)
         random.shuffle(state.new_world_islands)
@@ -80,15 +96,19 @@ class GameSetup:
         random.shuffle(state.expedition_deck.cards)
         random.shuffle(state.objective_deck)
 
+        # Official base game: reveal exactly five objectives, of either type.
+        # The catalogue currently contains TEST FIXTURES, not official card data.
         if len(state.objective_deck) < 5:
-            raise ValueError("At least file objective cards are required")
-
+            raise ValueError("At least five objective cards are required")
         selected = state.objective_deck[:5]
-
-        state.objective_cards = [card for card in selected if card.objective_type == ObjectiveType.END_GAME]
-
-        state.objective_effect_cards = [card for card in selected if card.objective_type == ObjectiveType.EFFECT]
-
+        state.objective_cards = [
+            card for card in selected
+            if card.objective_type == ObjectiveType.END_GAME
+        ]
+        state.objective_effect_cards = [
+            card for card in selected
+            if card.objective_type == ObjectiveType.EFFECT
+        ]
         state.objective_deck = state.objective_deck[5:]
 
 

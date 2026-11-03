@@ -40,6 +40,14 @@ class PlayerState:
     traded_goods_this_turn: set[Good] = field(default_factory=set)
 
     gold: int = 0
+    # Persistent audit ledger: goods successfully produced over the game.
+    goods_produced: dict[Good, int] = field(default_factory=dict)
+
+    def record_production(self, good: Good, amount: int = 1) -> None:
+        if amount < 0:
+            raise ValueError("Production amount cannot be negative")
+        self.goods_produced[good] = self.goods_produced.get(good, 0) + amount
+
 
     def add_population(self, population_type: PopulationType, amount: int = 1) -> list[PopulationCube]:
         return self.population.add(population_type, amount)

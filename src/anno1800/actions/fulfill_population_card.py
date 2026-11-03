@@ -51,6 +51,7 @@ class FulfillPopulationCardAction(GameAction):
         island_snapshot = player.island.snapshot()
         hand_snapshot = player.hand.copy()
         completed_snapshot = player.completed_cards.copy()
+        produced_snapshot = player.goods_produced.copy()
         resolver = player.start_production()
         trade_resolver = TradeResolver(player=player, production=resolver)
         new_world_resolver = NewWorldResolver(player=player, production=resolver)
@@ -85,6 +86,12 @@ class FulfillPopulationCardAction(GameAction):
 
             player.play_population_card(self.card)
 
+            # Commit production only when the card is successfully fulfilled.
+            for record in resolver.context.production_records:
+                player.record_production(record.good)
+            for record in resolver.context.new_world_records:
+                player.record_production(record.good)
+
 
                     
             return ActionResult(
@@ -100,6 +107,7 @@ class FulfillPopulationCardAction(GameAction):
             player.island.restore(island_snapshot)
             player.hand = hand_snapshot
             player.completed_cards = completed_snapshot
+            player.goods_produced = produced_snapshot
             raise
 
         finally:

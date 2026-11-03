@@ -21,10 +21,18 @@ from anno1800.models.ship import Ship, Shipyard
 
 from copy import deepcopy
 
-def create_default_deck() -> PopulationCardDeck:
-    deck = create_population_deck()
+def create_default_deck(
+    use_custom_population: bool = False,
+    use_custom_new_world: bool = False,
+) -> PopulationCardDeck:
+    """Opt in to either homebrew deck; retain fixtures by default."""
+    deck = create_population_deck(use_custom=use_custom_population)
 
-    deck.new_world_cards = deepcopy(NEW_WORLD_CARDS)
+    if use_custom_new_world:
+        from anno1800.data.new_world import load_custom_new_world_cards
+        deck.new_world_cards = load_custom_new_world_cards()
+    else:
+        deck.new_world_cards = deepcopy(NEW_WORLD_CARDS)
 
     return deck
 
@@ -84,13 +92,10 @@ class GameState:
         return self.old_world_islands.pop()
 
     def trigger_end_game(self, player: PlayerState) -> None:
-
         if not any(existing is player for existing in self.players):
-            raise ValueError("End-game trigger must be a player in this game.")
-
+            raise ValueError("End-game trigger must be a player in this game")
         if self.game_over:
             raise RuntimeError("The game is already over")
-        
         if self.end_game_phase != EndGamePhase.NORMAL:
             return
 

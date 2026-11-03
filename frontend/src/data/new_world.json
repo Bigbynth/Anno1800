@@ -1,0 +1,446 @@
+[
+  {
+    "id": "custom-new-world-001",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "sugar_cane": 1
+    },
+    "victory_points": 5,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Accessible entry card; no bonus to offset low requirement cost. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-002",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "tobacco": 1
+    },
+    "victory_points": 5,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Accessible entry card; no bonus to offset low requirement cost. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-003",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "cotton": 1
+    },
+    "victory_points": 5,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Accessible entry card; no bonus to offset low requirement cost. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-004",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "coffee": 1
+    },
+    "victory_points": 5,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Accessible entry card; no bonus to offset low requirement cost. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-005",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "rubber": 1
+    },
+    "victory_points": 5,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Accessible entry card; no bonus to offset low requirement cost. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-006",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "cocoa": 1
+    },
+    "victory_points": 5,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Accessible entry card; no bonus to offset low requirement cost. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-007",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "sugar_cane": 1,
+      "tobacco": 1
+    },
+    "victory_points": 5,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Two different New World goods; small or no bonus. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-008",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "sugar_cane": 1,
+      "cotton": 1
+    },
+    "victory_points": 5,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Two different New World goods; small or no bonus. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-009",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "sugar_cane": 1,
+      "rubber": 1
+    },
+    "victory_points": 5,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Two different New World goods; small or no bonus. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-010",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "sugar_cane": 1,
+      "cocoa": 1
+    },
+    "victory_points": 5,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Two different New World goods; small or no bonus. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-011",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "tobacco": 1,
+      "cotton": 1
+    },
+    "victory_points": 5,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Two different New World goods; small or no bonus. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-012",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "tobacco": 1,
+      "coffee": 1
+    },
+    "victory_points": 5,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Two different New World goods; small or no bonus. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-013",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "tobacco": 1,
+      "cocoa": 1
+    },
+    "victory_points": 5,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Two different New World goods; small or no bonus. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-014",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "cotton": 1,
+      "coffee": 1
+    },
+    "victory_points": 5,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Two different New World goods; small or no bonus. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-015",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "cotton": 1,
+      "rubber": 1
+    },
+    "victory_points": 5,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Two different New World goods; small or no bonus. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-016",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "coffee": 1,
+      "rubber": 1
+    },
+    "victory_points": 5,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Two different New World goods; small or no bonus. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-017",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "coffee": 1,
+      "cocoa": 1
+    },
+    "victory_points": 5,
+    "effects": [],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Two different New World goods; small or no bonus. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-018",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "rubber": 1,
+      "cocoa": 1
+    },
+    "victory_points": 5,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Two different New World goods; small or no bonus. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-019",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "sugar_cane": 1,
+      "tobacco": 1,
+      "cotton": 1
+    },
+    "victory_points": 5,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 2
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Three different New World goods; modest bonus for greater trade-capacity cost. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-020",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "coffee": 1,
+      "rubber": 1,
+      "cocoa": 1
+    },
+    "victory_points": 5,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 2
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Three different New World goods; modest bonus for greater trade-capacity cost. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-021",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "sugar_cane": 1,
+      "coffee": 1,
+      "rubber": 1
+    },
+    "victory_points": 5,
+    "effects": [
+      {
+        "type": "gain_trade_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Three different New World goods; modest bonus for greater trade-capacity cost. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-022",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "tobacco": 1,
+      "cotton": 1,
+      "cocoa": 1
+    },
+    "victory_points": 5,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 2
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Three different New World goods; modest bonus for greater trade-capacity cost. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-023",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "sugar_cane": 1,
+      "rubber": 1,
+      "cocoa": 1
+    },
+    "victory_points": 5,
+    "effects": [
+      {
+        "type": "gain_exploration_capacity",
+        "amount": 1
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Three different New World goods; modest bonus for greater trade-capacity cost. Balance requires playtesting."
+  },
+  {
+    "id": "custom-new-world-024",
+    "record_type": "custom_game_card",
+    "deck": "new_world",
+    "category": "new_world",
+    "requirements": {
+      "tobacco": 1,
+      "cotton": 1,
+      "coffee": 1
+    },
+    "victory_points": 5,
+    "effects": [
+      {
+        "type": "gain_gold",
+        "amount": 2
+      }
+    ],
+    "quantity": 1,
+    "verification": "invented",
+    "source": "custom_balanced_v1",
+    "notes": "Original homebrew design; NOT an official card. Three different New World goods; modest bonus for greater trade-capacity cost. Balance requires playtesting."
+  }
+]

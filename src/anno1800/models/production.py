@@ -31,8 +31,7 @@ class ProductionContext:
 
     def consume(self, good: Good, amount: int = 1) -> None:
         if amount < 0:
-            raise ValueError("Resource amount annot be native")
-        
+            raise ValueError("Resource amount cannot be negative")
         if not self.has(good, amount):
             raise ValueError(
                 f"Not enough {good.value}"

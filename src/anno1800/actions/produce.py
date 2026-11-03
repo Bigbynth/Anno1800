@@ -26,6 +26,8 @@ class ProduceAction(GameAction):
         finally:
             resolver.finish()
 
+        player.record_production(good)
+
         return ActionResult(
             message=(
                 f"{player.name} produced"
