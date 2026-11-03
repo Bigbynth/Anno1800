@@ -26,3 +26,20 @@ export interface ObjectiveCard {
 export type AnyCard = PopulationCard | ExpeditionCard | ObjectiveCard;
 export type DeckName = 'population' | 'new_world' | 'expedition' | 'objectives';
 export const pretty = (value: string) => value.replaceAll('_', ' ').replaceAll('-', ' ').replace(/\b\w/g, char => char.toUpperCase());
+export type Catalogue = Record<DeckName, AnyCard[]>;
+export interface GamePlayerSnapshot {
+  name: string;
+  gold: number;
+  victory_points: number;
+  hand: string[];
+  population: Record<string, number>;
+}
+
+export interface GameSnapshot {
+  round: number;
+  current_player_index: number;
+  phase: string;
+  game_over: boolean;
+  main_action_used: boolean;
+  players: GamePlayerSnapshot[];
+}
