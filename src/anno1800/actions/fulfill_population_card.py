@@ -69,7 +69,7 @@ class FulfillPopulationCardAction(GameAction):
                     resolver.produce(step.industry)
 
                 elif isinstance(step, TradeForCardStep):
-                    trade_resolver.trade(step.request)
+                    trade_resolver.trade(partner=step.request.partner, good=step.request.good)
 
                 elif isinstance(step, NewWorldForCardStep):
                     new_world_resolver.produce(step.request)
