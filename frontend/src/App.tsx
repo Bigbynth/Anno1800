@@ -348,7 +348,7 @@ function App() {
       }))
     : players;
 
-    
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -889,7 +889,7 @@ function App() {
                   disabled={
                     !selectedIndustryId ||
                     !selectedBuildSpace ||
-                    !allPaymentsSelected ||
+                    !canSubmitConstruction ||
                     actionLoading ||
                     game.main_action_used ||
                     game.game_over
