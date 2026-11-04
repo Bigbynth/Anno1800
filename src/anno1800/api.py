@@ -23,6 +23,15 @@ from anno1800.actions.expand import (
 from anno1800.data.industries import INDUSTRY_CATALOGUE
 from anno1800.models.industry import OwnedIndustry
 
+from typing import Literal
+
+from anno1800.actions.expand import (
+    ProduceStep,
+    TradeStep,
+)
+from anno1800.models.goods import Good
+from anno1800.models.trade import TradeRequest
+
 
 
 app = FastAPI(title="Anno 1800 Board Game API", version="0.2.0")
@@ -49,6 +58,22 @@ _game_lock = RLock()
 class BuildIndustryRequest(BaseModel):
     industry_id: str = Field(min_length=1)
     space_id: str = Field(min_length=1)
+
+
+class ConstructionPaymentStep(BaseModel):
+    source: Literal["produce", "trade"]
+    good: Good
+    industry_index: int | None = Field(default=None, ge=0)
+    partner_index: int | None = Field(default=None, ge=0)
+
+
+class AdvancedBuildRequest(BaseModel):
+    industry_id: str = Field(min_length=1)
+    space_id: str = Field(min_length=1)
+    payments: list[ConstructionPaymentStep] = Field(
+        default_factory=list,
+        max_length=20,
+    )
 
 
 
@@ -243,12 +268,12 @@ def perform_production(request: ProduceRequest) -> dict:
         }
 
 
+
 @app.post("/api/actions/build-industry")
-def build_industry(
-    request: BuildIndustryRequest,
-) -> dict:
+def build_industry(request: AdvancedBuildRequest) -> dict:
     with _game_lock:
         game = get_demo_game()
+        player = game.current_player
 
         if game.state.game_over:
             raise HTTPException(
@@ -264,8 +289,7 @@ def build_industry(
 
         definition = next(
             (
-                item
-                for item in INDUSTRY_CATALOGUE
+                item for item in INDUSTRY_CATALOGUE
                 if item.id == request.industry_id
             ),
             None,
@@ -277,59 +301,129 @@ def build_industry(
                 detail="Unknown industry",
             )
 
-        player = game.current_player
         industry = definition.industry
 
         try:
-            space = player.island.get_space(
-                request.space_id
-            )
+            space = player.island.get_space(request.space_id)
         except ValueError as exc:
             raise HTTPException(
                 status_code=404,
                 detail="Unknown island space",
             ) from exc
 
-        if not space.is_empty:
-            raise HTTPException(
-                status_code=400,
-                detail="Space is already occupied",
-            )
-
         if not space.can_place(OwnedIndustry(industry)):
             raise HTTPException(
                 status_code=400,
-                detail="Industry cannot be built in this space",
+                detail="Industry cannot be placed in this space",
             )
 
-        # Step 63 supports construction without resource
-        # production/trading steps. Never bypass build costs.
-        if industry.build_cost:
+        # Validate the exact resource requirements.
+        required = {
+            good: amount
+            for good, amount in industry.build_cost.items()
+            if amount > 0
+        }
+
+        supplied: dict[Good, int] = {}
+
+        for payment in request.payments:
+            supplied[payment.good] = (
+                supplied.get(payment.good, 0) + 1
+            )
+
+        if supplied != required:
             raise HTTPException(
                 status_code=400,
                 detail=(
-                    "This industry requires resources. "
-                    "Construction payment will be supported "
-                    "in the next step."
+                    "Payment goods do not match "
+                    "the industry build cost"
                 ),
             )
 
+        steps = []
+
+        owned_industries = player.get_all_industries()
+
+        for payment in request.payments:
+            if payment.source == "produce":
+                index = payment.industry_index
+
+                if index is None or index >= len(owned_industries):
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Invalid production industry",
+                    )
+
+                owned = owned_industries[index]
+
+                if owned.industry.good != payment.good:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            "Selected industry does not "
+                            "produce the required good"
+                        ),
+                    )
+
+                steps.append(
+                    ProduceStep(industry=owned)
+                )
+
+            elif payment.source == "trade":
+                index = payment.partner_index
+
+                if (
+                    index is None
+                    or index >= len(game.state.players)
+                    or index == game.state.current_player_index
+                ):
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Invalid trading partner",
+                    )
+
+                partner = game.state.players[index]
+
+                if not any(
+                    owned.industry.good == payment.good
+                    for owned in partner.get_all_industries()
+                ):
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            "Trading partner cannot "
+                            "supply the requested good"
+                        ),
+                    )
+
+                steps.append(
+                    TradeStep(
+                        request=TradeRequest(
+                            partner=partner,
+                            good=payment.good,
+                        )
+                    )
+                )
+
+        # Construction must occur after all payments.
+        steps.append(
+            BuildIndustryStep(
+                industry=industry,
+                space_id=request.space_id,
+            )
+        )
+
         try:
             result = game.perform_action(
-                ExpandAction(
-                    steps=[
-                        BuildIndustryStep(
-                            industry=industry,
-                            space_id=request.space_id,
-                        )
-                    ]
-                )
+                ExpandAction(steps=steps)
             )
+
         except (InvalidActionError, ValueError) as exc:
             raise HTTPException(
                 status_code=400,
                 detail=str(exc),
             ) from exc
+
         except RuntimeError as exc:
             raise HTTPException(
                 status_code=409,
@@ -340,6 +434,7 @@ def build_industry(
             "message": result.message,
             "game": serialize_game(game),
         }
+
 
 @app.post("/api/actions/end-turn")
 def end_current_turn() -> dict:

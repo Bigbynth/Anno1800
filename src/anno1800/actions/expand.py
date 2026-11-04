@@ -105,8 +105,18 @@ class ExpandAction(GameAction):
         execution = ExpandExecutionState(initial_shipyards={id(shipyard) for shipyard in player.shipyards})
         try:
             for step in self.steps:
+                
                 if isinstance(step, ProduceStep):
+                    if not any(
+                        owned is step.industry
+                        for owned in player.get_all_industries()
+                    ):
+                        raise InvalidActionError(
+                            "Player does not own this industry"
+                        )
+
                     resolver.produce(step.industry)
+
 
                 elif isinstance(step, TradeStep):
                     trade.trade(partner=step.request.partner, good=step.request.good)

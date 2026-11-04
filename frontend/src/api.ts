@@ -1,5 +1,15 @@
 import type { Catalogue, GameSnapshot, IndustryCatalogueSnapshot } from './types';
 
+
+
+export interface ConstructionPayment {
+  source: 'produce' | 'trade';
+  good: string;
+  industry_index?: number;
+  partner_index?: number;
+}
+
+
 export async function fetchGameData(): Promise<{
     catalogue: Catalogue;
     game: GameSnapshot;
@@ -85,13 +95,16 @@ export async function fetchIndustries():
   return (await response.json()) as IndustryCatalogueSnapshot;
 }
 
+
 export function buildIndustry(
   industryId: string,
-  spaceId: string
+  spaceId: string,
+  payments: ConstructionPayment[] = []
 ): Promise<GameActionResponse> {
   return postGameAction('/api/actions/build-industry', {
     industry_id: industryId,
     space_id: spaceId,
+    payments,
   });
 }
 
