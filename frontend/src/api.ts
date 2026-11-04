@@ -1,4 +1,4 @@
-import type { Catalogue, GameSnapshot, IndustryCatalogueSnapshot } from './types';
+import type { Catalogue, GameSnapshot, IndustryCatalogueSnapshot, NavalCatalogueSnapshot } from './types';
 
 
 
@@ -119,5 +119,36 @@ export function removeConstruction(
     space_id: spaceId,
   });
 }
+
+
+export async function fetchNavalCatalogue():
+  Promise<NavalCatalogueSnapshot> {
+  const response = await fetch('/api/naval-catalogue');
+
+  if (!response.ok) {
+    throw new Error(
+      `Unable to load naval catalogue (${response.status})`
+    );
+  }
+
+  return (await response.json()) as NavalCatalogueSnapshot;
+}
+
+export function buildNavalConstruction(
+  constructionType: 'shipyard' | 'ship',
+  definitionId: string,
+  spaceId: string,
+  payments: ConstructionPayment[],
+  shipyardIndex?: number
+): Promise<GameActionResponse> {
+  return postGameAction('/api/actions/build-naval', {
+    construction_type: constructionType,
+    definition_id: definitionId,
+    space_id: spaceId,
+    payments,
+    shipyard_index: shipyardIndex ?? null,
+  });
+}
+
 
 

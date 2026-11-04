@@ -9,6 +9,8 @@ import {
   fetchIndustries,
   buildIndustry,
   removeConstruction,
+  fetchNavalCatalogue,
+  buildNavalConstruction
 } from "./api";
 
 import type { GameActionResponse, ConstructionPayment } from "./api";
@@ -23,6 +25,7 @@ import type {
   Catalogue,
   GameSnapshot,
   IndustryCatalogueSnapshot,
+  NavalCatalogueSnapshot
 } from "./types";
 
 import "./styles.css";
@@ -89,7 +92,49 @@ function App() {
   const [selectedRemoveSpace, setSelectedRemoveSpace] =
     useState("");
 
+  
+  const [navalData, setNavalData] =
+    useState<NavalCatalogueSnapshot | null>(null);
+
+  const [navalType, setNavalType] =
+    useState<'shipyard' | 'ship'>('shipyard');
+
+  const [selectedNavalId, setSelectedNavalId] = useState('');
+  const [selectedNavalSpace, setSelectedNavalSpace] = useState('');
+  const [selectedShipyardIndex, setSelectedShipyardIndex] = useState('');
+
+  const [navalPaymentSources, setNavalPaymentSources] =
+    useState<Record<string, string>>({});
+
+
   const [apiError, setApiError] = useState<string | null>(null);
+  useEffect(() => {
+    if (!game) {
+      setNavalData(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    fetchNavalCatalogue()
+      .then(data => {
+        if (!cancelled) setNavalData(data);
+      })
+      .catch(error => {
+        if (!cancelled) {
+          setNotice(
+            error instanceof Error
+              ? error.message
+              : 'Failed to load naval data'
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [game]);
+
 
   useEffect(() => {
     let active = true;
@@ -409,6 +454,105 @@ function App() {
     }
   }
 
+  const selectedNavalDefinition =
+    navalType === 'shipyard'
+      ? navalData?.shipyards.find(x => x.id === selectedNavalId)
+      : navalData?.ships.find(x => x.id === selectedNavalId);
+
+  const navalRequiredPayments = Object.entries(
+    selectedNavalDefinition?.build_cost ?? {}
+  ).flatMap(([good, amount]) =>
+    Array.from({ length: amount }, (_, index) => ({
+      key: `${good}:${index}`,
+      good,
+    }))
+  );
+
+  const navalPaymentsComplete = navalRequiredPayments.every(
+    item => Boolean(navalPaymentSources[item.key])
+  );
+
+  const navalProductionSelections = Object.values(
+    navalPaymentSources
+  ).filter(value => value.startsWith('produce:'));
+
+  const navalHasDuplicateProduction =
+    new Set(navalProductionSelections).size !==
+    navalProductionSelections.length;
+
+  const canBuildNaval =
+    Boolean(game) &&
+    Boolean(selectedNavalDefinition) &&
+    Boolean(selectedNavalSpace) &&
+    (navalType === 'shipyard' || selectedShipyardIndex !== '') &&
+    navalPaymentsComplete &&
+    !navalHasDuplicateProduction &&
+    !actionLoading &&
+    !game?.main_action_used &&
+    !game?.game_over;
+
+  async function handleBuildNaval() {
+    if (!canBuildNaval || !game) return;
+
+    setActionLoading(true);
+
+    try {
+      const payments: ConstructionPayment[] =
+        navalRequiredPayments.map(({ key, good }) => {
+          const value = navalPaymentSources[key];
+          const [source, indexText] = value.split(':');
+          const index = Number(indexText);
+
+          if (!Number.isInteger(index) || index < 0) {
+            throw new Error('Invalid payment source');
+          }
+
+          if (source === 'produce') {
+            return {
+              source,
+              good,
+              industry_index: index,
+            };
+          }
+
+          if (source === 'trade') {
+            return {
+              source,
+              good,
+              partner_index: index,
+            };
+          }
+
+          throw new Error('Invalid payment type');
+        });
+
+      const result = await buildNavalConstruction(
+        navalType,
+        selectedNavalId,
+        selectedNavalSpace,
+        payments,
+        navalType === 'ship'
+          ? Number(selectedShipyardIndex)
+          : undefined
+      );
+
+      setGame(result.game);
+      setActivePlayer(result.game.current_player_index);
+      setSelectedNavalId('');
+      setSelectedNavalSpace('');
+      setSelectedShipyardIndex('');
+      setNavalPaymentSources({});
+      setNotice(result.message);
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : 'Naval construction failed'
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  }
 
   return (
     <div className="app-shell">
@@ -1051,6 +1195,204 @@ function App() {
                 >
                   Demolish Construction
                 </button>
+              </section>
+            )}
+            
+            {game && navalData && (
+              <section className="company-panel">
+                <div className="eyebrow">NAVAL DEVELOPMENT</div>
+                <h2>Shipyard & Ship Construction</h2>
+
+                <p className="small-note">
+                  Trade tokens: {navalData.naval_capacity.trade}
+                  {' · '}
+                  Exploration tokens: {navalData.naval_capacity.exploration}
+                </p>
+
+                <div className="filters">
+                  <label>
+                    Construction Type
+                    <select
+                      value={navalType}
+                      onChange={event => {
+                        setNavalType(
+                          event.target.value as 'shipyard' | 'ship'
+                        );
+                        setSelectedNavalId('');
+                        setSelectedNavalSpace('');
+                        setSelectedShipyardIndex('');
+                        setNavalPaymentSources({});
+                      }}
+                      disabled={actionLoading || game.main_action_used}
+                    >
+                      <option value="shipyard">Shipyard</option>
+                      <option value="ship">Ship</option>
+                    </select>
+                  </label>
+
+                  <label>
+                    Construction
+                    <select
+                      value={selectedNavalId}
+                      onChange={event => {
+                        setSelectedNavalId(event.target.value);
+                        setNavalPaymentSources({});
+                      }}
+                      disabled={actionLoading || game.main_action_used}
+                    >
+                      <option value="">Select construction</option>
+                      {(navalType === 'shipyard'
+                        ? navalData.shipyards
+                        : navalData.ships
+                      ).map(item => (
+                        <option
+                          key={item.id}
+                          value={item.id}
+                          disabled={item.remaining <= 0}
+                        >
+                          {item.name} — {item.remaining} left
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  {navalType === 'ship' && (
+                    <label>
+                      Shipyard
+                      <select
+                        value={selectedShipyardIndex}
+                        onChange={event =>
+                          setSelectedShipyardIndex(event.target.value)
+                        }
+                        disabled={actionLoading || game.main_action_used}
+                      >
+                        <option value="">Select shipyard</option>
+                        {navalData.owned_shipyards.map(shipyard => (
+                          <option
+                            key={shipyard.index}
+                            value={shipyard.index}
+                            disabled={
+                              (selectedNavalDefinition?.strength ?? 0) >
+                              shipyard.strength
+                            }
+                          >
+                            {shipyard.name} — Strength {shipyard.strength}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+
+                  <label>
+                    Construction Space
+                    <select
+                      value={selectedNavalSpace}
+                      onChange={event =>
+                        setSelectedNavalSpace(event.target.value)
+                      }
+                      disabled={actionLoading || game.main_action_used}
+                    >
+                      <option value="">Select space</option>
+                      {navalData.spaces
+                        .filter(space =>
+                          !space.occupied &&
+                          space.type === (
+                            navalType === 'shipyard' ? 'coast' : 'sea'
+                          )
+                        )
+                        .map(space => (
+                          <option key={space.id} value={space.id}>
+                            {space.id} — {pretty(space.type)}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                </div>
+
+                {selectedNavalDefinition && (
+                  <p className="small-note">
+                    Strength: {selectedNavalDefinition.strength}
+                    {' · '}
+                    Cost:{' '}
+                    {Object.entries(selectedNavalDefinition.build_cost)
+                      .map(([good, count]) => `${count}× ${pretty(good)}`)
+                      .join(', ') || 'Free'}
+                  </p>
+                )}
+
+                {navalRequiredPayments.length > 0 && (
+                  <div className="construction-payment">
+                    <div className="eyebrow">RESOURCE PAYMENT</div>
+
+                    {navalRequiredPayments.map(({ key, good }) => (
+                      <label key={key} style={{ display: 'block', marginBottom: 12 }}>
+                        <strong>{pretty(good)}</strong>
+                        <select
+                          value={navalPaymentSources[key] ?? ''}
+                          onChange={event =>
+                            setNavalPaymentSources(previous => ({
+                              ...previous,
+                              [key]: event.target.value,
+                            }))
+                          }
+                          disabled={actionLoading || game.main_action_used}
+                        >
+                          <option value="">Select source</option>
+
+                          {game.players[game.current_player_index]
+                            ?.industries
+                            .filter(industry =>
+                              industry.good === good &&
+                              industry.can_produce
+                            )
+                            .map(industry => (
+                              <option
+                                key={`produce:${industry.index}`}
+                                value={`produce:${industry.index}`}
+                              >
+                                Produce — {industry.name}
+                              </option>
+                            ))}
+
+                          {game.players.map((player, index) => {
+                            if (index === game.current_player_index) return null;
+                            if (!player.industries.some(x => x.good === good)) {
+                              return null;
+                            }
+
+                            return (
+                              <option key={`trade:${index}`} value={`trade:${index}`}>
+                                Trade — {player.name}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                <button
+                  className="gold-button"
+                  onClick={() => void handleBuildNaval()}
+                  disabled={!canBuildNaval}
+                >
+                  {actionLoading ? 'Building...' : 'Build Naval Construction'}
+                </button>
+
+                <div className="eyebrow">YOUR FLEET</div>
+                <div className="mini-card-stack">
+                  {navalData.owned_ships.map((ship, index) => (
+                    <div className="mini-card" key={`${ship.name}:${index}`}>
+                      <span>
+                        <strong>{ship.name}</strong>
+                        <small>
+                          {pretty(ship.type)} · Strength {ship.strength}
+                        </small>
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </section>
             )}
 

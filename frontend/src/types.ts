@@ -78,3 +78,46 @@ export interface IndustryCatalogueSnapshot {
   industries: IndustryDefinitionSnapshot[];
   spaces: IslandSpaceSnapshot[];
 }
+
+export interface ShipyardDefinitionSnapshot {
+  id: string;
+  name: string;
+  strength: number;
+  build_cost: Record<string, number>;
+  remaining: number;
+}
+
+export interface ShipDefinitionSnapshot {
+  id: string;
+  name: string;
+  type: string;
+  strength: number;
+  trade_tokens: number;
+  exploration_tokens: number;
+  build_cost: Record<string, number>;
+  remaining: number;
+}
+
+export interface OwnedShipyardSnapshot {
+  index: number;
+  name: string;
+  strength: number;
+}
+
+export interface OwnedShipSnapshot {
+  name: string;
+  type: string;
+  strength: number;
+}
+
+export interface NavalCatalogueSnapshot {
+  shipyards: ShipyardDefinitionSnapshot[];
+  ships: ShipDefinitionSnapshot[];
+  owned_shipyards: OwnedShipyardSnapshot[];
+  owned_ships: OwnedShipSnapshot[];
+  naval_capacity: {
+    trade: number;
+    exploration: number;
+  };
+  spaces: IslandSpaceSnapshot[];
+}

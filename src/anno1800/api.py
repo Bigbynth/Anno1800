@@ -19,10 +19,16 @@ from anno1800.actions.produce import ProduceAction
 from anno1800.actions.expand import (
     ExpandAction,
     BuildIndustryStep,
-    RemoveConstructionStep
+    RemoveConstructionStep,
+    BuildShipStep,
+    BuildShipyardStep
 )
 from anno1800.data.industries import INDUSTRY_CATALOGUE
+from anno1800.data.ships import SHIP_CATALOGUE
+from anno1800.data.shipyards import SHIPYARD_CATALOGUE
+
 from anno1800.models.industry import OwnedIndustry
+from anno1800.models.ship import Ship, Shipyard, NavalTokenType
 
 from typing import Literal
 
@@ -72,6 +78,17 @@ class AdvancedBuildRequest(BaseModel):
     industry_id: str = Field(min_length=1)
     space_id: str = Field(min_length=1)
     build_over: bool = False
+    payments: list[ConstructionPaymentStep] = Field(
+        default_factory=list,
+        max_length=20,
+    )
+
+
+class NavalBuildRequest(BaseModel):
+    construction_type: Literal["shipyard", "ship"]
+    definition_id: str = Field(min_length=1)
+    space_id: str = Field(min_length=1)
+    shipyard_index: int | None = Field(default=None, ge=0)
     payments: list[ConstructionPaymentStep] = Field(
         default_factory=list,
         max_length=20,
@@ -547,6 +564,313 @@ def end_current_turn() -> dict:
 
         return {
             "message": f"{previous_player} ended their turn.",
+            "game": serialize_game(game),
+        }
+
+
+def make_construction_payment_steps(
+    game: Game,
+    payments: list[ConstructionPaymentStep],
+    required_cost: dict[Good, int],
+) -> list:
+    player = game.current_player
+
+    required = {
+        good: amount
+        for good, amount in required_cost.items()
+        if amount > 0
+    }
+
+    supplied: dict[Good, int] = {}
+
+    for payment in payments:
+        supplied[payment.good] = (
+            supplied.get(payment.good, 0) + 1
+        )
+
+    if supplied != required:
+        raise HTTPException(
+            status_code=400,
+            detail="Payment goods do not match construction cost",
+        )
+
+    steps = []
+    owned_industries = player.get_all_industries()
+
+    for payment in payments:
+        if payment.source == "produce":
+            index = payment.industry_index
+
+            if index is None or index >= len(owned_industries):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid production industry",
+                )
+
+            owned = owned_industries[index]
+
+            if owned.industry.good != payment.good:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Industry produces the wrong good",
+                )
+
+            steps.append(ProduceStep(industry=owned))
+
+        elif payment.source == "trade":
+            index = payment.partner_index
+
+            if (
+                index is None
+                or index >= len(game.state.players)
+                or index == game.state.current_player_index
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid trading partner",
+                )
+
+            partner = game.state.players[index]
+
+            if not any(
+                owned.industry.good == payment.good
+                for owned in partner.get_all_industries()
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Trading partner cannot supply this good",
+                )
+
+            steps.append(
+                TradeStep(
+                    request=TradeRequest(
+                        partner=partner,
+                        good=payment.good,
+                    )
+                )
+            )
+
+    return steps
+
+
+
+@app.get("/api/naval-catalogue")
+def get_naval_catalogue() -> dict:
+    with _game_lock:
+        game = get_demo_game()
+        player = game.current_player
+
+        return {
+            "shipyards": [
+                {
+                    "id": definition.id,
+                    "name": definition.shipyard.name,
+                    "strength": definition.shipyard.strength,
+                    "build_cost": {
+                        good.value: amount
+                        for good, amount
+                        in definition.shipyard.build_cost.items()
+                    },
+                    "remaining": game.state.shipyard_remaining(
+                        definition.shipyard
+                    ),
+                }
+                for definition in SHIPYARD_CATALOGUE
+            ],
+            "ships": [
+                {
+                    "id": definition.id,
+                    "name": definition.ship.name,
+                    "type": definition.ship.ship_type.value,
+                    "strength": definition.ship.strength,
+                    "trade_tokens": definition.ship.trade_token,
+                    "exploration_tokens": (
+                        definition.ship.exploration_tokens
+                    ),
+                    "build_cost": {
+                        good.value: amount
+                        for good, amount
+                        in definition.ship.build_cost.items()
+                    },
+                    "remaining": game.state.ship_remaining(
+                        definition.ship
+                    ),
+                }
+                for definition in SHIP_CATALOGUE
+            ],
+            "owned_shipyards": [
+                {
+                    "index": index,
+                    "name": shipyard.name,
+                    "strength": shipyard.strength,
+                }
+                for index, shipyard in enumerate(player.shipyards)
+            ],
+            "owned_ships": [
+                {
+                    "name": ship.name,
+                    "type": ship.ship_type.value,
+                    "strength": ship.strength,
+                }
+                for ship in player.ships
+            ],
+            "naval_capacity": {
+                "trade": player.available_ship_capacity(
+                    NavalTokenType.TRADE
+                ),
+                "exploration": player.available_ship_capacity(
+                    NavalTokenType.EXPLORATION
+                ),
+            },
+            "spaces": [
+                {
+                    "id": space.id,
+                    "type": space.space_type.value,
+                    "occupied": not space.is_empty,
+                }
+                for space in player.island.spaces
+            ],
+        }
+
+
+@app.post("/api/actions/build-naval")
+def build_naval(request: NavalBuildRequest) -> dict:
+    with _game_lock:
+        game = get_demo_game()
+        player = game.current_player
+
+        if game.state.game_over:
+            raise HTTPException(
+                status_code=409,
+                detail="Game is already finished",
+            )
+
+        if game.turn_state.main_action_used:
+            raise HTTPException(
+                status_code=409,
+                detail="Main action already used",
+            )
+
+        try:
+            space = player.island.get_space(request.space_id)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=404,
+                detail="Unknown island space",
+            ) from exc
+
+        if not space.is_empty:
+            raise HTTPException(
+                status_code=400,
+                detail="Construction space is occupied",
+            )
+
+        if request.construction_type == "shipyard":
+            definition = next(
+                (
+                    item for item in SHIPYARD_CATALOGUE
+                    if item.id == request.definition_id
+                ),
+                None,
+            )
+
+            if definition is None:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Unknown shipyard",
+                )
+
+            construction = definition.shipyard
+
+            if not space.can_place(construction):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Shipyard requires a coastal space",
+                )
+
+            steps = make_construction_payment_steps(
+                game,
+                request.payments,
+                construction.build_cost,
+            )
+
+            steps.append(
+                BuildShipyardStep(
+                    shipyard=construction,
+                    space_id=request.space_id,
+                )
+            )
+
+        else:
+            definition = next(
+                (
+                    item for item in SHIP_CATALOGUE
+                    if item.id == request.definition_id
+                ),
+                None,
+            )
+
+            if definition is None:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Unknown ship",
+                )
+
+            construction = definition.ship
+
+            if not space.can_place(construction):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Ship requires a sea space",
+                )
+
+            index = request.shipyard_index
+
+            if index is None or index >= len(player.shipyards):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Select a valid owned shipyard",
+                )
+
+            shipyard = player.shipyards[index]
+
+            if not shipyard.can_build(construction):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Shipyard strength is insufficient",
+                )
+
+            steps = make_construction_payment_steps(
+                game,
+                request.payments,
+                construction.build_cost,
+            )
+
+            steps.append(
+                BuildShipStep(
+                    shipyard=shipyard,
+                    ship=construction,
+                    space_id=request.space_id,
+                )
+            )
+
+        try:
+            result = game.perform_action(
+                ExpandAction(steps=steps)
+            )
+        except (InvalidActionError, ValueError) as exc:
+            raise HTTPException(
+                status_code=400,
+                detail=str(exc),
+            ) from exc
+        except RuntimeError as exc:
+            raise HTTPException(
+                status_code=409,
+                detail=str(exc),
+            ) from exc
+
+        return {
+            "message": result.message,
             "game": serialize_game(game),
         }
 
