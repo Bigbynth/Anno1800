@@ -19,6 +19,7 @@ from anno1800.actions.produce import ProduceAction
 from anno1800.actions.expand import (
     ExpandAction,
     BuildIndustryStep,
+    RemoveConstructionStep
 )
 from anno1800.data.industries import INDUSTRY_CATALOGUE
 from anno1800.models.industry import OwnedIndustry
@@ -70,12 +71,15 @@ class ConstructionPaymentStep(BaseModel):
 class AdvancedBuildRequest(BaseModel):
     industry_id: str = Field(min_length=1)
     space_id: str = Field(min_length=1)
+    build_over: bool = False
     payments: list[ConstructionPaymentStep] = Field(
         default_factory=list,
         max_length=20,
     )
 
 
+class RemoveConstructionRequest(BaseModel):
+    space_id: str = Field(min_length=1)
 
 class ProduceRequest(BaseModel):
     industry_index: int = Field(ge=0)
@@ -310,7 +314,19 @@ def build_industry(request: AdvancedBuildRequest) -> dict:
                 status_code=404,
                 detail="Unknown island space",
             ) from exc
-
+  
+        if request.build_over:
+            if space.is_empty:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot replace an empty space",
+                )
+        else:
+            if not space.can_place(OwnedIndustry(industry)):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Industry cannot be placed in this space",
+                )
         if not space.can_place(OwnedIndustry(industry)):
             raise HTTPException(
                 status_code=400,
@@ -405,11 +421,12 @@ def build_industry(request: AdvancedBuildRequest) -> dict:
                     )
                 )
 
-        # Construction must occur after all payments.
+        # Construction must occur after all payments.        
         steps.append(
             BuildIndustryStep(
                 industry=industry,
                 space_id=request.space_id,
+                build_over=request.build_over,
             )
         )
 
@@ -435,6 +452,79 @@ def build_industry(request: AdvancedBuildRequest) -> dict:
             "game": serialize_game(game),
         }
 
+
+@app.post("/api/actions/remove-construction")
+def remove_construction(
+    request: RemoveConstructionRequest,
+) -> dict:
+    with _game_lock:
+        game = get_demo_game()
+        player = game.current_player
+
+        if game.state.game_over:
+            raise HTTPException(
+                status_code=409,
+                detail="The game is already over",
+            )
+
+        if game.turn_state.main_action_used:
+            raise HTTPException(
+                status_code=409,
+                detail="Main action has already been used",
+            )
+
+        try:
+            space = player.island.get_space(
+                request.space_id
+            )
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=404,
+                detail="Unknown island space",
+            ) from exc
+
+        if space.is_empty:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot demolish an empty space",
+            )
+
+        construction = space.construction
+
+        construction_name = (
+            construction.industry.name
+            if isinstance(construction, OwnedIndustry)
+            else construction.name
+        )
+
+        try:
+            game.perform_action(
+                ExpandAction(
+                    steps=[
+                        RemoveConstructionStep(
+                            space_id=request.space_id
+                        )
+                    ]
+                )
+            )
+        except (InvalidActionError, ValueError) as exc:
+            raise HTTPException(
+                status_code=400,
+                detail=str(exc),
+            ) from exc
+        except RuntimeError as exc:
+            raise HTTPException(
+                status_code=409,
+                detail=str(exc),
+            ) from exc
+
+        return {
+            "message": (
+                f"{player.name} demolished "
+                f"{construction_name} at {request.space_id}"
+            ),
+            "game": serialize_game(game),
+        }
 
 @app.post("/api/actions/end-turn")
 def end_current_turn() -> dict:

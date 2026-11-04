@@ -96,15 +96,28 @@ export async function fetchIndustries():
 }
 
 
+
 export function buildIndustry(
   industryId: string,
   spaceId: string,
-  payments: ConstructionPayment[] = []
+  payments: ConstructionPayment[] = [],
+  buildOver: boolean = false
 ): Promise<GameActionResponse> {
   return postGameAction('/api/actions/build-industry', {
     industry_id: industryId,
     space_id: spaceId,
     payments,
+    build_over: buildOver,
   });
 }
+
+
+export function removeConstruction(
+  spaceId: string
+): Promise<GameActionResponse> {
+  return postGameAction('/api/actions/remove-construction', {
+    space_id: spaceId,
+  });
+}
+
 

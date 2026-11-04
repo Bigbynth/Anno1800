@@ -8,6 +8,7 @@ import {
   endTurn,
   fetchIndustries,
   buildIndustry,
+  removeConstruction,
 } from "./api";
 
 import type { GameActionResponse, ConstructionPayment } from "./api";
@@ -84,6 +85,9 @@ function App() {
   const [selectedIndustryId, setSelectedIndustryId] = useState("");
 
   const [selectedBuildSpace, setSelectedBuildSpace] = useState("");
+  const [buildOver, setBuildOver] = useState(false);
+  const [selectedRemoveSpace, setSelectedRemoveSpace] =
+    useState("");
 
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -311,6 +315,7 @@ function App() {
         selectedIndustryId,
         selectedBuildSpace,
         payments,
+        buildOver
       );
 
       setGame(result.game);
@@ -321,6 +326,7 @@ function App() {
       setPaymentSources({});
       setApiError(null);
       setNotice(result.message);
+      setBuildOver(false);
     } catch (error) {
       setNotice(
         error instanceof Error ? error.message : "Unable to construct industry",
@@ -347,6 +353,61 @@ function App() {
           .toUpperCase(),
       }))
     : players;
+  
+  
+  async function handleRemoveConstruction() {
+    if (
+      !game ||
+      !selectedRemoveSpace ||
+      actionLoading ||
+      game.main_action_used ||
+      game.game_over
+    ) {
+      return;
+    }
+
+    const target = industryData?.spaces.find(
+      space => space.id === selectedRemoveSpace
+    );
+
+    if (!target?.occupied) {
+      setNotice("Select an occupied space.");
+      return;
+    }
+
+    if (
+      !window.confirm(
+        `Demolish ${target.construction ?? "construction"} at ${target.id}?`
+      )
+    ) {
+      return;
+    }
+
+    setActionLoading(true);
+
+    try {
+      const result = await removeConstruction(
+        selectedRemoveSpace
+      );
+
+      setGame(result.game);
+      setActivePlayer(
+        result.game.current_player_index
+      );
+
+      setSelectedRemoveSpace("");
+      setSelectedBuildSpace("");
+      setNotice(result.message);
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Unable to demolish construction"
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  }
 
 
   return (
@@ -743,6 +804,30 @@ function App() {
                       ))}
                     </select>
                   </label>
+                  
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 12,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={buildOver}
+                      onChange={(event) => {
+                        setBuildOver(event.target.checked);
+                        setSelectedBuildSpace("");
+                      }}
+                      disabled={
+                        actionLoading ||
+                        game.main_action_used ||
+                        game.game_over
+                      }
+                    />
+                    Replace an existing construction
+                  </label>
 
                   <label>
                     Construction Space
@@ -761,14 +846,19 @@ function App() {
                       <option value="">Select space</option>
 
                       {industryData.spaces
-                        .filter(
-                          (space) =>
-                            !space.occupied &&
-                            ["land", "coast"].includes(space.type),
+                        .filter(space =>
+                          buildOver
+                            ? space.occupied &&
+                              ["land", "coast"].includes(space.type)
+                            : !space.occupied &&
+                              ["land", "coast"].includes(space.type)
                         )
                         .map((space) => (
                           <option key={space.id} value={space.id}>
                             {space.id} — {pretty(space.type)}
+                            {space.occupied
+                              ? ` (${space.construction ?? "Occupied"})`
+                              : " (Empty)"}
                           </option>
                         ))}
                     </select>
@@ -896,6 +986,70 @@ function App() {
                   }
                 >
                   {actionLoading ? "Building..." : "Build Industry"}
+                </button>
+              </section>
+            )}
+            
+            {game && industryData && (
+              <section className="company-panel">
+                <div className="eyebrow">
+                  ISLAND MANAGEMENT
+                </div>
+
+                <h2>Demolish Construction</h2>
+
+                <p className="small-note">
+                  Remove a construction from your Home Island.
+                  This consumes your main action.
+                </p>
+
+                <div className="filters">
+                  <label>
+                    Occupied Space
+
+                    <select
+                      value={selectedRemoveSpace}
+                      onChange={event =>
+                        setSelectedRemoveSpace(event.target.value)
+                      }
+                      disabled={
+                        actionLoading ||
+                        game.main_action_used ||
+                        game.game_over
+                      }
+                    >
+                      <option value="">
+                        Select construction
+                      </option>
+
+                      {industryData.spaces
+                        .filter(space => space.occupied)
+                        .map(space => (
+                          <option
+                            key={space.id}
+                            value={space.id}
+                          >
+                            {space.id} —{" "}
+                            {space.construction ?? "Construction"}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                </div>
+
+                <button
+                  className="ghost-button"
+                  onClick={() =>
+                    void handleRemoveConstruction()
+                  }
+                  disabled={
+                    !selectedRemoveSpace ||
+                    actionLoading ||
+                    game.main_action_used ||
+                    game.game_over
+                  }
+                >
+                  Demolish Construction
                 </button>
               </section>
             )}
