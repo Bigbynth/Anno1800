@@ -218,12 +218,12 @@ function App() {
       );
     }
   }
-
+  
   useEffect(() => {
     if (!game) return;
 
     void loadIndustryData();
-  }, [game?.current_player_index, game?.round, game?.main_action_used]);
+  }, [game]);
 
   const selectedIndustry = industryData?.industries.find(
     (item) => item.id === selectedIndustryId,
@@ -330,6 +330,25 @@ function App() {
     }
   }
 
+  
+  const displayPlayers = game
+    ? game.players.map((player, index) => ({
+      name: player.name,
+        subtitle:
+          index === game.current_player_index
+            ? "Current turn"
+            : "Trading company",
+        color: players[index % players.length].color,
+        initials: player.name
+          .split(" ")
+          .map(word => word[0])
+          .slice(0, 2)
+          .join("")
+          .toUpperCase(),
+      }))
+    : players;
+
+    
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -482,7 +501,7 @@ function App() {
                   <div className="eyebrow">THE TRADING COMPANIES</div>
                   <h2>At the table</h2>
                   <div className="player-list">
-                    {players.map((player, i) => (
+                    {displayPlayers.map((player, i) => (
                       <button
                         key={player.name}
                         onClick={() => setActivePlayer(i)}
