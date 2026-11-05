@@ -3,6 +3,10 @@ import { useState } from "react";
 
 import { InteractiveIslandBoard } from "./InteractiveIslandBoard";
 
+import { VisualConstructionPanel } from "./VisualConstructionPanel";
+
+import type { ConstructionPayment } from "../api";
+
 import type {
   GameSnapshot,
   PopulationCard,
@@ -17,6 +21,7 @@ type GameTableProps = {
   handCards: PopulationCard[];
   actionLoading: boolean;
   notice: string;
+  industryData: IndustryCatalogueSnapshot | null;
   selectedLocation: string | null;
   onSelectLocation: (id: string) => void;
   onFestival: () => void;
@@ -24,16 +29,24 @@ type GameTableProps = {
   onEndTurn: () => void;
   onOpenWorkshop: () => void;
   onOpenCards: () => void;
+  onBuildIndustry: (
+  industryId: string,
+  spaceId: string,
+  payments: ConstructionPayment[]
+) => Promise<void>;
 };
 
 export function GameTable({
   game,
   islandSpaces,
+  industryData,
+
   handCards,
   actionLoading,
   notice,
   selectedLocation,
   onSelectLocation,
+  onBuildIndustry,
   onFestival,
   onProduce,
   onEndTurn,
@@ -43,6 +56,7 @@ export function GameTable({
   const [selectedIndustryIndex, setSelectedIndustryIndex] =
     useState<number | null>(null);
 
+  const [constructionOpen, setConstructionOpen] = useState(false);
   const player = game?.players[game.current_player_index];
   const industries = player?.industries ?? [];
   const selectedIndustry = industries.find(
@@ -128,8 +142,8 @@ export function GameTable({
 
           <div className="game-action-grid">
             <button
-              className="game-action-button"
-              onClick={onOpenWorkshop}
+              className="game-action-button"            
+              onClick={() => setConstructionOpen(previous => !previous)}
             >
               <span className="game-action-symbol">⚒</span>
               <strong>Construct</strong>
@@ -241,7 +255,16 @@ export function GameTable({
                 : "Select an Industry"}
             </button>
           </div>
-
+          {constructionOpen && game && industryData && (
+            <VisualConstructionPanel
+              key={game.current_player_index}
+              game={game}
+              industryData={industryData}
+              selectedSpaceId={selectedLocation}
+              actionLoading={actionLoading}
+              onBuild={onBuildIndustry}
+            />
+          )}
           <div className="game-turn-controls">
             <p>
               {game?.game_over

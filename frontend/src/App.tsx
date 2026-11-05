@@ -578,6 +578,48 @@ useEffect(() => {
       setActionLoading(false);
     }
   }
+  async function handleBoardBuildIndustry(
+    industryId: string,
+    spaceId: string,
+    payments: ConstructionPayment[]
+  ): Promise<void> {
+    if (
+      !game ||
+      actionLoading ||
+      game.main_action_used ||
+      game.game_over
+    ) {
+      return;
+    }
+
+    setActionLoading(true);
+
+    try {
+      const result = await buildIndustry(
+        industryId,
+        spaceId,
+        payments,
+        false
+      );
+
+      setGame(result.game);
+      setActivePlayer(result.game.current_player_index);
+      setApiError(null);
+
+      setNotice(result.message);
+      setSelectedLocation(spaceId);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to construct industry";
+
+      setNotice(message);
+      throw error;
+    } finally {
+      setActionLoading(false);
+    }
+  }
 
   return (
     <div className={`app-shell ${screen === "table" ? "table-mode" : ""}`}>
@@ -683,7 +725,9 @@ useEffect(() => {
             handCards={handCards}
             actionLoading={actionLoading}
             notice={notice}
+            industryData={industryData}
             selectedLocation={selectedLocation}
+            onBuildIndustry={handleBoardBuildIndustry}
             onSelectLocation={(id) => {
             setSelectedLocation(id);
 
