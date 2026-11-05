@@ -488,3 +488,124 @@
   }
 }
 
+/* STEP 82 — RESOURCE DEPENDENCIES */
+
+.resource-dependency-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid rgba(197, 155, 86, 0.55);
+  border-radius: 9px;
+  background: #203b45;
+  color: #e8dcc1;
+}
+
+.resource-dependency-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.resource-dependency-heading h4 {
+  margin: 5px 0 0;
+  font: 17px Georgia, serif;
+}
+
+.resource-dependency-progress {
+  color: #d9bc87;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.resource-dependency-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.resource-dependency-good {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid #53666a;
+  border-radius: 7px;
+  background: #294650;
+}
+
+.resource-dependency-good-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.resource-dependency-good-header > span:last-child {
+  color: #e0c998;
+  font-size: 11px;
+}
+
+.resource-dependency-source {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.resource-dependency-source > strong {
+  color: #e3c892;
+  font-size: 12px;
+}
+
+.resource-dependency-source small {
+  color: #c6d0c9;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.resource-dependency-producers,
+.resource-dependency-partners {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.resource-dependency-producer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.resource-dependency-producer span {
+  overflow-wrap: anywhere;
+}
+
+.resource-dependency-producer .is-ready {
+  color: #a9dfb5;
+}
+
+.resource-dependency-producer .is-unavailable {
+  color: #d8a6a0;
+}
+
+.resource-dependency-partners span {
+  padding: 4px 7px;
+  border: 1px solid #6b817e;
+  border-radius: 5px;
+  color: #dce4d9;
+  font-size: 11px;
+}
+
+.resource-dependency-note,
+.resource-dependency-empty {
+  margin: 0;
+  color: #c4d0cb;
+  font-size: 11px;
+  line-height: 1.5;
+}
+

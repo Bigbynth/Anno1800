@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { IslandCanvas } from "./IslandCanvas";
 import { ResourceToken } from "./ResourceToken";
+import { ResourceDependencyPanel } from "./ResourceDependencyPanel";
 
 import { ConstructionPalette } from "./ConstructionPalette";
 import {
@@ -17,7 +18,6 @@ import { TradeHarbor } from "./TradeHarbor";
 
 import type { ComponentProps } from "react";
 import type { GameSnapshot } from "../types";
-import { pretty } from "../types";
 
 type IslandSpaces =
   ComponentProps<typeof IslandCanvas>["spaces"];
@@ -599,6 +599,12 @@ async function confirmConstruction() {
                       <p className="construction-preview-warning">
                         Candidate only. The engine must validate placement before building.
                       </p>
+                      {/* STEP 82 — RESOURCE SOURCE OVERVIEW */}
+                      <ResourceDependencyPanel
+                        game={game}
+                        requirements={requirements}
+                        paymentSources={paymentSources}
+                      />
                       <div className="construction-payment-section">
                         <ResourcePaymentPicker
                           game={game}
