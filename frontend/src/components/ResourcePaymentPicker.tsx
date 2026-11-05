@@ -1,7 +1,12 @@
+import { useState } from "react";
 
-import { pretty } from "../types";
-import type { GameSnapshot } from "../types";
 import type { ConstructionPayment } from "../api";
+import { getResourceIcon } from "../resource-icons";
+import { pretty } from "../types";
+
+import type { GameSnapshot } from "../types";
+
+import { TradeHarbor } from "./TradeHarbor";
 
 export type ResourceRequirement = {
   key: string;
@@ -15,31 +20,6 @@ type Props = {
   onChange: (sources: Record<string, string>) => void;
   disabled?: boolean;
 };
-
-const goodIcons: Record<string, string> = {
-  grain: "🌾",
-  wool: "🐑",
-  bread: "🍞",
-  clothing: "🧥",
-  coal: "⚫",
-  brick: "🧱",
-  beer: "🍺",
-  steel: "⚙️",
-  windows: "🪟",
-  sewing_machine: "🪡",
-  bicycle: "🚲",
-  gramophone: "🎵",
-  sugar_cane: "🌿",
-  tobacco: "🍃",
-  cotton: "☁️",
-  coffee: "☕",
-  rubber: "🌳",
-  cocoa: "🍫",
-};
-
-export function getResourceIcon(good: string): string {
-  return goodIcons[good] ?? "📦";
-}
 
 export function hasDuplicateProductionSources(
   sources: Record<string, string>,
@@ -101,6 +81,8 @@ export function ResourcePaymentPicker({
   disabled = false,
 }: Props) {
   const currentPlayer = game.players[game.current_player_index];
+  const [harborRequirement, setHarborRequirement] =
+    useState<ResourceRequirement | null>(null);
 
   const selectedProduction = requirements
     .map(item => paymentSources[item.key])
@@ -127,7 +109,10 @@ export function ResourcePaymentPicker({
   if (requirements.length === 0) {
     return (
       <div className="resource-payment-picker">
-        <span className="game-overline">RESOURCE PAYMENT</span>
+        <span className="game-overline">
+          RESOURCE PAYMENT
+        </span>
+
         <p className="resource-payment-free">
           No resources required.
         </p>
@@ -150,52 +135,26 @@ export function ResourcePaymentPicker({
       <div className="resource-requirement-list">
         {requirements.map(({ key, good }) => {
           const selected = paymentSources[key] ?? "";
-
           const productionOptions =
             currentPlayer?.industries
-              .filter(industry =>
-                industry.good === good &&
-                industry.can_produce
+              .filter(
+                industry =>
+                  industry.good === good &&
+                  industry.can_produce
               )
               .map(industry => ({
                 value: `produce:${industry.index}`,
                 label: industry.name,
-                kind: "produce" as const,
               })) ?? [];
-
-          const tradeOptions = game.players.flatMap(
-            (partner, index) => {
-              if (index === game.current_player_index) {
-                return [];
-              }
-
-              if (
-                !partner.industries.some(
-                  industry => industry.good === good
-                )
-              ) {
-                return [];
-              }
-
-              return [{
-                value: `trade:${index}`,
-                label: partner.name,
-                kind: "trade" as const,
-              }];
-            }
-          );
-
-          const options = [
-            ...productionOptions,
-            ...tradeOptions,
-          ];
 
           return (
             <div
               key={key}
               className={
                 "resource-requirement" +
-                (selected ? " resource-requirement--assigned" : "")
+                (selected
+                  ? " resource-requirement--assigned"
+                  : "")
               }
             >
               <div className="resource-requirement-title">
@@ -218,11 +177,10 @@ export function ResourcePaymentPicker({
               </div>
 
               <div className="resource-source-list">
-                {options.map(option => {
-                  const isSelected = selected === option.value;
-
+                {productionOptions.map(option => {
+                  const isSelected =
+                    selected === option.value;
                   const isUsedElsewhere =
-                    option.kind === "produce" &&
                     selectedProduction.includes(option.value) &&
                     !isSelected;
 
@@ -243,15 +201,11 @@ export function ResourcePaymentPicker({
                       }
                     >
                       <span className="resource-source-icon">
-                        {option.kind === "produce" ? "⚙" : "⚓"}
+                        ⚙
                       </span>
 
                       <span className="resource-source-name">
-                        <strong>
-                          {option.kind === "produce"
-                            ? "Produce"
-                            : "Trade"}
-                        </strong>
+                        <strong>Produce</strong>
                         <small>{option.label}</small>
                       </span>
 
@@ -262,10 +216,34 @@ export function ResourcePaymentPicker({
                   );
                 })}
 
-                {options.length === 0 && (
+                {productionOptions.length === 0 && (
                   <p className="resource-source-empty">
-                    No available source for {pretty(good)}.
+                    No local producer available. You can check
+                    the Trading Harbor.
                   </p>
+                )}
+              </div>
+
+              <div className="resource-harbor-row">
+                <button
+                  type="button"
+                  className="resource-open-harbor"
+                  disabled={disabled}
+                  onClick={() =>
+                    setHarborRequirement({ key, good })
+                  }
+                >
+                  <span aria-hidden="true">⚓</span>
+                  Open Trading Harbor
+                </button>
+
+                {selected.startsWith("trade:") && (
+                  <span className="resource-trade-assignment">
+                    Assigned:{" "}
+                    {game.players[
+                      Number(selected.split(":")[1])
+                    ]?.name ?? "Trading partner"}
+                  </span>
                 )}
               </div>
             </div>
@@ -284,6 +262,22 @@ export function ResourcePaymentPicker({
           All resources assigned. The game engine will
           validate the payment before completing the action.
         </p>
+      )}
+
+      {harborRequirement && (
+        <TradeHarbor
+          game={game}
+          requiredGood={harborRequirement.good}
+          onAssign={(partnerIndex, good) => {
+            if (good !== harborRequirement.good) return;
+
+            onChange({
+              ...paymentSources,
+              [harborRequirement.key]: `trade:${partnerIndex}`,
+            });
+          }}
+          onClose={() => setHarborRequirement(null)}
+        />
       )}
     </div>
   );

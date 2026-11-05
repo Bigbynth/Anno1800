@@ -10,6 +10,7 @@ import type {
   IndustryCatalogueSnapshot,
 } from "../types";
 import { pretty } from "../types";
+import { TradeHarbor } from "./TradeHarbor";
 
 type GameTableProps = {
   islandSpaces: IndustryCatalogueSnapshot["spaces"];
@@ -57,6 +58,9 @@ export function GameTable({
 }: GameTableProps) {
   const [selectedIndustryIndex, setSelectedIndustryIndex] =
     useState<number | null>(null);
+  
+  const [tradeHarborOpen, setTradeHarborOpen] =
+    useState(false);
 
   const [constructionOpen, setConstructionOpen] = useState(false);
   const player = game?.players[game.current_player_index];
@@ -166,6 +170,16 @@ export function GameTable({
               <span className="game-action-symbol">⚙</span>
               <strong>Produce</strong>
               <small>Activate your industries</small>
+            </button>
+              
+            <button
+              type="button"
+              className="game-action-button"
+              onClick={() => setTradeHarborOpen(true)}
+            >
+              <span className="game-action-symbol">⚓</span>
+              <strong>Trade</strong>
+              <small>Inspect the harbor</small>
             </button>
 
             <button
@@ -306,6 +320,15 @@ export function GameTable({
       <div className="game-status" role="status">
         <span>✦</span> {notice}
       </div>
+      
+      {tradeHarborOpen && game && (
+        <TradeHarbor
+          key={game.current_player_index}
+          game={game}
+          onClose={() => setTradeHarborOpen(false)}
+        />
+      )}
+
     </div>
   );
 }

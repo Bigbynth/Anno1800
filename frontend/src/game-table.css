@@ -1235,3 +1235,314 @@
     font-size: 20px;
   }
 }
+
+/* STEP 73 — IMMERSIVE MARITIME TRADING */
+
+.harbor-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(5, 14, 20, 0.78);
+  backdrop-filter: blur(8px);
+}
+
+.harbor-window {
+  width: min(960px, 100%);
+  max-height: min(840px, 94vh);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  border: 2px solid #C59B56;
+  border-radius: 13px;
+  background: #172D3B;
+  color: #E8DCC1;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, .6);
+}
+
+.harbor-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 25px 28px 20px;
+  background: linear-gradient(125deg, #493326, #172D3B);
+}
+
+.harbor-header h2 {
+  color: #E8DCC1;
+  font-size: 29px;
+  font-weight: 500;
+  margin: 8px 0;
+}
+
+.harbor-header p {
+  color: #cbbda4;
+  font: 12px Arial, sans-serif;
+  margin: 0;
+}
+
+.harbor-close {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #b59465;
+  border-radius: 50%;
+  background: #493326;
+  color: #E8DCC1;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.harbor-sea {
+  padding: 23px 28px;
+  background:
+    radial-gradient(
+      ellipse at 35% 35%,
+      rgba(104, 163, 171, .18),
+      transparent 70%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 23px,
+      rgba(181, 219, 218, .05) 24px 25px
+    ),
+    #254c5a;
+}
+
+.harbor-sea-heading,
+.harbor-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  color: #E8DCC1;
+  font: 700 11px Arial, sans-serif;
+  letter-spacing: 1px;
+}
+
+.harbor-fleet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.harbor-vessel {
+  flex: 1 1 170px;
+  max-width: 250px;
+  min-height: 165px;
+  padding: 14px;
+  border: 2px solid rgba(214, 190, 139, .5);
+  border-radius: 10px;
+  background: rgba(21, 51, 61, .72);
+  color: #E8DCC1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 160ms, border-color 160ms;
+}
+
+.harbor-vessel:hover:not(:disabled) {
+  transform: translateY(-5px);
+  border-color: #E8DCC1;
+}
+
+.harbor-vessel--selected {
+  border-color: #C59B56;
+  background: rgba(98, 83, 60, .75);
+}
+
+.harbor-vessel:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.harbor-vessel-art {
+  font-size: 53px;
+  line-height: 1;
+  filter: drop-shadow(0 5px 6px rgba(0,0,0,.3));
+}
+
+.harbor-vessel strong {
+  font-size: 14px;
+  text-align: center;
+}
+
+.harbor-vessel small {
+  color: #b8d1cf;
+  font: 11px Arial, sans-serif;
+}
+
+.harbor-cargo-section {
+  padding: 22px 28px;
+  background: #493326;
+}
+
+.harbor-cargo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 17px;
+}
+
+.harbor-cargo {
+  min-height: 112px;
+  padding: 12px;
+  border: 2px solid #b6a077;
+  border-radius: 8px;
+  background: linear-gradient(#E8DCC1, #cdbb94);
+  color: #493326;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  transition: transform 150ms, border-color 150ms;
+}
+
+.harbor-cargo:hover:not(:disabled) {
+  transform: translateY(-4px);
+}
+
+.harbor-cargo--selected {
+  border-color: #3D7977;
+  outline: 3px solid rgba(61,121,119,.35);
+}
+
+.harbor-cargo:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.harbor-cargo-icon {
+  font-size: 29px;
+}
+
+.harbor-cargo strong {
+  font-size: 13px;
+}
+
+.harbor-cargo small {
+  font: 10px Arial, sans-serif;
+}
+
+.harbor-placeholder,
+.harbor-empty {
+  padding: 30px 0;
+  color: #d7c7ac;
+  font: 13px Arial, sans-serif;
+  text-align: center;
+}
+
+.harbor-footer {
+  padding: 22px 28px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.harbor-cargo-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-width: 520px;
+}
+
+.harbor-cargo-preview strong {
+  font-size: 18px;
+  color: #E8DCC1;
+}
+
+.harbor-cargo-preview small,
+.harbor-cargo-preview p {
+  font: 11px/1.5 Arial, sans-serif;
+  color: #c4bba8;
+  margin: 0;
+}
+
+.harbor-footer-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.harbor-cancel,
+.harbor-confirm {
+  padding: 11px 17px;
+  border-radius: 5px;
+  font: 700 12px Arial, sans-serif;
+  cursor: pointer;
+}
+
+.harbor-cancel {
+  border: 1px solid #988465;
+  background: transparent;
+  color: #E8DCC1;
+}
+
+.harbor-confirm {
+  border: 1px solid #e0bd7c;
+  background: #C59B56;
+  color: #172D3B;
+}
+
+.harbor-confirm:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.resource-harbor-row {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.resource-open-harbor {
+  padding: 11px;
+  border: 1px solid #C59B56;
+  border-radius: 6px;
+  background: #304c53;
+  color: #E8DCC1;
+  text-align: left;
+  cursor: pointer;
+}
+
+.resource-open-harbor:hover:not(:disabled) {
+  background: #3D7977;
+}
+
+.resource-trade-assignment {
+  font: 11px Arial, sans-serif;
+  color: #b5d5c6;
+}
+
+@media (max-width: 650px) {
+  .harbor-backdrop { padding: 8px; }
+  .harbor-header,
+  .harbor-sea,
+  .harbor-cargo-section,
+  .harbor-footer { padding: 16px; }
+  .harbor-cargo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .harbor-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .harbor-vessel,
+  .harbor-cargo {
+    transition: none;
+  }
+}
