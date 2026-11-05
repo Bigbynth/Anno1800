@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { catalogue as fallbackCatalogue, deckLabels } from "./data/catalogue";
 
+import { GameTable } from "./components/GameTable";
+import "./game-table.css";
+
+
 import {
   fetchGameData,
   performFestival,
@@ -30,7 +34,7 @@ import type {
 
 import "./styles.css";
 
-type Screen = "harbor" | "codex";
+type Screen = "table" | "harbor" | "codex";
 const decks: DeckName[] = [
   "population",
   "new_world",
@@ -53,7 +57,7 @@ const players = [
 ];
 
 function App() {
-  const [screen, setScreen] = useState<Screen>("harbor");
+  const [screen, setScreen] = useState<Screen>("table");
   const [activeDeck, setActiveDeck] = useState<DeckName>("population");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
@@ -555,7 +559,7 @@ function App() {
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${screen === "table" ? "table-mode" : ""}`}>
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark">
@@ -570,6 +574,14 @@ function App() {
         </div>
         <div className="sidebar-section-title">YOUR TABLE</div>
         <nav className="primary-nav" aria-label="Main navigation">
+        <button
+          className={screen === "table" ? "active" : ""}
+          onClick={() => setScreen("table")}
+        >
+          <span className="nav-symbol">⚓</span>
+          Game Table
+          <span className="nav-arrow">↗</span>
+        </button>
           <button
             className={screen === "harbor" ? "active" : ""}
             onClick={() => setScreen("harbor")}
@@ -643,7 +655,32 @@ function App() {
             <div className="avatar">YC</div>
           </div>
         </header>
-        {screen === "harbor" ? (
+        {screen === "table" ? (
+          <GameTable
+            game={game}
+            handCards={handCards}
+            actionLoading={actionLoading}
+            notice={notice}
+            selectedLocation={selectedLocation}
+            onSelectLocation={(id) => {
+              setSelectedLocation(id);
+
+              const selected = locations.find(
+                location => location.id === id
+              );
+
+              setNotice(
+                `${selected?.name ?? "Location"} selected. ` +
+                "This illustrated location is not yet a construction slot."
+              );
+            }}
+            onFestival={handleFestival}
+            onProduce={handleProduce}
+            onEndTurn={handleEndTurn}
+            onOpenWorkshop={() => setScreen("harbor")}
+            onOpenCards={() => openDeck("population")}
+          />
+        ) : screen === "harbor" ? (
           <>
             <div className="page-intro">
               <div>
