@@ -675,6 +675,54 @@ useEffect(() => {
       setActionLoading(false);
     }
   }
+  
+  async function handleImmersiveBuildNaval(
+    type: "shipyard" | "ship",
+    constructionId: string,
+    spaceId: string,
+    payments: ConstructionPayment[],
+    shipyardIndex?: number
+  ): Promise<void> {
+    if (
+      !game ||
+      actionLoading ||
+      game.main_action_used ||
+      game.game_over
+    ) {
+      throw new Error(
+        "Naval construction is not available right now."
+      );
+    }
+
+    setActionLoading(true);
+
+    try {
+      const result = await buildNavalConstruction(
+        type,
+        constructionId,
+        spaceId,
+        payments,
+        shipyardIndex
+      );
+
+      setGame(result.game);
+      setActivePlayer(result.game.current_player_index);
+      setSelectedLocation(spaceId);
+      setApiError(null);
+      setNotice(result.message);
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Naval construction failed."
+      );
+
+      throw error;
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
   async function handleBoardBuildIndustry(
     industryId: string,
     spaceId: string,
@@ -762,6 +810,8 @@ useEffect(() => {
       <ImmersiveGameTable
         game={game}
         tradeCapacity={navalData?.naval_capacity.trade ?? null}
+        navalData={navalData}
+        onBuildNaval={handleImmersiveBuildNaval}
         onBuildIndustry={handleBoardBuildIndustry}
         onProduceIndustry={handleImmersiveProduce}
         industryData={industryData}

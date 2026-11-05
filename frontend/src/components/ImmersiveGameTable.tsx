@@ -5,6 +5,10 @@ import { ResourceToken } from "./ResourceToken";
 import { ResourceDependencyPanel } from "./ResourceDependencyPanel";
 import { TradeDirectory } from "./TradeDirectory";
 
+import { NavalConstructionPanel } from "./NavalConstructionPanel";
+
+import type { NavalCatalogueSnapshot } from "../types";
+
 import { ConstructionPalette } from "./ConstructionPalette";
 import {
   ResourcePaymentPicker,
@@ -36,6 +40,7 @@ type Props = {
   islandSpaces: IslandSpaces;
   handCards: HandCards;
   industryData: IndustryCatalogueSnapshot | null;
+  navalData: NavalCatalogueSnapshot | null
   selectedLocation: string | null;
   actionLoading: boolean;
   notice: string;
@@ -50,6 +55,14 @@ type Props = {
     industryId: string,
     spaceId: string,
     payments: ConstructionPayment[]
+  ) => Promise<void>;
+
+  onBuildNaval: (
+    type: "shipyard" | "ship",
+    constructionId: string,
+    spaceId: string,
+    payments: ConstructionPayment[],
+    shipyardIndex?: number
   ) => Promise<void>;
 };
 
@@ -66,6 +79,12 @@ const dockActions: DockAction[] = [
     label: "Build",
     symbol: "⚒",
     description: "Construct industries",
+  },
+  {
+    id: "naval",
+    label: "Naval",
+    symbol: "⚓",
+    description: "Construct shipyards and ships",
   },
   {
     id: "festival",
@@ -104,6 +123,7 @@ export function ImmersiveGameTable({
   tradeCapacity,
   islandSpaces,
   handCards,
+  navalData,
   selectedLocation,
   actionLoading,
   notice,
@@ -115,6 +135,7 @@ export function ImmersiveGameTable({
   onFulfillPopulationCard,
   onBuildIndustry,
   onProduceIndustry,
+  onBuildNaval,
 }: Props) {
   const [objectivesOpen, setObjectivesOpen] =
     useState(true);
@@ -149,6 +170,16 @@ export function ImmersiveGameTable({
   const [selectedProducerIndex, setSelectedProducerIndex] = useState<number | null>(null);
   const [isProducing, setIsProducing] = useState(false);
   const [productionError, setProductionError] = useState<string | null>(null);
+
+  
+  const [navalMode, setNavalMode] = useState(false);
+
+  const [navalType, setNavalType] =
+    useState<"shipyard" | "ship">("shipyard");
+
+  const [navalTargetId, setNavalTargetId] =
+    useState<string | null>(null);
+
   
   const [lastProduction, setLastProduction] = useState<{
     industryIndex: number;
@@ -183,6 +214,9 @@ export function ImmersiveGameTable({
     setSelectedProducerIndex(null);
     setProductionError(null);
     setLastProduction(null);
+    setNavalMode(false);
+    setNavalTargetId(null);
+    setNavalType("shipyard");
   }, [game?.current_player_index]);
 
   function selectDockAction(id: string) {
@@ -191,6 +225,15 @@ export function ImmersiveGameTable({
         closeProductionMode();
       } else {
         openProductionMode();
+      }
+      return;
+    }
+
+    if (id === "naval") {
+      if (navalMode) {
+        closeNavalMode();
+      } else {
+        openNavalMode();
       }
       return;
     }
@@ -264,6 +307,17 @@ const constructionCandidates =
         )
         .map(space => space.id)
     : [];
+
+const navalCandidates = navalMode && navalData
+  ? navalData.spaces
+      .filter(space =>
+        !space.occupied &&
+        space.type === (
+          navalType === "shipyard" ? "coast" : "sea"
+        )
+      )
+      .map(space => space.id)
+  : [];
 
 const constructionTarget =
   islandSpaces.find(space => space.id === constructionTargetId)
@@ -404,6 +458,35 @@ async function confirmConstruction() {
     setActiveAction(null);
   }
 
+  function closeNavalMode() {
+    setNavalMode(false);
+    setNavalType("shipyard");
+    setNavalTargetId(null);
+    setActiveAction(null);
+  }
+
+  function openNavalMode() {
+    if (
+      !game ||
+      !navalData ||
+      actionLoading ||
+      game.main_action_used ||
+      game.game_over
+    ) {
+      return;
+    }
+
+    closeConstructionMode();
+    closeProductionMode();
+    setHarborOpen(false);
+    setHandOpen(false);
+
+    setNavalType("shipyard");
+    setNavalTargetId(null);
+    setNavalMode(true);
+    setActiveAction("naval");
+  }
+
   function selectConstructionIndustry(industryId: string) {
     if (!canEnterConstruction) return;
     const industry = industryData?.industries.find(item => item.id === industryId);
@@ -416,6 +499,15 @@ async function confirmConstruction() {
 
   function selectBoardSpace(spaceId: string) {
     onSelectLocation(spaceId);
+    
+    if (navalMode) {
+      setNavalTargetId(
+        navalCandidates.includes(spaceId)
+          ? spaceId
+          : null
+      );
+      return;
+    }
 
     // Clicking a built space opens the production panel, but does not
     // select an industry by guessing from the building name.
@@ -604,8 +696,12 @@ async function confirmConstruction() {
               spaces={islandSpaces}
               selectedSpaceId={selectedLocation}
               onSelectSpace={selectBoardSpace}
-              constructionMode={constructionMode}
-              candidateSpaceIds={constructionCandidates}
+              constructionMode={constructionMode || navalMode}
+              candidateSpaceIds={
+                navalMode
+                  ? navalCandidates
+                  : constructionCandidates
+              }
             />
             </div>
 
@@ -738,6 +834,24 @@ async function confirmConstruction() {
                 {isProducing ? "Producing..." : "Confirm Production"}
               </button>
             </section>
+          )}
+
+          {/* STEP 87 — NAVAL CONSTRUCTION */}
+          {navalMode && navalData && (
+            <div className="immersive-naval-overlay">
+              <NavalConstructionPanel
+                game={game}
+                navalData={navalData}
+                selectedSpaceId={navalTargetId}
+                actionLoading={actionLoading}
+                onTypeChange={next => {
+                  setNavalType(next);
+                  setNavalTargetId(null);
+                }}
+                onClose={closeNavalMode}
+                onBuild={onBuildNaval}
+              />
+            </div>
           )}
 
           <div className="immersive-island-footer">

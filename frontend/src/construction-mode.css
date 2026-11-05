@@ -1257,3 +1257,192 @@
     transition: none;
   }
 }
+
+/* STEP 87 — NAVAL CONSTRUCTION */
+
+.immersive-naval-overlay {
+  position: absolute;
+  z-index: 10;
+  top: 16px;
+  left: 16px;
+  bottom: 16px;
+  width: min(355px, calc(100% - 32px));
+  display: flex;
+  min-height: 0;
+  pointer-events: none;
+}
+
+.naval-construction-panel {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  min-height: 0;
+  padding: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #c59b56;
+  border-radius: 10px;
+  background: rgba(23, 45, 59, 0.98);
+  color: #e8dcc1;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45);
+}
+
+.naval-construction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.naval-construction-header h2 {
+  margin: 7px 0 0;
+  font: 23px Georgia, serif;
+}
+
+.naval-construction-header > button {
+  border: 0;
+  background: transparent;
+  color: #e8dcc1;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.naval-construction-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.naval-construction-tabs button {
+  padding: 11px;
+  border: 1px solid #667d81;
+  border-radius: 7px;
+  color: #e8dcc1;
+  background: #294650;
+  cursor: pointer;
+}
+
+.naval-construction-tabs button.is-selected {
+  border-color: #e5c282;
+  color: #f5dfae;
+  background: #554932;
+}
+
+.naval-construction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 0 0 auto;
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.naval-construction-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 11px;
+  text-align: left;
+  border: 1px solid #58717a;
+  border-radius: 7px;
+  background: #294650;
+  color: #e8dcc1;
+  cursor: pointer;
+}
+
+.naval-construction-item.is-selected,
+.naval-construction-item:hover:not(:disabled) {
+  border-color: #e5c282;
+  background: #493d2d;
+}
+
+.naval-construction-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.naval-construction-item small {
+  color: #d4c49d;
+}
+
+.naval-construction-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.naval-construction-details h3 {
+  margin: 0;
+  color: #f0dfbd;
+  font: 19px Georgia, serif;
+}
+
+.naval-construction-details p,
+.naval-construction-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.naval-shipyard-select {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.naval-shipyard-select select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #84938c;
+  border-radius: 7px;
+  background: #213b46;
+  color: #e8dcc1;
+}
+
+.naval-construction-confirm {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e5c282;
+  border-radius: 7px;
+  background: #81623b;
+  color: #fff0cf;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.naval-construction-confirm:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.naval-construction-confirm:hover:not(:disabled) {
+  background: #a17d4a;
+}
+
+.naval-construction-error {
+  padding: 9px;
+  border: 1px solid #af6a60;
+  border-radius: 6px;
+  background: #56393a;
+  color: #ffe0d8;
+  font-size: 12px;
+}
+
+.naval-construction-note {
+  padding-top: 12px;
+  border-top: 1px solid #53696b;
+  color: #c8d3cc;
+}
+
+@media (max-width: 1024px) {
+  .immersive-naval-overlay {
+    top: 10px;
+    left: 10px;
+    bottom: 10px;
+    width: min(310px, calc(100% - 20px));
+  }
+}
