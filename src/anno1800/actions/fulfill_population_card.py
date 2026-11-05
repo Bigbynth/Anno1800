@@ -72,7 +72,10 @@ class FulfillPopulationCardAction(GameAction):
                     trade_resolver.trade(partner=step.request.partner, good=step.request.good)
 
                 elif isinstance(step, NewWorldForCardStep):
-                    new_world_resolver.produce(step.request)
+                    new_world_resolver.produce(
+                        step.request.island,
+                        step.request.good,
+                    )
 
                 else:
                     raise TypeError(f"Unsupported population card step: {type(step).__name__}")

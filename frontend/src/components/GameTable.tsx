@@ -3,7 +3,7 @@ import { useState } from "react";
 import { InteractiveIslandBoard } from "./InteractiveIslandBoard";
 import { PopulationHand } from "./PopulationHand";
 import { VisualConstructionPanel } from "./VisualConstructionPanel";
-import type { ConstructionPayment } from "../api";
+import type { ConstructionPayment, PopulationCardPayment } from "../api";
 import type {
   GameSnapshot,
   PopulationCard,
@@ -34,7 +34,7 @@ type GameTableProps = {
 
   onFulfillPopulationCard: (
     cardId: string,
-    payments: ConstructionPayment[]
+    payments: PopulationCardPayment[]
   ) => Promise<boolean>;
 };
 

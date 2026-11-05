@@ -1954,3 +1954,70 @@
     flex-direction: column;
   }
 }
+
+/* STEP 90 — NEW WORLD RESOURCE PAYMENTS */
+
+.resource-payment-new-world-note {
+  margin: 10px 0;
+  padding: 11px 12px;
+  border: 1px solid #b99b68;
+  border-radius: 7px;
+  background: #264b4b;
+  color: #e8dcc1;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.resource-payment-new-world-note strong {
+  color: #f0d59a;
+}
+
+/* Highlight New World payment selections */
+
+.resource-source--selected {
+  border-color: #e5c282;
+  background: #4c4934;
+}
+
+.resource-source:focus-visible {
+  outline: 2px solid #e5c282;
+  outline-offset: 2px;
+}
+
+
+/* STEP 90 — POPULATION CARD FULFILLMENT */
+
+.population-fulfillment-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.population-fulfillment-confirm {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e5c282;
+  border-radius: 7px;
+  background: #81623b;
+  color: #fff0cf;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.population-fulfillment-confirm:hover:not(:disabled) {
+  background: #a17d4a;
+}
+
+.population-fulfillment-confirm:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.population-fulfillment-hint {
+  margin: 0;
+  color: #d7c9aa;
+  font-size: 12px;
+  line-height: 1.5;
+}

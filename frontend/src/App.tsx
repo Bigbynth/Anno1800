@@ -28,7 +28,7 @@ import {
   fulfillPopulationCard
 } from "./api";
 
-import type { GameActionResponse, ConstructionPayment } from "./api";
+import type { GameActionResponse, ConstructionPayment, PopulationCardPayment } from "./api";
 
 import { CardFace, isPopulation, isExpedition } from "./components/CardFace";
 import { IslandBoard, locations } from "./components/IslandBoard";
@@ -821,7 +821,7 @@ useEffect(() => {
   }
   async function handleFulfillPopulationCard(
     cardId: string,
-    payments: ConstructionPayment[]
+    payments: PopulationCardPayment[]
   ): Promise<boolean> {
     if (
       !game ||

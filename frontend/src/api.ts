@@ -10,6 +10,16 @@ export interface ConstructionPayment {
 }
 
 
+export interface PopulationCardPayment {
+  source: "produce" | "trade" | "new_world";
+  good: string;
+  industry_index?: number;
+  partner_index?: number;
+  island_id?: string;
+}
+
+
+
 export async function fetchGameData(): Promise<{
     catalogue: Catalogue;
     game: GameSnapshot;
@@ -157,7 +167,7 @@ export function buildNavalConstruction(
 
 export function fulfillPopulationCard(
   cardId: string,
-  payments: ConstructionPayment[]
+  payments: PopulationCardPayment[]
 ): Promise<GameActionResponse> {
   return postGameAction(
     "/api/actions/fulfill-population-card",

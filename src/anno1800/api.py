@@ -17,11 +17,15 @@ from anno1800.game import Game
 from anno1800.actions.base import InvalidActionError
 from anno1800.actions.festival import FestivalAction
 from anno1800.actions.produce import ProduceAction
+
 from anno1800.actions.fulfill_population_card import (
     FulfillPopulationCardAction,
     ProduceForCardStep,
     TradeForCardStep,
+    NewWorldForCardStep,
 )
+
+from anno1800.models.new_world import NewWorldProductionRequest
 from anno1800.actions.expand import (
     ExpandAction,
     BuildIndustryStep,
@@ -83,9 +87,18 @@ class ConstructionPaymentStep(BaseModel):
     partner_index: int | None = Field(default=None, ge=0)
 
 
+class PopulationCardPaymentStep(BaseModel):
+    source: Literal["produce", "trade", "new_world"]
+    good: Good
+    industry_index: int | None = Field(default=None, ge=0)
+    partner_index: int | None = Field(default=None, ge=0)
+    island_id: str | None = None
+
+
+
 class FulfillPopulationCardRequest(BaseModel):
     card_id: str = Field(min_length=1)
-    payments: list[ConstructionPaymentStep] = Field(
+    payments: list[PopulationCardPaymentStep] = Field(
         default_factory=list,
         max_length=30,
     )
@@ -1029,6 +1042,35 @@ def fulfill_population_card(
                         status_code=400,
                         detail="Partner cannot supply this good",
                     )
+            
+            elif payment.source == "new_world":
+                if not payment.island_id:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="New World island ID is required",
+                    )
+
+                island = next(
+                    (
+                        owned
+                        for owned in player.new_world_islands
+                        if owned.id == payment.island_id
+                    ),
+                    None,
+                )
+
+                if island is None:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Player does not own this New World island",
+                    )
+
+                if payment.good not in island.resources:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Island cannot supply the requested good",
+                    )
+
 
             else:
                 raise HTTPException(
@@ -1057,6 +1099,25 @@ def fulfill_population_card(
         # Do not use ExpandAction here.
 
         
+        new_world_payment_count = sum(
+            payment.source == "new_world"
+            for payment in request.payments
+        )
+
+        available_trade_tokens = player.available_ship_capacity(
+            NavalTokenType.TRADE
+        )
+
+        if new_world_payment_count > available_trade_tokens:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Not enough Trade tokens for New World "
+                    f"production: need {new_world_payment_count}, "
+                    f"available {available_trade_tokens}"
+                ),
+            )
+
         # Convert API payments into card-specific engine steps.
         steps = []
 
@@ -1098,6 +1159,33 @@ def fulfill_population_card(
                         )
                     )
                 )
+
+                
+            elif payment.source == "new_world":
+                island = next(
+                    (
+                        owned
+                        for owned in player.new_world_islands
+                        if owned.id == payment.island_id
+                    ),
+                    None,
+                )
+
+                if island is None:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="New World island not found",
+                    )
+
+                steps.append(
+                    NewWorldForCardStep(
+                        request=NewWorldProductionRequest(
+                            island=island,
+                            good=payment.good,
+                        )
+                    )
+                )
+
 
         action = FulfillPopulationCardAction(
             card=card,

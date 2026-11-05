@@ -7,12 +7,12 @@ import type {
   PopulationCard,
 } from "../types";
 
-import type { ConstructionPayment } from "../api";
+import type { PopulationCardPayment } from "../api";
 
 import {
   ResourcePaymentPicker,
   hasDuplicateProductionSources,
-  toConstructionPayments,
+  toPopulationCardPayments
 } from "./ResourcePaymentPicker";
 
 type Props = {
@@ -21,7 +21,7 @@ type Props = {
   actionLoading: boolean;
   onFulfill: (
     cardId: string,
-    payments: ConstructionPayment[]
+    payments: PopulationCardPayment[]
   ) => Promise<boolean>;
 };
 
@@ -81,8 +81,8 @@ export function PopulationHand({
     setPaymentSources({});
   }
 
-  function buildPayments(): ConstructionPayment[] {
-    return toConstructionPayments(
+  function buildPayments(): PopulationCardPayment[] {
+    return toPopulationCardPayments(
       requirements,
       paymentSources
     );
@@ -199,6 +199,7 @@ export function PopulationHand({
           {game && (
             <ResourcePaymentPicker
               game={game}
+              allowNewWorld
               requirements={requirements}
               paymentSources={paymentSources}
               onChange={setPaymentSources}
@@ -209,6 +210,35 @@ export function PopulationHand({
               }
             />
           )}
+
+          
+          {/* STEP 90 — SUBMIT CARD FULFILLMENT */}
+          <div className="population-fulfillment-actions">
+            <button
+              type="button"
+              className="population-fulfillment-confirm"
+              disabled={!canFulfill}
+              onClick={() => void handleFulfill()}
+            >
+              {actionLoading
+                ? "Fulfilling..."
+                : "Fulfill Population Card"}
+            </button>
+
+            {!paymentsComplete && (
+              <p className="population-fulfillment-hint">
+                Assign all required resources before fulfilling
+                this card.
+              </p>
+            )}
+
+            {duplicateProduction && (
+              <p className="population-fulfillment-hint">
+                The same local producer cannot be used twice.
+              </p>
+            )}
+          </div>
+
         </div>
       )}
     </section>

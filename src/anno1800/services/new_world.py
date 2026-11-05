@@ -22,7 +22,7 @@ class NewWorldResolver:
         return (self.player.has_new_world_resource(good)) \
                 and ShippingService.can_use_capacity(self.player, NavalTokenType.TRADE, 1)
 
-    def produce(self,island: NewWorldIsland, good: Good) -> Good:
+    def produce(self, island: NewWorldIsland, good: Good) -> Good:
         self.production._ensure_active()
 
         self._validate_island(island)
@@ -35,6 +35,7 @@ class NewWorldResolver:
         token = self.player.use_naval_tokens(NavalTokenType.TRADE, 1)[0]
         record = NewWorldProductionRecord(island=island, good=good, token=token)
         self.production.context.add_new_world_production(record)
+        self.production.add_external_good(good, 1)
         return good
 
     def _validate_island(self, island: NewWorldIsland) -> None:

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import type { ConstructionPayment } from "../api";
+import type { ConstructionPayment, PopulationCardPayment } from "../api";
 import { getResourceIcon } from "../resource-icons";
 import { pretty } from "../types";
 
@@ -15,6 +15,7 @@ export type ResourceRequirement = {
 
 type Props = {
   game: GameSnapshot;
+  allowNewWorld?: boolean;
   requirements: ResourceRequirement[];
   paymentSources: Record<string, string>;
   onChange: (sources: Record<string, string>) => void;
@@ -126,8 +127,44 @@ export function toConstructionPayments(
   });
 }
 
+export function toPopulationCardPayments(
+  requirements: ResourceRequirement[],
+  sources: Record<string, string>
+): PopulationCardPayment[] {
+  return requirements.map(({ key, good }) => {
+    const selected = sources[key];
+
+    if (!selected) {
+      throw new Error(`Missing payment for ${good}`);
+    }
+
+    if (selected.startsWith("new_world:")) {
+      const islandId = selected.slice("new_world:".length);
+
+      if (!islandId) {
+        throw new Error("Missing New World island ID");
+      }
+
+      return {
+        source: "new_world",
+        good,
+        island_id: islandId,
+      };
+    }
+
+    // Reuse the original construction-compatible
+    // conversion for production and trading.
+    return toConstructionPayments(
+      [{ key, good }],
+      sources
+    )[0];
+  });
+}
+
+
 export function ResourcePaymentPicker({
   game,
+  allowNewWorld = false,
   requirements,
   paymentSources,
   onChange,
@@ -149,6 +186,13 @@ export function ResourcePaymentPicker({
   const completed = requirements.filter(
     item => Boolean(paymentSources[item.key])
   ).length;
+
+  
+  const selectedNewWorldCount = requirements.filter(
+    item =>
+      paymentSources[item.key]?.startsWith("new_world:")
+  ).length;
+
 
   function selectSource(key: string, value: string) {
     if (disabled) return;
@@ -250,6 +294,17 @@ export function ResourcePaymentPicker({
                 label: industry.name,
               })) ?? [];
 
+          
+          const newWorldOptions = allowNewWorld
+            ? (currentPlayer?.new_world_islands ?? [])
+                .filter(island => island.resources.includes(good))
+                .map(island => ({
+                  value: `new_world:${island.id}`,
+                  label: island.name,
+                }))
+            : [];
+
+
           return (
             <div
               key={key}
@@ -319,12 +374,48 @@ export function ResourcePaymentPicker({
                   );
                 })}
 
-                {productionOptions.length === 0 && (
-                  <p className="resource-source-empty">
-                    No local producer available. You can check
-                    the Trading Harbor.
-                  </p>
-                )}
+                
+                {/* STEP 90 — NEW WORLD RESOURCE SOURCES */}
+                {newWorldOptions.map(option => {
+                  const isSelected = selected === option.value;
+
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={[
+                        "resource-source",
+                        isSelected ? "resource-source--selected" : "",
+                      ].join(" ")}
+                      disabled={disabled}
+                      aria-pressed={isSelected}
+                      onClick={() => selectSource(key, option.value)}
+                    >
+                      <span className="resource-source-icon">
+                        ◈
+                      </span>
+
+                      <span className="resource-source-name">
+                        <strong>New World</strong>
+                        <small>{option.label}</small>
+                      </span>
+
+                      <span className="resource-source-check">
+                        {isSelected ? "✓" : ""}
+                      </span>
+                    </button>
+                  );
+                })}
+
+
+                
+                {productionOptions.length === 0 &&
+                  newWorldOptions.length === 0 && (
+                    <p className="resource-source-empty">
+                      No local or New World producer available.
+                      Check the Trading Harbor for other sources.
+                    </p>
+                  )}
               </div>
 
               <div className="resource-harbor-row">
@@ -388,6 +479,18 @@ export function ResourcePaymentPicker({
               : "Unknown trading partner";
           }
 
+          if (value.startsWith("new_world:")) {
+            const islandId = value.slice("new_world:".length);
+
+            const island = currentPlayer?.new_world_islands?.find(
+              item => item.id === islandId
+            );
+
+            sourceLabel = island
+              ? `New World — ${island.name}`
+              : "Unknown New World island";
+          }
+
           return (
             <div
               key={key}
@@ -410,6 +513,17 @@ export function ResourcePaymentPicker({
           );
         })}
       </div>
+        
+      {allowNewWorld && selectedNewWorldCount > 0 && (
+        <p className="resource-payment-new-world-note">
+          New World shipping selected:{" "}
+          <strong>{selectedNewWorldCount}</strong>
+          {" "}Trade token(s) required.
+
+          The backend validates the available capacity
+          when fulfilling the card.
+        </p>
+      )}
 
       {duplicates && (
         <p className="resource-payment-warning">
