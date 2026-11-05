@@ -4,18 +4,21 @@ import json
 from pathlib import Path
 from threading import RLock
 from pydantic import BaseModel, Field
+from collections import Counter
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from anno1800.game import Game
-from anno1800.models.population import PopulationType
 
 from anno1800.actions.base import InvalidActionError
 from anno1800.actions.festival import FestivalAction
 from anno1800.actions.produce import ProduceAction
-
-
+from anno1800.actions.fulfill_population_card import (
+    FulfillPopulationCardAction,
+    ProduceForCardStep,
+    TradeForCardStep,
+)
 from anno1800.actions.expand import (
     ExpandAction,
     BuildIndustryStep,
@@ -23,12 +26,15 @@ from anno1800.actions.expand import (
     BuildShipStep,
     BuildShipyardStep
 )
+
 from anno1800.data.industries import INDUSTRY_CATALOGUE
 from anno1800.data.ships import SHIP_CATALOGUE
 from anno1800.data.shipyards import SHIPYARD_CATALOGUE
 
 from anno1800.models.industry import OwnedIndustry
 from anno1800.models.ship import Ship, Shipyard, NavalTokenType
+from anno1800.models.population import PopulationType
+
 
 from typing import Literal
 
@@ -73,6 +79,13 @@ class ConstructionPaymentStep(BaseModel):
     industry_index: int | None = Field(default=None, ge=0)
     partner_index: int | None = Field(default=None, ge=0)
 
+
+class FulfillPopulationCardRequest(BaseModel):
+    card_id: str = Field(min_length=1)
+    payments: list[ConstructionPaymentStep] = Field(
+        default_factory=list,
+        max_length=30,
+    )
 
 class AdvancedBuildRequest(BaseModel):
     industry_id: str = Field(min_length=1)
@@ -873,4 +886,204 @@ def build_naval(request: NavalBuildRequest) -> dict:
             "message": result.message,
             "game": serialize_game(game),
         }
+
+@app.post("/api/actions/fulfill-population-card")
+def fulfill_population_card(
+    request: FulfillPopulationCardRequest,
+) -> dict:
+    with _game_lock:
+        game = get_demo_game()
+        player = game.current_player
+
+        if game.state.game_over:
+            raise HTTPException(
+                status_code=409,
+                detail="Game is already finished",
+            )
+
+        if game.turn_state.main_action_used:
+            raise HTTPException(
+                status_code=409,
+                detail="Main action already used",
+            )
+
+        card = next(
+            (
+                item
+                for item in player.hand
+                if item.id == request.card_id
+            ),
+            None,
+        )
+
+        if card is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Card is not in the player's hand",
+            )
+
+        expected = Counter({
+            good: amount
+            for good, amount in card.requirements.items()
+            if amount > 0
+        })
+
+        provided = Counter(
+            payment.good for payment in request.payments
+        )
+
+        if expected != provided:
+            raise HTTPException(
+                status_code=400,
+                detail="Payment goods do not match card requirements",
+            )
+
+        used_industries = set()
+
+        for payment in request.payments:
+            if payment.source == "produce":
+                index = payment.industry_index
+
+                industries = player.get_all_industries()
+
+                if index is None or index >= len(industries):
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Invalid production industry",
+                    )
+
+                if index in used_industries:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Industry selected more than once",
+                    )
+
+                owned = industries[index]
+
+                if owned.industry.good != payment.good:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Industry produces the wrong good",
+                    )
+
+                used_industries.add(index)
+
+            elif payment.source == "trade":
+                index = payment.partner_index
+
+                if (
+                    index is None
+                    or index >= len(game.state.players)
+                    or index == game.state.current_player_index
+                ):
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Invalid trading partner",
+                    )
+
+                partner = game.state.players[index]
+
+                if not any(
+                    owned.industry.good == payment.good
+                    for owned in partner.get_all_industries()
+                ):
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Partner cannot supply this good",
+                    )
+
+            else:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid payment source",
+                )
+
+        # ENGINE INTEGRATION POINT
+        #
+        # Translate each validated payment into the existing
+        # card-specific production/trade step objects.
+        #
+        # Then call the existing FulfillPopulationCardAction.
+        #
+        # Example structure only:
+        #
+        # steps = [...]
+        # result = game.perform_action(
+        #     FulfillPopulationCardAction(
+        #         card=card,
+        #         steps=steps,
+        #     )
+        # )
+        #
+        # Match the actual action constructor in your source.
+        # Do not use ExpandAction here.
+
+        
+        # Convert API payments into card-specific engine steps.
+        steps = []
+
+        owned_industries = player.get_all_industries()
+
+        for payment in request.payments:
+            if payment.source == "produce":
+                industry = owned_industries[
+                    payment.industry_index
+                ]
+
+                # FulfillPopulationCardAction currently
+                # accepts industries on the player's island.
+                if not any(
+                    owned is industry
+                    for owned in player.island.industries
+                ):
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Industry is not on the player's island",
+                    )
+
+                steps.append(
+                    ProduceForCardStep(
+                        industry=industry
+                    )
+                )
+
+            elif payment.source == "trade":
+                partner = game.state.players[
+                    payment.partner_index
+                ]
+
+                steps.append(
+                    TradeForCardStep(
+                        request=TradeRequest(
+                            partner=partner,
+                            good=payment.good,
+                        )
+                    )
+                )
+
+        action = FulfillPopulationCardAction(
+            card=card,
+            steps=steps,
+        )
+
+        try:
+            result = game.perform_action(action)
+
+        except (InvalidActionError, ValueError) as exc:
+            raise HTTPException(
+                status_code=400,
+                detail=str(exc),
+            ) from exc
+
+        except RuntimeError as exc:
+            raise HTTPException(
+                status_code=409,
+                detail=str(exc),
+            ) from exc
+
+        return {
+            "message": result.message,
+            "game": serialize_game(game),
+        }
+
 

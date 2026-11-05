@@ -868,3 +868,156 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+
+
+/* STEP 71 — INTERACTIVE POPULATION CARDS */
+
+.population-hand-count {
+  font: 700 12px Arial, sans-serif;
+  color: #d9bd88;
+}
+
+.game-population-card {
+  position: relative;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+
+.game-population-card:hover {
+  transform: translateY(-8px);
+}
+
+.game-population-card--selected {
+  transform: translateY(-12px);
+  border-color: #ffe29e;
+  box-shadow:
+    0 0 0 3px rgba(249, 214, 146, 0.3),
+    0 12px 25px rgba(0, 0, 0, 0.4);
+}
+
+.game-population-card--selected:hover {
+  transform: translateY(-12px);
+}
+
+.population-inspector {
+  margin-top: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid rgba(219, 184, 119, 0.4);
+  border-radius: 9px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(89, 74, 51, 0.35),
+      rgba(19, 41, 43, 0.9)
+    );
+}
+
+.population-inspector-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.population-inspector-heading h3 {
+  color: #efddb9;
+  font-size: 24px;
+  font-weight: 500;
+  margin: 8px 0;
+}
+
+.population-inspector-heading small {
+  color: #b9af99;
+  font-size: 11px;
+}
+
+.population-inspector-vp {
+  color: #e7c286;
+  font-size: 24px;
+  white-space: nowrap;
+}
+
+.population-requirements,
+.population-payment {
+  padding: 14px;
+  border: 1px solid rgba(214, 186, 131, 0.22);
+  border-radius: 6px;
+  background: rgba(16, 31, 34, 0.6);
+}
+
+.population-requirements p {
+  margin: 10px 0 0;
+  color: #e5d5b4;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.population-payment {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.population-payment label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #e9d9b9;
+  font: 12px Arial, sans-serif;
+}
+
+.population-payment select {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #8d754c;
+  border-radius: 5px;
+  background: #243b3c;
+  color: #f3e5cc;
+  font: 12px Arial, sans-serif;
+}
+
+.population-payment select:focus {
+  outline: 2px solid #d8b477;
+  outline-offset: 2px;
+}
+
+.population-payment-error {
+  margin: 0;
+  color: #e5a39b;
+  font: 12px Arial, sans-serif;
+}
+
+.population-inspector-note {
+  margin: 0;
+  color: #baa98b;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@media (min-width: 1100px) {
+  .population-inspector {
+    max-width: 720px;
+  }
+}
+
+@media (max-width: 650px) {
+  .population-inspector {
+    padding: 13px;
+  }
+
+  .population-inspector-heading h3 {
+    font-size: 20px;
+  }
+
+  .population-inspector-vp {
+    font-size: 19px;
+  }
+}

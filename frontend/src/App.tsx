@@ -14,7 +14,8 @@ import {
   buildIndustry,
   removeConstruction,
   fetchNavalCatalogue,
-  buildNavalConstruction
+  buildNavalConstruction,
+  fulfillPopulationCard
 } from "./api";
 
 import type { GameActionResponse, ConstructionPayment } from "./api";
@@ -29,7 +30,8 @@ import type {
   Catalogue,
   GameSnapshot,
   IndustryCatalogueSnapshot,
-  NavalCatalogueSnapshot
+  NavalCatalogueSnapshot,
+  PopulationCard
 } from "./types";
 
 import "./styles.css";
@@ -204,10 +206,17 @@ function App() {
   }, [catalogue, activeDeck, category, search]);
   const selectedCard =
     visibleCards.find((card) => card.id === selectedCardId) ?? visibleCards[0];
-  const location = locations.find((item) => item.id === selectedLocation);
-  const handCards = catalogue.population
-    .filter(isPopulation)
-    .filter((card) => visibleHand.includes(card.id));
+  const location = locations.find((item) => item.id === selectedLocation)
+  const handCards = visibleHand
+    .map(cardId =>
+      catalogue.population.find(
+        card => card.id === cardId
+      )
+    )
+    .filter(
+      (card): card is PopulationCard =>
+        card !== undefined && isPopulation(card)
+    );
 
   function openDeck(deck: DeckName) {
     setActiveDeck(deck);
@@ -620,6 +629,45 @@ useEffect(() => {
       setActionLoading(false);
     }
   }
+  async function handleFulfillPopulationCard(
+    cardId: string,
+    payments: ConstructionPayment[]
+  ): Promise<boolean> {
+    if (
+      !game ||
+      actionLoading ||
+      game.main_action_used ||
+      game.game_over
+    ) {
+      return false;
+    }
+
+    setActionLoading(true);
+
+    try {
+      const result = await fulfillPopulationCard(
+        cardId,
+        payments
+      );
+
+      setGame(result.game);
+      setActivePlayer(result.game.current_player_index);
+      setApiError(null);
+      setNotice(result.message);
+
+      return true;
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Unable to fulfill population card"
+      );
+
+      return false;
+    } finally {
+      setActionLoading(false);
+    }
+  }
 
   return (
     <div className={`app-shell ${screen === "table" ? "table-mode" : ""}`}>
@@ -728,6 +776,7 @@ useEffect(() => {
             industryData={industryData}
             selectedLocation={selectedLocation}
             onBuildIndustry={handleBoardBuildIndustry}
+            onFulfillPopulationCard={handleFulfillPopulationCard}
             onSelectLocation={(id) => {
             setSelectedLocation(id);
 

@@ -150,3 +150,15 @@ export function buildNavalConstruction(
   });
 }
 
+export function fulfillPopulationCard(
+  cardId: string,
+  payments: ConstructionPayment[]
+): Promise<GameActionResponse> {
+  return postGameAction(
+    "/api/actions/fulfill-population-card",
+    {
+      card_id: cardId,
+      payments,
+    }
+  );
+}

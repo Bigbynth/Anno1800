@@ -1,18 +1,14 @@
 
 import { useState } from "react";
-
 import { InteractiveIslandBoard } from "./InteractiveIslandBoard";
-
+import { PopulationHand } from "./PopulationHand";
 import { VisualConstructionPanel } from "./VisualConstructionPanel";
-
 import type { ConstructionPayment } from "../api";
-
 import type {
   GameSnapshot,
   PopulationCard,
   IndustryCatalogueSnapshot,
 } from "../types";
-
 import { pretty } from "../types";
 
 type GameTableProps = {
@@ -33,7 +29,12 @@ type GameTableProps = {
   industryId: string,
   spaceId: string,
   payments: ConstructionPayment[]
-) => Promise<void>;
+  ) => Promise<void>;
+
+  onFulfillPopulationCard: (
+    cardId: string,
+    payments: ConstructionPayment[]
+  ) => Promise<boolean>;
 };
 
 export function GameTable({
@@ -45,6 +46,7 @@ export function GameTable({
   actionLoading,
   notice,
   selectedLocation,
+  onFulfillPopulationCard,
   onSelectLocation,
   onBuildIndustry,
   onFestival,
@@ -290,58 +292,13 @@ export function GameTable({
         </aside>
       </div>
 
-      <section className="game-hand">
-        <div className="game-section-heading">
-          <div>
-            <span className="game-overline">
-              YOUR COLLECTION
-            </span>
-            <h2>Population Cards</h2>
-          </div>
-          <button
-            className="game-secondary-button"
-            onClick={onOpenCards}
-          >
-            View Cards
-          </button>
-        </div>
-
-        <div className="game-card-row">
-          {handCards.map((card, index) => (
-            <button
-              key={`${card.id}-${index}`}
-              className={`game-population-card ${card.category}`}
-              onClick={onOpenCards}
-            >
-              <span className="game-population-tier">
-                {pretty(card.category)}
-              </span>
-
-              <span className="game-population-symbol">
-                ♜
-              </span>
-
-              <span className="game-population-requirements">
-                {Object.entries(card.requirements)
-                  .map(([good, count]) =>
-                    `${count}× ${pretty(good)}`
-                  )
-                  .join(" · ")}
-              </span>
-
-              <strong className="game-population-vp">
-                {card.victory_points} VP
-              </strong>
-            </button>
-          ))}
-
-          {handCards.length === 0 && (
-            <p className="game-empty">
-              Your hand is empty.
-            </p>
-          )}
-        </div>
-      </section>
+      <PopulationHand
+        key={`${game?.current_player_index ?? "demo"}:${game?.round ?? 0}`}
+        game={game}
+        cards={handCards}
+        actionLoading={actionLoading}
+        onFulfill={onFulfillPopulationCard}
+      />
 
       <div className="game-status" role="status">
         <span>✦</span> {notice}
