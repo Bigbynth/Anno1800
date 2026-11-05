@@ -15,6 +15,7 @@ import type { ConstructionPayment } from "../api";
 import type { IndustryCatalogueSnapshot } from "../types";
 
 import { PopulationHand } from "./PopulationHand";
+import { PopulationCardDesk } from "./PopulationCardDesk";
 
 import type { ComponentProps } from "react";
 import type { GameSnapshot } from "../types";
@@ -198,8 +199,10 @@ export function ImmersiveGameTable({
       setHarborOpen(true);
       return;
     }
-
     if (id === "cards") {
+      closeConstructionMode();
+      closeProductionMode();
+      setHarborOpen(false);
       setHandOpen(true);
       return;
     }
@@ -880,11 +883,10 @@ async function confirmConstruction() {
 
           <span>{handOpen ? "▼" : "▲"}</span>
         </button>
-
         {handOpen && (
           <div className="immersive-hand-content">
-            <PopulationHand
-              key={`${game.current_player_index}:${game.round}`}
+            <PopulationCardDesk
+              key={game.current_player_index}
               game={game}
               cards={handCards}
               actionLoading={actionLoading}
