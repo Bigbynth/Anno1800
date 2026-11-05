@@ -44,7 +44,17 @@ export interface GamePlayerSnapshot {
   hand: string[];
   population: Record<string, number>;
   industries: IndustrySnapshot[];
+  new_world_islands: NewWorldIslandSnapshot[];
 }
+
+
+/** An island discovered by the current or another player. */
+export interface NewWorldIslandSnapshot {
+  id: string;
+  name: string;
+  resources: string[];
+}
+
 
 
 export interface GameSnapshot {

@@ -212,6 +212,17 @@ def serialize_game(game: Game) -> dict:
                 "gold": player.gold,
                 "victory_points": player.total_victory_points(),
                 "hand": [card.id for card in player.hand],
+                "new_world_islands": [
+                    {
+                        "id": island.id,
+                        "name": island.name,
+                        "resources": [
+                            good.value
+                            for good in island.resources
+                        ],
+                    }
+                    for island in player.new_world_islands
+                ],
                 "population": {
                     tier.value: player.population.total(tier)
                     for tier in PopulationType

@@ -1671,3 +1671,286 @@
     transition: none;
   }
 }
+
+/* STEP 89 — NEW WORLD ATLAS */
+
+.new-world-atlas-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 20, 29, .82);
+  backdrop-filter: blur(4px);
+}
+
+.new-world-atlas {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(880px, 100%);
+  max-height: 92dvh;
+  overflow: hidden;
+  padding: 22px;
+  border: 2px solid #c59b56;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #294855, #172d3b);
+  color: #e8dcc1;
+  box-shadow: 0 24px 65px rgba(0, 0, 0, .55);
+}
+
+.new-world-atlas-header,
+.new-world-atlas-footer,
+.new-world-atlas-island-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.new-world-atlas-header h2 {
+  margin: 6px 0;
+  font: 30px Georgia, serif;
+  color: #f0dfbd;
+}
+
+.new-world-atlas-header p,
+.new-world-atlas-footer p,
+.new-world-atlas-note {
+  margin: 0;
+  color: #cbd2c9;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.new-world-atlas-close {
+  border: 0;
+  background: transparent;
+  color: #e8dcc1;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.new-world-atlas-overview {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.new-world-atlas-overview > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid #6a807f;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.new-world-atlas-overview small {
+  color: #c9d2cc;
+  font-size: 11px;
+}
+
+.new-world-atlas-overview strong {
+  color: #e5c282;
+  font-size: 23px;
+}
+
+.new-world-atlas-content {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) minmax(0, 1.8fr);
+  gap: 13px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.new-world-atlas-island-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.new-world-atlas-island {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px;
+  border: 1px solid #607b7e;
+  border-radius: 8px;
+  background: #294650;
+  color: #e8dcc1;
+  text-align: left;
+  cursor: pointer;
+}
+
+.new-world-atlas-island:hover,
+.new-world-atlas-island.is-selected {
+  border-color: #e5c282;
+  background: #493d2d;
+}
+
+.new-world-atlas-number {
+  color: #e5c282;
+  font: 23px Georgia, serif;
+}
+
+.new-world-atlas-island-name {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.new-world-atlas-island-name small {
+  color: #c5cfc9;
+  font-size: 11px;
+}
+
+.new-world-atlas-details {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 14px;
+  overflow-y: auto;
+  border: 1px solid #607b7e;
+  border-radius: 9px;
+  background: #25414d;
+}
+
+.new-world-atlas-landscape {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 165px;
+  overflow: hidden;
+  border-radius: 8px;
+  background:
+    radial-gradient(ellipse at center, #527563 0 25%, transparent 26%),
+    radial-gradient(ellipse at center, #ceb78b 0 32%, transparent 33%),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 24px,
+      rgba(170, 213, 211, .1) 25px
+    ),
+    linear-gradient(#417b87, #1e4a5d);
+}
+
+.new-world-atlas-landmass {
+  font-size: 66px;
+  color: #719572;
+  text-shadow: 0 3px 0 #d1bc8e;
+}
+
+.new-world-atlas-landscape-label {
+  position: absolute;
+  bottom: 8px;
+  color: #f3e6cb;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.new-world-atlas-island-heading {
+  flex-direction: column;
+  gap: 5px;
+}
+
+.new-world-atlas-island-heading h3 {
+  margin: 3px 0;
+  color: #f0dfbd;
+  font: 23px Georgia, serif;
+}
+
+.new-world-atlas-island-heading small {
+  color: #bbc8c1;
+}
+
+.new-world-atlas-resources {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.new-world-atlas-resources > strong {
+  color: #e6c994;
+  font-size: 13px;
+}
+
+.new-world-atlas-resource-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.new-world-atlas-empty {
+  padding: 25px 15px;
+  border: 1px dashed #79928b;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.new-world-atlas-empty p {
+  color: #cbd6d1;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.new-world-atlas-footer {
+  align-items: center;
+  padding-top: 13px;
+  border-top: 1px solid #6b7c7a;
+}
+
+.new-world-atlas-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.new-world-atlas-actions button {
+  padding: 10px 14px;
+  border-radius: 7px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.new-world-atlas-secondary {
+  border: 1px solid #86958b;
+  background: transparent;
+  color: #e8dcc1;
+}
+
+.new-world-atlas-primary {
+  border: 1px solid #e1bf82;
+  background: #81623b;
+  color: #fff0cf;
+}
+
+.new-world-atlas-primary:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+  .new-world-atlas {
+    padding: 14px;
+  }
+
+  .new-world-atlas-content {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+
+  .new-world-atlas-island-list {
+    max-height: 180px;
+  }
+
+  .new-world-atlas-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

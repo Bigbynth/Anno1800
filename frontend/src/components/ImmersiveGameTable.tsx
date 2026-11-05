@@ -22,6 +22,7 @@ import { PopulationHand } from "./PopulationHand";
 import { PopulationCardDesk } from "./PopulationCardDesk";
 import { FestivalDialog } from "./FestivalDialog";
 import { ExplorationDialog } from "./ExplorationDialog";
+import { NewWorldAtlas } from "./NewWorldAtlas";
 
 import type { ComponentProps } from "react";
 import type { GameSnapshot } from "../types";
@@ -113,6 +114,12 @@ const dockActions: DockAction[] = [
     description: "Explore the New World",
   },
   {
+    id: "world",
+    label: "World",
+    symbol: "◈",
+    description: "View discovered New World islands",
+  },
+  {
     id: "cards",
     label: "Cards",
     symbol: "▤",
@@ -155,6 +162,9 @@ export function ImmersiveGameTable({
   const [festivalOpen, setFestivalOpen] = useState(false);
   
   const [explorationOpen, setExplorationOpen] =
+    useState(false);
+
+  const [newWorldAtlasOpen, setNewWorldAtlasOpen] =
     useState(false);
 
   const [activeAction, setActiveAction] =
@@ -224,6 +234,7 @@ export function ImmersiveGameTable({
     setNavalTargetId(null);
     setNavalType("shipyard");
     setExplorationOpen(false);
+    setNewWorldAtlasOpen(false);
   }, [game?.current_player_index]);
 
   function selectDockAction(id: string) {
@@ -276,6 +287,15 @@ export function ImmersiveGameTable({
       return;
     }
     
+    if (id === "world") {
+      setHarborOpen(false);
+      setFestivalOpen(false);
+      setExplorationOpen(false);
+      setNewWorldAtlasOpen(true);
+      setActiveAction("world");
+      return;
+    }
+
     if (id === "explore") {
       if (
         !game ||
@@ -285,7 +305,7 @@ export function ImmersiveGameTable({
       ) {
         return;
       }
-
+      setNewWorldAtlasOpen(false);
       closeConstructionMode();
       closeProductionMode();
       closeNavalMode();
@@ -1158,6 +1178,30 @@ async function confirmConstruction() {
         />
       )}
       
+      {/* STEP 89 — DISCOVERED NEW WORLD ISLANDS */}
+      {newWorldAtlasOpen && (
+        <NewWorldAtlas
+          islands={activePlayer?.new_world_islands ?? []}
+          playerName={activePlayer?.name ?? "Current Player"}
+          canExplore={
+            !actionLoading &&
+            !game.main_action_used &&
+            !game.game_over &&
+            (activePlayer?.new_world_islands.length ?? 0) < 4 &&
+            (navalData?.naval_capacity.exploration ?? 0) > 0
+          }
+          onClose={() => {
+            setNewWorldAtlasOpen(false);
+            setActiveAction(null);
+          }}
+          onExplore={() => {
+            setNewWorldAtlasOpen(false);
+            setActiveAction("explore");
+            setExplorationOpen(true);
+          }}
+        />
+      )}
+
       {/* STEP 84 — MARITIME TRADING DIRECTORY */}
       {harborOpen && (
         <TradeDirectory
