@@ -211,14 +211,17 @@ export function GameTable({
                   }
                 >
                   <span className="game-industry-symbol">
-                    ⚙
+                    {industry.can_produce ? "⚙" : "🔒"}
                   </span>
-                  <span>
-                    <strong>{industry.name}</strong>
-                    <small>
-                      Produces {pretty(industry.good)}
-                    </small>
-                  </span>
+                  
+                    <span>
+                      <strong>{industry.name}</strong>
+
+                      <small className="game-industry-output">
+                        <span>→</span> {pretty(industry.good)}
+                      </small>
+                    </span>
+
                   <span
                     className={
                       industry.can_produce
@@ -253,7 +256,7 @@ export function GameTable({
               }}
             >
               {selectedIndustry
-                ? `Produce ${pretty(selectedIndustry.good)}`
+                ? `⚙ Produce ${pretty(selectedIndustry.good)}`
                 : "Select an Industry"}
             </button>
           </div>

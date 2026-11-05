@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+
 import { pretty } from "../types";
 
 import type {
@@ -8,6 +8,12 @@ import type {
 } from "../types";
 
 import type { ConstructionPayment } from "../api";
+
+import {
+  ResourcePaymentPicker,
+  hasDuplicateProductionSources,
+  toConstructionPayments,
+} from "./ResourcePaymentPicker";
 
 type Props = {
   game: GameSnapshot | null;
@@ -27,7 +33,6 @@ export function PopulationHand({
 }: Props) {
   const [selectedIndex, setSelectedIndex] =
     useState<number | null>(null);
-
   const [paymentSources, setPaymentSources] =
     useState<Record<string, string>>({});
 
@@ -35,8 +40,6 @@ export function PopulationHand({
     selectedIndex === null
       ? null
       : cards[selectedIndex] ?? null;
-
-  const player = game?.players[game.current_player_index];
 
   const requirements = Object.entries(
     selectedCard?.requirements ?? {}
@@ -53,18 +56,14 @@ export function PopulationHand({
   const paymentsComplete = requirements.every(
     item => Boolean(paymentSources[item.key])
   );
-
-  const selectedProduction = requirements
-    .map(item => paymentSources[item.key])
-    .filter(value => value?.startsWith("produce:"));
-
-  const duplicateProduction =
-    new Set(selectedProduction).size !==
-    selectedProduction.length;
+  const duplicateProduction = hasDuplicateProductionSources(
+    paymentSources,
+    requirements
+  );
 
   const canFulfill =
     Boolean(game) &&
-    Boolean(player) &&
+    Boolean(game?.players[game.current_player_index]) &&
     Boolean(selectedCard) &&
     !game?.main_action_used &&
     !game?.game_over &&
@@ -83,33 +82,10 @@ export function PopulationHand({
   }
 
   function buildPayments(): ConstructionPayment[] {
-    return requirements.map(({ key, good }) => {
-      const value = paymentSources[key];
-      const [source, rawIndex] = value.split(":");
-      const index = Number(rawIndex);
-
-      if (!Number.isInteger(index) || index < 0) {
-        throw new Error("Invalid payment selection");
-      }
-
-      if (source === "produce") {
-        return {
-          source: "produce",
-          good,
-          industry_index: index,
-        };
-      }
-
-      if (source === "trade") {
-        return {
-          source: "trade",
-          good,
-          partner_index: index,
-        };
-      }
-
-      throw new Error("Unknown payment source");
-    });
+    return toConstructionPayments(
+      requirements,
+      paymentSources
+    );
   }
 
   async function handleFulfill() {
@@ -130,9 +106,7 @@ export function PopulationHand({
     <section className="game-hand">
       <div className="game-section-heading">
         <div>
-          <span className="game-overline">
-            POPULATION
-          </span>
+          <span className="game-overline">POPULATION</span>
           <h2>Your Hand</h2>
         </div>
 
@@ -166,8 +140,9 @@ export function PopulationHand({
 
             <span className="game-population-requirements">
               {Object.entries(card.requirements)
-                .map(([good, count]) =>
-                  `${count}× ${pretty(good)}`
+                .map(
+                  ([good, count]) =>
+                    `${count}× ${pretty(good)}`
                 )
                 .join(" · ")}
             </span>
@@ -212,113 +187,28 @@ export function PopulationHand({
             ) : (
               <p>
                 {Object.entries(selectedCard.requirements)
-                  .map(([good, amount]) =>
-                    `${amount}× ${pretty(good)}`
+                  .map(
+                    ([good, amount]) =>
+                      `${amount}× ${pretty(good)}`
                   )
                   .join(" · ")}
               </p>
             )}
           </div>
 
-          <div className="population-payment">
-            <span className="game-overline">
-              ASSIGN RESOURCES
-            </span>
-
-            {requirements.map(({ key, good }) => {
-              const selectedValue =
-                paymentSources[key] ?? "";
-
-              return (
-                <label key={key}>
-                  <span>{pretty(good)}</span>
-
-                  <select
-                    value={selectedValue}
-                    onChange={event =>
-                      setPaymentSources(previous => ({
-                        ...previous,
-                        [key]: event.target.value,
-                      }))
-                    }
-                    disabled={
-                      actionLoading ||
-                      Boolean(game?.main_action_used) ||
-                      Boolean(game?.game_over)
-                    }
-                  >
-                    <option value="">
-                      Select source
-                    </option>
-
-                    {player?.industries
-                      .filter(industry =>
-                        industry.good === good &&
-                        industry.can_produce
-                      )
-                      .map(industry => (
-                        <option
-                          key={`produce:${industry.index}`}
-                          value={`produce:${industry.index}`}
-                        >
-                          Produce — {industry.name}
-                        </option>
-                      ))}
-
-                    {game?.players.map((partner, index) => {
-                      if (
-                        index === game.current_player_index
-                      ) {
-                        return null;
-                      }
-
-                      if (
-                        !partner.industries.some(
-                          industry =>
-                            industry.good === good
-                        )
-                      ) {
-                        return null;
-                      }
-
-                      return (
-                        <option
-                          key={`trade:${index}`}
-                          value={`trade:${index}`}
-                        >
-                          Trade — {partner.name}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </label>
-              );
-            })}
-
-            {duplicateProduction && (
-              <p className="population-payment-error">
-                You cannot use the same industry
-                twice in one action.
-              </p>
-            )}
-          </div>
-
-          <button
-            type="button"
-            className="game-primary-button"
-            disabled={!canFulfill}
-            onClick={() => void handleFulfill()}
-          >
-            {actionLoading
-              ? "Fulfilling..."
-              : `Fulfill Card · ${selectedCard.victory_points} VP`}
-          </button>
-
-          <p className="population-inspector-note">
-            Fulfillment consumes your main action.
-            Resource payments and card effects are
-            validated by the Python game engine.
-          </p>
+          {game && (
+            <ResourcePaymentPicker
+              game={game}
+              requirements={requirements}
+              paymentSources={paymentSources}
+              onChange={setPaymentSources}
+              disabled={
+                actionLoading ||
+                game.main_action_used ||
+                game.game_over
+              }
+            />
+          )}
         </div>
       )}
     </section>

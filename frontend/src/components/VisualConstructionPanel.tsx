@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 
 import { pretty } from "../types";
@@ -7,6 +6,12 @@ import type {
   GameSnapshot,
   IndustryCatalogueSnapshot,
 } from "../types";
+
+import {
+  ResourcePaymentPicker,
+  hasDuplicateProductionSources,
+  toConstructionPayments,
+} from "./ResourcePaymentPicker";
 
 import type { ConstructionPayment } from "../api";
 
@@ -29,26 +34,19 @@ export function VisualConstructionPanel({
   actionLoading,
   onBuild,
 }: Props) {
-  const [selectedIndustryId, setSelectedIndustryId] =
-    useState("");
-
+  const [selectedIndustryId, setSelectedIndustryId] = useState("");
   const [paymentSources, setPaymentSources] =
     useState<Record<string, string>>({});
-
-  const player = game.players[game.current_player_index];
 
   const selectedIndustry = industryData.industries.find(
     industry => industry.id === selectedIndustryId
   );
-
   const selectedSpace = industryData.spaces.find(
     space => space.id === selectedSpaceId
   );
-
   const availableIndustries = industryData.industries.filter(
     industry =>
-      industry.remaining > 0 &&
-      !industry.already_owned
+      industry.remaining > 0 && !industry.already_owned
   );
 
   const requiredPayments = Object.entries(
@@ -63,14 +61,10 @@ export function VisualConstructionPanel({
   const paymentsComplete = requiredPayments.every(
     item => Boolean(paymentSources[item.key])
   );
-
-  const selectedProductionSources = requiredPayments
-    .map(item => paymentSources[item.key])
-    .filter(source => source?.startsWith("produce:"));
-
-  const duplicateProduction =
-    new Set(selectedProductionSources).size !==
-    selectedProductionSources.length;
+  const duplicateProduction = hasDuplicateProductionSources(
+    paymentSources,
+    requiredPayments
+  );
 
   const canBuild =
     Boolean(selectedIndustry) &&
@@ -91,52 +85,27 @@ export function VisualConstructionPanel({
   }
 
   function buildPayments(): ConstructionPayment[] {
-    return requiredPayments.map(({ key, good }) => {
-      const value = paymentSources[key];
-      const [source, indexText] = value.split(":");
-      const index = Number(indexText);
-
-      if (!Number.isInteger(index) || index < 0) {
-        throw new Error("Invalid resource source");
-      }
-
-      if (source === "produce") {
-        return {
-          source: "produce",
-          good,
-          industry_index: index,
-        };
-      }
-
-      if (source === "trade") {
-        return {
-          source: "trade",
-          good,
-          partner_index: index,
-        };
-      }
-
-      throw new Error("Invalid payment source");
-    });
+    return toConstructionPayments(
+      requiredPayments,
+      paymentSources
+    );
   }
 
-  
-    async function handleConstruct() {
+  async function handleConstruct() {
     if (!canBuild || !selectedSpaceId || !selectedIndustryId) {
-        return;
+      return;
     }
 
     try {
-        await onBuild(
+      await onBuild(
         selectedIndustryId,
         selectedSpaceId,
         buildPayments()
-        );
+      );
     } catch {
-        // App.tsx already displays the error via setNotice().
+      // App.tsx already displays the error via setNotice().
     }
-    }
-
+  }
 
   return (
     <div className="visual-construction">
@@ -174,9 +143,7 @@ export function VisualConstructionPanel({
 
             <strong>{industry.name}</strong>
 
-            <small>
-              {pretty(industry.good)}
-            </small>
+            <small>{pretty(industry.good)}</small>
 
             <span className="construction-card-stock">
               {industry.remaining} available
@@ -243,78 +210,18 @@ export function VisualConstructionPanel({
         )}
       </div>
 
-      {selectedIndustry && requiredPayments.length > 0 && (
-        <div className="construction-resource-payment">
-          <span className="game-overline">
-            RESOURCE PAYMENT
-          </span>
-
-          {requiredPayments.map(({ key, good }) => (
-            <label key={key}>
-              <span>{pretty(good)}</span>
-
-              <select
-                value={paymentSources[key] ?? ""}
-                onChange={event =>
-                  setPaymentSources(previous => ({
-                    ...previous,
-                    [key]: event.target.value,
-                  }))
-                }
-                disabled={
-                  actionLoading ||
-                  game.main_action_used ||
-                  game.game_over
-                }
-              >
-                <option value="">Select source</option>
-
-                {player?.industries
-                  .filter(industry =>
-                    industry.good === good &&
-                    industry.can_produce
-                  )
-                  .map(industry => (
-                    <option
-                      key={`produce:${industry.index}`}
-                      value={`produce:${industry.index}`}
-                    >
-                      Produce — {industry.name}
-                    </option>
-                  ))}
-
-                {game.players.map((partner, index) => {
-                  if (index === game.current_player_index) {
-                    return null;
-                  }
-
-                  if (
-                    !partner.industries.some(
-                      industry => industry.good === good
-                    )
-                  ) {
-                    return null;
-                  }
-
-                  return (
-                    <option
-                      key={`trade:${index}`}
-                      value={`trade:${index}`}
-                    >
-                      Trade — {partner.name}
-                    </option>
-                  );
-                })}
-              </select>
-            </label>
-          ))}
-
-          {duplicateProduction && (
-            <p className="construction-error">
-              The same industry cannot produce twice.
-            </p>
-          )}
-        </div>
+      {selectedIndustry && (
+        <ResourcePaymentPicker
+          game={game}
+          requirements={requiredPayments}
+          paymentSources={paymentSources}
+          onChange={setPaymentSources}
+          disabled={
+            actionLoading ||
+            game.main_action_used ||
+            game.game_over
+          }
+        />
       )}
 
       <button
