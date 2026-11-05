@@ -3,6 +3,12 @@ import { useEffect, useState } from "react";
 import { IslandCanvas } from "./IslandCanvas";
 
 import { ConstructionPalette } from "./ConstructionPalette";
+import {
+  ResourcePaymentPicker,
+  hasDuplicateProductionSources,
+  toConstructionPayments,
+} from "./ResourcePaymentPicker";
+import type { ConstructionPayment } from "../api";
 import type { IndustryCatalogueSnapshot } from "../types";
 
 import { PopulationHand } from "./PopulationHand";
@@ -33,6 +39,11 @@ type Props = {
   onEndTurn: () => void;
   onOpenWorkshop: () => void;
   onFulfillPopulationCard: FulfillHandler;
+  onBuildIndustry: (
+    industryId: string,
+    spaceId: string,
+    payments: ConstructionPayment[]
+  ) => Promise<void>;
 };
 
 type DockAction = {
@@ -87,6 +98,7 @@ export function ImmersiveGameTable({
   onEndTurn,
   onOpenWorkshop,
   onFulfillPopulationCard,
+  onBuildIndustry,
 }: Props) {
   const [objectivesOpen, setObjectivesOpen] =
     useState(true);
@@ -109,6 +121,10 @@ export function ImmersiveGameTable({
     useState<string | null>(null);
   const [constructionTargetId, setConstructionTargetId] =
     useState<string | null>(null);
+  const [paymentSources, setPaymentSources] =
+    useState<Record<string, string>>({});
+  const [isBuilding, setIsBuilding] = useState(false);
+  const [buildError, setBuildError] = useState<string | null>(null);
 
   const selectedSpace = islandSpaces.find(
     space => space.id === selectedLocation
@@ -130,6 +146,8 @@ export function ImmersiveGameTable({
     setConstructionMode(false);
     setSelectedConstructionId(null);
     setConstructionTargetId(null);
+    setPaymentSources({});
+    setBuildError(null);
   }, [game?.current_player_index]);
 
   function selectDockAction(id: string) {
@@ -185,10 +203,63 @@ const constructionTarget =
   islandSpaces.find(space => space.id === constructionTargetId)
   ?? null;
 
+const requirements = Object.entries(
+  selectedConstruction?.build_cost ?? {}
+).flatMap(([good, amount]) =>
+  Array.from({ length: amount }, (_, index) => ({
+    key: `${good}:${index}`,
+    good,
+  }))
+);
+
+const paymentComplete = requirements.every(
+  requirement => Boolean(paymentSources[requirement.key])
+);
+
+const duplicateProduction = hasDuplicateProductionSources(
+  paymentSources,
+  requirements
+);
+
+const canConfirmBuild =
+  canEnterConstruction &&
+  !isBuilding &&
+  Boolean(selectedConstruction) &&
+  Boolean(constructionTarget) &&
+  Boolean(constructionTarget && constructionCandidates.includes(constructionTarget.id)) &&
+  paymentComplete &&
+  !duplicateProduction;
+
+async function confirmConstruction() {
+  if (!canConfirmBuild || !selectedConstruction || !constructionTarget) return;
+
+  setIsBuilding(true);
+  setBuildError(null);
+
+  try {
+    const payments = toConstructionPayments(requirements, paymentSources);
+    await onBuildIndustry(
+      selectedConstruction.id,
+      constructionTarget.id,
+      payments
+    );
+    // App owns the authoritative backend snapshot; only clear the UI on success.
+    closeConstructionMode();
+  } catch (error) {
+    setBuildError(
+      error instanceof Error ? error.message : "Construction failed"
+    );
+  } finally {
+    setIsBuilding(false);
+  }
+}
+
   function openConstructionMode() {
     if (!canEnterConstruction) return;
     setSelectedConstructionId(null);
     setConstructionTargetId(null);
+    setPaymentSources({});
+    setBuildError(null);
     setConstructionMode(true);
     setActiveAction("build");
   }
@@ -197,6 +268,8 @@ const constructionTarget =
     setConstructionMode(false);
     setSelectedConstructionId(null);
     setConstructionTargetId(null);
+    setPaymentSources({});
+    setBuildError(null);
     setActiveAction(null);
   }
 
@@ -206,6 +279,8 @@ const constructionTarget =
     if (!industry || industry.remaining <= 0 || industry.already_owned) return;
     setSelectedConstructionId(industryId);
     setConstructionTargetId(null);
+    setPaymentSources({});
+    setBuildError(null);
   }
 
   function selectBoardSpace(spaceId: string) {
@@ -216,6 +291,7 @@ const constructionTarget =
     setConstructionTargetId(
       constructionCandidates.includes(spaceId) ? spaceId : null
     );
+    setBuildError(null);
   }
 
 
@@ -371,7 +447,7 @@ const constructionTarget =
             />
             </div>
 
-          {/* Step 78: construction selection overlay; no backend action yet. */}
+          {/* Step 79: board selection, payment, backend construction. */}
           {constructionMode && (
             <div className="immersive-construction-overlay">
               <ConstructionPalette
@@ -397,8 +473,32 @@ const constructionTarget =
                       <p className="construction-preview-warning">
                         Candidate only. The engine must validate placement before building.
                       </p>
-                      <button type="button" className="construction-preview-next" disabled>
-                        Continue to Payment — Step 79
+                      <div className="construction-payment-section">
+                        <ResourcePaymentPicker
+                          game={game}
+                          requirements={requirements}
+                          paymentSources={paymentSources}
+                          onChange={(next) => {
+                            setPaymentSources(next);
+                            setBuildError(null);
+                          }}
+                          disabled={actionLoading || isBuilding}
+                        />
+                      </div>
+
+                      {buildError && (
+                        <p className="construction-preview-error" role="alert">
+                          {buildError}
+                        </p>
+                      )}
+
+                      <button
+                        type="button"
+                        className="construction-preview-confirm"
+                        disabled={!canConfirmBuild}
+                        onClick={() => void confirmConstruction()}
+                      >
+                        {isBuilding ? "Constructing..." : "Confirm Construction"}
                       </button>
                     </>
                   ) : (

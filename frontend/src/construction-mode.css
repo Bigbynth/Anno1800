@@ -257,3 +257,46 @@
     animation: none;
   }
 }
+
+/* STEP 79 — PAYMENT AND FINAL CONSTRUCTION */
+
+.construction-payment-section {
+  margin-top: 12px;
+  min-height: 0;
+}
+
+.construction-placement-preview {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.construction-preview-confirm {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid #d8b473;
+  border-radius: 7px;
+  background: #80633c;
+  color: #fff4d7;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.construction-preview-confirm:hover:not(:disabled) {
+  background: #a1804b;
+}
+
+.construction-preview-confirm:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.construction-preview-error {
+  color: #ffd0c9;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.construction-payment-section .resource-payment-picker {
+  width: 100%;
+}

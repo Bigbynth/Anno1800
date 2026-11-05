@@ -688,7 +688,8 @@ useEffect(() => {
   if (screen === "table") {
     return (
       <ImmersiveGameTable
-        game={game}
+        game={game}  
+        onBuildIndustry={handleBoardBuildIndustry}
         industryData={industryData}
         islandSpaces={industryData?.spaces ?? []}
         handCards={handCards}
