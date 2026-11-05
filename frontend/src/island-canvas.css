@@ -1,0 +1,245 @@
+
+/* STEP 75 — SVG ISLAND CANVAS */
+
+.svg-island-canvas {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  color: #E8DCC1;
+  border: 2px solid #C59B56;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #172D3B;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.28),
+    inset 0 0 35px rgba(0, 0, 0, 0.2);
+}
+
+.svg-board-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 17px;
+  background: linear-gradient(90deg, #493326, #2c3436);
+  border-bottom: 1px solid #C59B56;
+  color: #E8DCC1;
+  font: 700 11px Arial, sans-serif;
+  letter-spacing: 1.1px;
+}
+
+.svg-board-heading span:first-child {
+  color: #d9af6e;
+}
+
+.svg-board {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  user-select: none;
+}
+
+/* ISLAND SHAPE */
+
+.svg-island-shoreline {
+  stroke: #e4d3a3;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.svg-island-landmass {
+  stroke: rgba(52, 81, 62, 0.7);
+  stroke-width: 2px;
+}
+
+.svg-board-contours path {
+  stroke: #405f4b;
+  stroke-width: 3px;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.svg-board-region-label {
+  fill: #f5e8c8;
+  font: 700 17px Georgia, serif;
+  letter-spacing: 1px;
+  paint-order: stroke;
+  stroke: rgba(25, 43, 46, 0.7);
+  stroke-width: 4px;
+  pointer-events: none;
+}
+
+.svg-board-region-label--sea {
+  fill: #d4e5df;
+}
+
+/* INTERACTIVE SPACES */
+
+.svg-board-space {
+  cursor: pointer;
+  outline: none;
+  transition: filter 150ms ease;
+}
+
+.svg-board-space-shadow {
+  fill: rgba(15, 25, 25, 0.32);
+  pointer-events: none;
+}
+
+.svg-board-space-base {
+  fill: #bfa77a;
+  stroke: #e4d5ac;
+  stroke-width: 3px;
+  transition:
+    fill 150ms ease,
+    stroke 150ms ease;
+}
+
+.svg-board-space-inset {
+  fill: url(#island-tile);
+  stroke: rgba(75, 58, 39, 0.35);
+  stroke-width: 1px;
+}
+
+.svg-board-space--coast .svg-board-space-base {
+  fill: #8b947d;
+  stroke: #d6d3ae;
+}
+
+.svg-board-space--sea .svg-board-space-base {
+  fill: #356b78;
+  stroke: #90c0c3;
+}
+
+.svg-board-space--sea .svg-board-space-inset {
+  fill: #447b89;
+  stroke: #aed4cf;
+}
+
+.svg-board-space.is-occupied .svg-board-space-base {
+  fill: #8a6547;
+  stroke: #e3c384;
+}
+
+.svg-board-space.is-hovered .svg-board-space-base,
+.svg-board-space:hover .svg-board-space-base {
+  stroke: #fff1c8;
+  stroke-width: 5px;
+}
+
+.svg-board-space.is-selected .svg-board-space-base {
+  stroke: #ffd987;
+  stroke-width: 5px;
+}
+
+.svg-board-space:focus-visible .svg-board-space-base {
+  stroke: #ffffff;
+  stroke-width: 6px;
+  stroke-dasharray: 9 4;
+}
+
+.svg-board-space-icon {
+  fill: #493326;
+  font: 700 31px Georgia, serif;
+  pointer-events: none;
+}
+
+.svg-board-space--sea .svg-board-space-icon {
+  fill: #e5eeea;
+}
+
+.svg-board-space-id {
+  fill: #493326;
+  font: 700 17px Arial, sans-serif;
+  pointer-events: none;
+}
+
+.svg-board-space--sea .svg-board-space-id {
+  fill: #f2e5c7;
+}
+
+.svg-board-selection-ring {
+  stroke: #f5db9e;
+  stroke-width: 2px;
+  stroke-dasharray: 7 5;
+  pointer-events: none;
+}
+
+.svg-board-selection-marker {
+  fill: #ffdf96;
+  stroke: #493326;
+  stroke-width: 1px;
+  pointer-events: none;
+}
+
+/* COMPASS */
+
+.svg-board-compass {
+  opacity: 0.78;
+  pointer-events: none;
+}
+
+.svg-board-compass circle {
+  fill: none;
+  stroke: #e5d7ba;
+  stroke-width: 1.5px;
+}
+
+.svg-board-compass path {
+  fill: #d3b77e;
+  stroke: #493326;
+  stroke-width: 1px;
+}
+
+.svg-board-compass text {
+  fill: #f1e7d2;
+  font: 700 15px Georgia, serif;
+}
+
+.svg-board-footer-text {
+  fill: #b9d0ca;
+  font: 11px Georgia, serif;
+  letter-spacing: 2px;
+  pointer-events: none;
+}
+
+/* BOTTOM SELECTION STRIP */
+
+.svg-board-status {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 15px;
+  border-top: 1px solid rgba(197, 155, 86, 0.55);
+  background: #243c43;
+  color: #dfd7c3;
+  font: 12px Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+.svg-board-status strong {
+  color: #e4bc7c;
+}
+
+/* RESPONSIVENESS */
+
+@media (max-width: 1024px) {
+  .svg-board-region-label {
+    font-size: 15px;
+  }
+
+  .svg-board-heading {
+    padding: 10px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .svg-board-space,
+  .svg-board-space-base {
+    transition: none;
+  }
+}

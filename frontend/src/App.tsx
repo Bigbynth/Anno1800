@@ -11,7 +11,7 @@ import { GameTable } from "./components/GameTable";
 
 import "./game-table.css";
 import "./immersive-game.css";
-
+import "./island-canvas.css";
 
 
 import {

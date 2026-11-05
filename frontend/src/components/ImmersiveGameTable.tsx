@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
+import { IslandCanvas } from "./IslandCanvas";
 
-import { InteractiveIslandBoard } from "./InteractiveIslandBoard";
 import { PopulationHand } from "./PopulationHand";
 import { TradeHarbor } from "./TradeHarbor";
 
@@ -9,7 +9,7 @@ import type { ComponentProps } from "react";
 import type { GameSnapshot } from "../types";
 
 type IslandSpaces =
-  ComponentProps<typeof InteractiveIslandBoard>["spaces"];
+  ComponentProps<typeof IslandCanvas>["spaces"];
 
 type HandCards =
   ComponentProps<typeof PopulationHand>["cards"];
@@ -276,13 +276,15 @@ export function ImmersiveGameTable({
             </span>
           </div>
 
-          <div className="immersive-island-surface">
-            <InteractiveIslandBoard
-              spaces={islandSpaces}
-              selectedSpaceId={selectedLocation}
-              onSelectSpace={onSelectLocation}
+          
+
+            <div className="immersive-island-surface">
+            <IslandCanvas
+                spaces={islandSpaces}
+                selectedSpaceId={selectedLocation}
+                onSelectSpace={onSelectLocation}
             />
-          </div>
+            </div>
 
           <div className="immersive-island-footer">
             <span>
