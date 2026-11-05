@@ -1,0 +1,521 @@
+
+/* STEP 74 — IMMERSIVE GAME SHELL */
+
+.immersive-shell {
+  --harbor-navy: #172D3B;
+  --antique-brass: #C59B56;
+  --parchment: #E8DCC1;
+  --walnut: #493326;
+  --industrial-teal: #3D7977;
+  --oxide-red: #A34F42;
+
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  min-height: 650px;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse at 45% 35%,
+      #315762 0%,
+      #172D3B 70%
+    );
+  color: var(--parchment);
+  font-family: Arial, sans-serif;
+}
+
+/* TOP BAR */
+
+.immersive-topbar {
+  flex: 0 0 64px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 8px 22px;
+  background: linear-gradient(
+    90deg,
+    #493326,
+    #2C2B28,
+    #172D3B
+  );
+  border-bottom: 2px solid var(--antique-brass);
+  box-sizing: border-box;
+}
+
+.immersive-brand {
+  display: flex;
+  flex-direction: column;
+  min-width: 155px;
+  gap: 3px;
+}
+
+.immersive-brand strong {
+  font: 700 22px Georgia, serif;
+  letter-spacing: 1px;
+  color: var(--antique-brass);
+}
+
+.immersive-brand small,
+.immersive-top-label {
+  font: 700 10px Arial, sans-serif;
+  letter-spacing: 1.1px;
+  color: #bdad90;
+}
+
+.immersive-turn-info,
+.immersive-round {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.immersive-turn-info strong,
+.immersive-round strong {
+  font-size: 15px;
+}
+
+.immersive-top-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.immersive-action-state {
+  font-size: 11px;
+  color: #a8d9bd;
+}
+
+.immersive-action-state.is-used {
+  color: #e2b1a2;
+}
+
+.immersive-workshop-button {
+  padding: 9px 13px;
+  border: 1px solid #9e8460;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--parchment);
+  cursor: pointer;
+}
+
+/* MAIN GAME STAGE */
+
+.immersive-play-area {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.immersive-objectives,
+.immersive-inspector {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 210px;
+  width: 210px;
+  min-width: 0;
+  overflow-y: auto;
+  background: rgba(28, 40, 42, 0.96);
+  box-sizing: border-box;
+  transition:
+    flex-basis 250ms ease,
+    width 250ms ease;
+}
+
+.immersive-objectives {
+  border-right: 1px solid #796344;
+}
+
+.immersive-inspector {
+  flex-basis: 240px;
+  width: 240px;
+  border-left: 1px solid #796344;
+}
+
+.immersive-objectives.is-collapsed,
+.immersive-inspector.is-collapsed {
+  flex-basis: 32px;
+  width: 32px;
+}
+
+.immersive-rail-toggle {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 32px;
+  border: 0;
+  border-bottom: 1px solid #655339;
+  background: #493326;
+  color: #E8DCC1;
+  cursor: pointer;
+}
+
+.immersive-rail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 14px;
+}
+
+.immersive-overline {
+  color: var(--antique-brass);
+  font: 700 10px Arial, sans-serif;
+  letter-spacing: 1.3px;
+}
+
+.immersive-rail-content h3 {
+  margin: 0;
+  color: var(--parchment);
+  font: 500 19px Georgia, serif;
+}
+
+.immersive-stat {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(197, 155, 86, 0.2);
+}
+
+.immersive-stat small {
+  color: #bfb5a1;
+  font-size: 11px;
+}
+
+.immersive-stat strong {
+  color: #e7c894;
+  font-size: 13px;
+}
+
+.immersive-rail-note {
+  color: #bdb19e;
+  font: 12px/1.6 Arial, sans-serif;
+  margin: 0;
+}
+
+/* ISLAND STAGE */
+
+.immersive-stage-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 17px 20px;
+}
+
+.immersive-stage-heading h2 {
+  margin: 5px 0 0;
+  color: #E8DCC1;
+  font: 500 23px Georgia, serif;
+}
+
+.immersive-stage-hint {
+  color: #d6d9cc;
+  font-size: 11px;
+}
+
+/* STEP 74 FIX — SCROLLABLE ISLAND VIEWPORT */
+
+.immersive-island-stage {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(91, 133, 112, 0.4),
+      transparent 60%
+    ),
+    #274957;
+}
+
+.immersive-island-surface {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  display: block;
+  padding: 20px 24px 40px;
+
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.immersive-island-surface .interactive-island {
+  width: 100%;
+  max-width: 1000px;
+  height: auto;
+  margin: 0 auto;
+}
+
+
+/* Constrain the existing Step 69 board to the stage. */
+.immersive-island-surface .interactive-island {
+  width: 100%;
+  max-width: 1000px;
+}
+
+.immersive-island-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 12px 22px;
+  border-top: 1px solid rgba(209, 178, 116, 0.4);
+  background: rgba(23, 45, 59, 0.85);
+  color: #d0cab8;
+  font-size: 11px;
+}
+
+/* CONTEXT INSPECTOR */
+
+.immersive-inspector-symbol {
+  display: grid;
+  place-items: center;
+  min-height: 90px;
+  border: 1px solid #8e7856;
+  border-radius: 7px;
+  background: #354f4a;
+  font-size: 45px;
+}
+
+.immersive-inspector-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.immersive-inspector-detail small {
+  color: #b8b19f;
+  font-size: 11px;
+}
+
+.immersive-inspector-detail strong {
+  color: var(--parchment);
+  font-size: 13px;
+}
+
+.immersive-inspector-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 35px 0;
+  color: #bfb29a;
+  text-align: center;
+}
+
+.immersive-inspector-empty span {
+  font-size: 42px;
+}
+
+.immersive-inspector-empty p {
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.immersive-inspector-action {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d9b577;
+  border-radius: 5px;
+  background: #C59B56;
+  color: #172D3B;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ACTION DOCK */
+
+.immersive-action-dock {
+  flex: 0 0 80px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 8px;
+  padding: 8px 15px;
+  border-top: 2px solid #a88854;
+  background: #3e3027;
+  box-sizing: border-box;
+}
+
+.immersive-dock-button {
+  display: flex;
+  flex: 0 1 112px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--parchment);
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
+}
+
+.immersive-dock-button:hover,
+.immersive-dock-button.is-active {
+  border-color: #C59B56;
+  background: #5a4833;
+}
+
+.immersive-dock-symbol {
+  font-size: 25px;
+}
+
+.immersive-dock-button strong {
+  font-size: 12px;
+}
+
+.immersive-end-turn {
+  align-self: center;
+  margin-left: auto;
+  min-width: 110px;
+  padding: 13px 15px;
+  border: 1px solid #e2c38d;
+  border-radius: 6px;
+  background: #C59B56;
+  color: #172D3B;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.immersive-end-turn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* POPULATION HAND */
+
+.immersive-hand {
+  position: relative;
+  z-index: 3;
+  flex-shrink: 0;
+  background: #30271f;
+  border-top: 1px solid #b28e55;
+}
+
+.immersive-hand-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 39px;
+  border: 0;
+  background: #493326;
+  color: var(--parchment);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.immersive-hand-content {
+  max-height: min(42vh, 350px);
+  padding: 16px;
+  overflow-y: auto;
+  border-top: 1px solid rgba(197, 155, 86, .4);
+}
+
+/* FEEDBACK */
+
+.immersive-notice {
+  position: absolute;
+  right: 18px;
+  bottom: 140px;
+  z-index: 12;
+  max-width: min(450px, 85vw);
+  padding: 13px 18px;
+  border: 1px solid #C59B56;
+  border-radius: 6px;
+  background: #243d43;
+  color: #E8DCC1;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.immersive-loading {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  background: #172D3B;
+  color: #E8DCC1;
+  text-align: center;
+}
+
+/* RESPONSIVE DESKTOP */
+
+@media (max-width: 1100px) {
+  .immersive-objectives {
+    flex-basis: 165px;
+    width: 165px;
+  }
+
+  .immersive-inspector {
+    flex-basis: 190px;
+    width: 190px;
+  }
+
+  .immersive-topbar {
+    gap: 15px;
+    padding: 8px 12px;
+  }
+
+  .immersive-stage-hint {
+    display: none;
+  }
+
+  .immersive-island-surface {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 800px) {
+  .immersive-objectives,
+  .immersive-inspector {
+    flex-basis: 32px;
+    width: 32px;
+  }
+
+  .immersive-rail-content {
+    display: none;
+  }
+
+  .immersive-top-actions .immersive-action-state {
+    display: none;
+  }
+
+  .immersive-brand {
+    min-width: auto;
+  }
+
+  .immersive-end-turn {
+    min-width: 86px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .immersive-shell *,
+  .immersive-shell *::before,
+  .immersive-shell *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

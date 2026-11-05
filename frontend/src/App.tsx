@@ -1,8 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
-import { catalogue as fallbackCatalogue, deckLabels } from "./data/catalogue";
 
+import { useEffect, useMemo, useState } from "react";
+
+import {
+  catalogue as fallbackCatalogue,
+  deckLabels,
+} from "./data/catalogue";
+
+import { ImmersiveGameTable } from "./components/ImmersiveGameTable";
 import { GameTable } from "./components/GameTable";
+
 import "./game-table.css";
+import "./immersive-game.css";
+
 
 
 import {
@@ -36,7 +45,7 @@ import type {
 
 import "./styles.css";
 
-type Screen = "table" | "harbor" | "codex";
+type Screen = "table" | "legacy-table" | "harbor" | "codex";
 const decks: DeckName[] = [
   "population",
   "new_world",
@@ -185,7 +194,14 @@ function App() {
     ),
   }));
 
-  const visibleHand = game ? (game.players[activePlayer]?.hand ?? []) : hand;
+  
+  const visibleHand = game
+    ? (
+      game.players[game.current_player_index]?.hand
+      ?? []
+    )
+    : hand;
+
 
   const visibleCards = useMemo(() => {
     const source = catalogue[activeDeck] as AnyCard[];
@@ -229,7 +245,7 @@ function App() {
   function resetDemo() {
     if (game) {
       setActivePlayer(game.current_player_index);
-      setSelectedLocation("port");
+      setSelectedLocation(null);
       setNotice("UI view reset. Backend game state remains unchanged.");
       setScreen("harbor");
       return;
@@ -668,9 +684,27 @@ useEffect(() => {
       setActionLoading(false);
     }
   }
+  
+  if (screen === "table") {
+    return (
+      <ImmersiveGameTable
+        game={game}
+        islandSpaces={industryData?.spaces ?? []}
+        handCards={handCards}
+        selectedLocation={selectedLocation}
+        actionLoading={actionLoading}
+        notice={notice ?? ""}
+        onSelectLocation={setSelectedLocation}
+        onEndTurn={handleEndTurn}
+        onOpenWorkshop={() => setScreen("legacy-table")}
+        onFulfillPopulationCard={handleFulfillPopulationCard}
+      />
+    );
+  }
 
   return (
-    <div className={`app-shell ${screen === "table" ? "table-mode" : ""}`}>
+    <div className="app-shell">
+      
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark">
@@ -686,11 +720,19 @@ useEffect(() => {
         <div className="sidebar-section-title">YOUR TABLE</div>
         <nav className="primary-nav" aria-label="Main navigation">
         <button
-          className={screen === "table" ? "active" : ""}
-          onClick={() => setScreen("table")}
+            className=""
+            onClick={() => setScreen("table")}
+          >
+            <span className="nav-symbol">⚓</span>
+            Immersive Game
+            <span className="nav-arrow">↗</span>
+        </button>
+        <button
+          className={screen === "legacy-table" ? "active" : ""}
+          onClick={() => setScreen("legacy-table")}
         >
-          <span className="nav-symbol">⚓</span>
-          Game Table
+          <span className="nav-symbol">⚙</span>
+          Classic Game Table
           <span className="nav-arrow">↗</span>
         </button>
           <button
@@ -766,40 +808,23 @@ useEffect(() => {
             <div className="avatar">YC</div>
           </div>
         </header>
-        {screen === "table" ? (
+        {screen === "legacy-table" ? (
           <GameTable
             game={game}
             islandSpaces={industryData?.spaces ?? []}
+            industryData={industryData}
             handCards={handCards}
+            selectedLocation={selectedLocation}
             actionLoading={actionLoading}
             notice={notice}
-            industryData={industryData}
-            selectedLocation={selectedLocation}
-            onBuildIndustry={handleBoardBuildIndustry}
-            onFulfillPopulationCard={handleFulfillPopulationCard}
-            onSelectLocation={(id) => {
-            setSelectedLocation(id);
-
-            const space = industryData?.spaces.find(
-              item => item.id === id
-            );
-
-            if (!space) {
-              setNotice(`Selected space ${id}.`);
-              return;
-            }
-
-            setNotice(
-              space.occupied
-                ? `${id}: ${space.construction ?? "Occupied construction"}`
-                : `${id}: Empty ${pretty(space.type)} space.`
-            );
-          }}
+            onSelectLocation={setSelectedLocation}
             onFestival={handleFestival}
             onProduce={handleProduce}
             onEndTurn={handleEndTurn}
             onOpenWorkshop={() => setScreen("harbor")}
-            onOpenCards={() => openDeck("population")}
+            onOpenCards={() => setScreen("codex")}
+            onBuildIndustry={handleBoardBuildIndustry}
+            onFulfillPopulationCard={handleFulfillPopulationCard}
           />
         ) : screen === "harbor" ? (
           <>
@@ -927,9 +952,9 @@ useEffect(() => {
                     </span>
                   </div>
                   <div className="mini-card-stack">
-                    {handCards.map((card) => (
+                    {handCards.map((card, index) => (
                       <button
-                        key={card.id}
+                        key={`${card.id}:${index}`}
                         className="mini-card"
                         onClick={() => {
                           openDeck("population");
@@ -1768,7 +1793,7 @@ useEffect(() => {
         )}
         <footer className="app-footer">
           <span>ANNO 1800 · UNOFFICIAL FAN-MADE PROTOTYPE</span>
-          <span>STEP 64 · ADVANCED CONSTRUCTION</span>
+          <span>STEP 74 · IMMERSIVE GAME SHELL</span>
         </footer>
       </main>
       {showHelp && (
@@ -1790,17 +1815,16 @@ useEffect(() => {
             <div className="eyebrow">ABOUT THIS BUILD</div>
             <h2 id="modal-title">A beautiful beginning.</h2>
             <p>
-              This is the Step 51 interface prototype. You can explore five
-              island locations, browse all four custom card decks, filter and
-              inspect cards, and preview a hand.
+              This prototype includes an immersive game screen, a classic
+              playable game table, a legacy harbor workspace, and a card archive.
             </p>
             <p>
-              Production, trading, turn progression, multiplayer and saving are
-              not yet connected to the Python game engine. The displayed
-              companies and island are sample UI data.
+              Gameplay actions use the connected Python engine when it is
+              available. Some features and presentation elements are still
+              experimental; the legacy harbor overview includes sample visuals.
             </p>
             <button className="gold-button" onClick={() => setShowHelp(false)}>
-              Return to harbor
+              Close
             </button>
           </div>
         </div>
