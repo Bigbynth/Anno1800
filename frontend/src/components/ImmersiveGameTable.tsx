@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { IslandCanvas } from "./IslandCanvas";
 import { ResourceToken } from "./ResourceToken";
 import { ResourceDependencyPanel } from "./ResourceDependencyPanel";
+import { TradeDirectory } from "./TradeDirectory";
 
 import { ConstructionPalette } from "./ConstructionPalette";
 import {
@@ -14,7 +15,6 @@ import type { ConstructionPayment } from "../api";
 import type { IndustryCatalogueSnapshot } from "../types";
 
 import { PopulationHand } from "./PopulationHand";
-import { TradeHarbor } from "./TradeHarbor";
 
 import type { ComponentProps } from "react";
 import type { GameSnapshot } from "../types";
@@ -30,6 +30,7 @@ type FulfillHandler =
 
 type Props = {
   game: GameSnapshot | null;
+  tradeCapacity?: number | null;
   islandSpaces: IslandSpaces;
   handCards: HandCards;
   industryData: IndustryCatalogueSnapshot | null;
@@ -91,6 +92,7 @@ const dockActions: DockAction[] = [
 
 export function ImmersiveGameTable({
   game,
+  tradeCapacity,
   islandSpaces,
   handCards,
   selectedLocation,
@@ -936,13 +938,24 @@ async function confirmConstruction() {
         </div>
       )}
 
-      {/* TRADE OVERLAY */}
+      
+      {/* STEP 84 — MARITIME TRADING DIRECTORY */}
       {harborOpen && (
-        <TradeHarbor
+        <TradeDirectory
           game={game}
-          onClose={() => setHarborOpen(false)}
+          tradeCapacity={tradeCapacity}
+          onClose={() => {
+            setHarborOpen(false);
+            setActiveAction(null);
+          }}
+          onStartConstruction={() => {
+            setHarborOpen(false);
+            setActiveAction(null);
+            openConstructionMode();
+          }}
         />
       )}
+
     </main>
   );
 }

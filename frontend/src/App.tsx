@@ -721,7 +721,8 @@ useEffect(() => {
   if (screen === "table") {
     return (
       <ImmersiveGameTable
-        game={game}  
+        game={game}
+        tradeCapacity={navalData?.naval_capacity.trade ?? null}
         onBuildIndustry={handleBoardBuildIndustry}
         onProduceIndustry={handleImmersiveProduce}
         industryData={industryData}

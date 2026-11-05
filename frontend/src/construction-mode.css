@@ -709,3 +709,223 @@
   }
 }
 
+
+/* STEP 84 — MARITIME TRADING DIRECTORY */
+
+.trade-directory-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 20, 29, 0.78);
+  backdrop-filter: blur(4px);
+}
+
+.trade-directory {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(760px, 100%);
+  max-height: min(790px, 92dvh);
+  overflow: hidden;
+  padding: 22px;
+  border: 2px solid #c59b56;
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, #263f4b, #172d3b);
+  color: #e8dcc1;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.5);
+}
+
+.trade-directory-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.trade-directory-header h2 {
+  margin: 8px 0;
+  font: 30px Georgia, serif;
+  color: #f0dfbd;
+}
+
+.trade-directory-header p,
+.trade-directory-explanation,
+.trade-directory-footer p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #c7d1ca;
+}
+
+.trade-directory-close {
+  align-self: flex-start;
+  border: 0;
+  background: transparent;
+  color: #e8dcc1;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.trade-directory-summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.trade-directory-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 13px;
+  border: 1px solid #617479;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.trade-directory-summary small {
+  font-size: 11px;
+  color: #cbd0c8;
+}
+
+.trade-directory-summary strong {
+  font-size: 22px;
+  color: #e5c282;
+}
+
+.trade-directory-search {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+}
+
+.trade-directory-search input {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #77918e;
+  border-radius: 7px;
+  outline-offset: 3px;
+  background: #122e3b;
+  color: #f3e8d2;
+}
+
+.trade-directory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.trade-directory-partner {
+  padding: 15px;
+  border: 1px solid #667b7c;
+  border-radius: 8px;
+  background: #274451;
+}
+
+.trade-directory-partner-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 13px;
+}
+
+.trade-directory-partner-heading h3 {
+  margin: 6px 0 0;
+  font: 19px Georgia, serif;
+}
+
+.trade-directory-partner-count {
+  color: #dcc18d;
+  font-size: 11px;
+}
+
+.trade-directory-goods {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trade-directory-good {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  background: #1d3844;
+}
+
+.trade-directory-good > span:last-child {
+  color: #cbd6d1;
+  font-size: 11px;
+  text-align: right;
+}
+
+.trade-directory-empty {
+  color: #cbd6d1;
+  font-size: 12px;
+}
+
+.trade-directory-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding-top: 12px;
+  border-top: 1px solid #647878;
+}
+
+.trade-directory-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.trade-directory-actions button {
+  padding: 11px 15px;
+  border-radius: 7px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.trade-directory-secondary {
+  border: 1px solid #768b89;
+  background: transparent;
+  color: #e8dcc1;
+}
+
+.trade-directory-primary {
+  border: 1px solid #d9b779;
+  background: #80633c;
+  color: #fff0cf;
+}
+
+.trade-directory-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .trade-directory {
+    padding: 14px;
+  }
+
+  .trade-directory-header h2 {
+    font-size: 24px;
+  }
+
+  .trade-directory-good {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .trade-directory-good > span:last-child {
+    text-align: left;
+  }
+}
