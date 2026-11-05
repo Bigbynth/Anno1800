@@ -1,6 +1,8 @@
 
-import { useMemo, useState } from "react";
 
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import type { PointerEvent as ReactPointerEvent } from "react";
 import type { IndustryCatalogueSnapshot } from "../types";
 
 type IslandSpace =
@@ -17,6 +19,85 @@ type Position = {
   x: number;
   y: number;
 };
+
+type Camera = {
+  x: number;
+  y: number;
+  scale: number;
+};
+
+type BoardPoint = {
+  x: number;
+  y: number;
+};
+
+const BOARD_WIDTH = 1100;
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 3;
+const ZOOM_FACTOR = 1.2;
+
+const INITIAL_CAMERA: Camera = {
+  x: 0,
+  y: 0,
+  scale: 1,
+};
+
+function clamp(
+  value: number,
+  min: number,
+  max: number
+): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function clampCamera(
+  camera: Camera,
+  boardHeight: number
+): Camera {
+  const scale = clamp(
+    camera.scale,
+    MIN_ZOOM,
+    MAX_ZOOM
+  );
+
+  return {
+    scale,
+    x: clamp(
+      camera.x,
+      BOARD_WIDTH * (1 - scale),
+      0
+    ),
+    y: clamp(
+      camera.y,
+      boardHeight * (1 - scale),
+      0
+    ),
+  };
+}
+
+function zoomCamera(
+  camera: Camera,
+  nextScale: number,
+  anchor: BoardPoint,
+  boardHeight: number
+): Camera {
+  const scale = clamp(
+    nextScale,
+    MIN_ZOOM,
+    MAX_ZOOM
+  );
+
+  const ratio = scale / camera.scale;
+
+  return clampCamera(
+    {
+      scale,
+      x: anchor.x - (anchor.x - camera.x) * ratio,
+      y: anchor.y - (anchor.y - camera.y) * ratio,
+    },
+    boardHeight
+  );
+}
 
 const REGION_LABELS = {
   land: "INDUSTRIAL DISTRICT",
@@ -63,6 +144,17 @@ export function IslandCanvas({
 }: Props) {
   const [hoveredSpaceId, setHoveredSpaceId] =
     useState<string | null>(null);
+
+  const [camera, setCamera] = useState<Camera>(
+    INITIAL_CAMERA
+  );
+  const [isDragging, setIsDragging] = useState(false);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+
+  const dragRef = useRef<{
+    pointerId: number;
+    previous: BoardPoint;
+  } | null>(null);
 
   const layout = useMemo(() => {
     const land = spaces.filter(space => space.type === "land");
@@ -113,6 +205,192 @@ export function IslandCanvas({
     space => space.id === selectedSpaceId
   );
 
+  function getBoardPoint(
+    clientX: number,
+    clientY: number
+  ): BoardPoint | null {
+    const svg = svgRef.current;
+
+    if (!svg) return null;
+
+    const matrix = svg.getScreenCTM();
+
+    if (!matrix) return null;
+
+    const point = svg.createSVGPoint();
+
+    point.x = clientX;
+    point.y = clientY;
+
+    const result = point.matrixTransform(matrix.inverse());
+
+    return {
+      x: result.x,
+      y: result.y,
+    };
+  }
+
+  function changeZoom(factor: number) {
+    setCamera(current =>
+      zoomCamera(
+        current,
+        current.scale * factor,
+        {
+          x: BOARD_WIDTH / 2,
+          y: layout.height / 2,
+        },
+        layout.height
+      )
+    );
+  }
+
+  function resetCamera() {
+    setCamera(INITIAL_CAMERA);
+  }
+
+  function focusSelection() {
+    if (!selectedSpace) return;
+
+    const target = allPositions.find(
+      item => item.space.id === selectedSpace.id
+    );
+
+    if (!target) return;
+
+    setCamera(current => {
+      const scale = Math.max(current.scale, 1.8);
+
+      return clampCamera(
+        {
+          scale,
+          x: BOARD_WIDTH / 2 - target.x * scale,
+          y: layout.height / 2 - target.y * scale,
+        },
+        layout.height
+      );
+    });
+  }
+
+  function handlePointerDown(
+    event: ReactPointerEvent<SVGSVGElement>
+  ) {
+    if (event.button !== 0) return;
+
+    // Tile clicks must continue selecting spaces.
+    // Start camera dragging only on the board background.
+    if (
+      event.target instanceof Element &&
+      event.target.closest(".svg-board-space")
+    ) {
+      return;
+    }
+
+    const point = getBoardPoint(
+      event.clientX,
+      event.clientY
+    );
+
+    if (!point) return;
+
+    dragRef.current = {
+      pointerId: event.pointerId,
+      previous: point,
+    };
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsDragging(true);
+  }
+
+  function handlePointerMove(
+    event: ReactPointerEvent<SVGSVGElement>
+  ) {
+    const drag = dragRef.current;
+
+    if (!drag || drag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const nextPoint = getBoardPoint(
+      event.clientX,
+      event.clientY
+    );
+
+    if (!nextPoint) return;
+
+    const dx = nextPoint.x - drag.previous.x;
+    const dy = nextPoint.y - drag.previous.y;
+
+    drag.previous = nextPoint;
+
+    setCamera(current =>
+      clampCamera(
+        {
+          ...current,
+          x: current.x + dx,
+          y: current.y + dy,
+        },
+        layout.height
+      )
+    );
+  }
+
+  function handlePointerEnd(
+    event: ReactPointerEvent<SVGSVGElement>
+  ) {
+    if (dragRef.current?.pointerId !== event.pointerId) {
+      return;
+    }
+
+    dragRef.current = null;
+    setIsDragging(false);
+
+    if (
+      event.currentTarget.hasPointerCapture(event.pointerId)
+    ) {
+      event.currentTarget.releasePointerCapture(
+        event.pointerId
+      );
+    }
+  }
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    function handleWheel(event: WheelEvent) {
+      event.preventDefault();
+
+      const point = getBoardPoint(
+        event.clientX,
+        event.clientY
+      );
+
+      if (!point) return;
+
+      const factor =
+        event.deltaY < 0
+          ? ZOOM_FACTOR
+          : 1 / ZOOM_FACTOR;
+
+      setCamera(current =>
+        zoomCamera(
+          current,
+          current.scale * factor,
+          point,
+          layout.height
+        )
+      );
+    }
+
+    svg.addEventListener("wheel", handleWheel, {
+      passive: false,
+    });
+
+    return () => {
+      svg.removeEventListener("wheel", handleWheel);
+    };
+  }, [layout.height]);
+
   function renderSpace({ space, x, y }: Position) {
     const selected = selectedSpaceId === space.id;
     const hovered = hoveredSpaceId === space.id;
@@ -123,7 +401,9 @@ export function IslandCanvas({
       space.occupied ? "is-occupied" : "is-empty",
       selected ? "is-selected" : "",
       hovered ? "is-hovered" : "",
-    ].filter(Boolean).join(" ");
+    ]
+      .filter(Boolean)
+      .join(" ");
 
     return (
       <g
@@ -230,11 +510,19 @@ export function IslandCanvas({
       </div>
 
       <svg
-        className="svg-board"
-        viewBox={`0 0 1100 ${layout.height}`}
+        ref={svgRef}
+        className={[
+          "svg-board",
+          isDragging ? "is-dragging" : "",
+        ].join(" ")}
+        viewBox={`0 0 ${BOARD_WIDTH} ${layout.height}`}
         preserveAspectRatio="xMidYMin meet"
         role="group"
         aria-label="Old World island board"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
       >
         <defs>
           <linearGradient id="island-sea" x1="0" y1="0" x2="0" y2="1">
@@ -273,11 +561,11 @@ export function IslandCanvas({
           </pattern>
         </defs>
 
-        {/* OCEAN */}
+        {/* STATIC OCEAN BACKGROUND */}
         <rect
           x="0"
           y="0"
-          width="1100"
+          width={BOARD_WIDTH}
           height={layout.height}
           fill="url(#island-sea)"
         />
@@ -285,12 +573,21 @@ export function IslandCanvas({
         <rect
           x="0"
           y="0"
-          width="1100"
+          width={BOARD_WIDTH}
           height={layout.height}
           fill="url(#island-chart-lines)"
         />
 
-        {/* ILLUSTRATED ISLAND */}
+        {/* CAMERA-TRANSFORMED GAME WORLD */}
+        <g
+          className="svg-board-world"
+          transform={`
+            translate(${camera.x} ${camera.y})
+            scale(${camera.scale})
+          `}
+        >
+          {/* ILLUSTRATED ISLAND */}
+
         <path
           className="svg-island-shoreline"
           d={`
@@ -388,12 +685,15 @@ export function IslandCanvas({
           {layout.coast.map(renderSpace)}
         </g>
 
-        {/* SEA TILES */}
-        <g className="svg-board-sea-spaces">
-          {layout.sea.map(renderSpace)}
+          {/* SEA TILES */}
+          <g className="svg-board-sea-spaces">
+            {layout.sea.map(renderSpace)}
+          </g>
         </g>
+        {/* END CAMERA-TRANSFORMED WORLD */}
 
         {/* COMPASS */}
+
         <g
           className="svg-board-compass"
           transform="translate(1018 105)"
@@ -416,7 +716,59 @@ export function IslandCanvas({
         </text>
       </svg>
 
+      {/* NAUTICAL CAMERA CONTROLS */}
+      <div
+        className="svg-camera-controls"
+        aria-label="Board camera controls"
+      >
+        <button
+          type="button"
+          onClick={() => changeZoom(ZOOM_FACTOR)}
+          disabled={camera.scale >= MAX_ZOOM}
+          aria-label="Zoom in"
+          title="Zoom in"
+        >
+          +
+        </button>
+
+        <span className="svg-camera-zoom" aria-live="off">
+          {Math.round(camera.scale * 100)}%
+        </span>
+
+        <button
+          type="button"
+          onClick={() => changeZoom(1 / ZOOM_FACTOR)}
+          disabled={camera.scale <= MIN_ZOOM}
+          aria-label="Zoom out"
+          title="Zoom out"
+        >
+          −
+        </button>
+
+        <div className="svg-camera-divider" />
+
+        <button
+          type="button"
+          onClick={focusSelection}
+          disabled={!selectedSpace}
+          aria-label="Focus selected space"
+          title="Focus selected space"
+        >
+          ◎
+        </button>
+
+        <button
+          type="button"
+          onClick={resetCamera}
+          aria-label="Reset camera"
+          title="Reset camera"
+        >
+          ⌂
+        </button>
+      </div>
+
       <div className="svg-board-status" role="status">
+
         {hoveredSpace ? (
           <>
             <strong>{hoveredSpace.id}</strong>
