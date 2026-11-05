@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { IslandCanvas } from "./IslandCanvas";
+import { ResourceToken } from "./ResourceToken";
 
 import { ConstructionPalette } from "./ConstructionPalette";
 import {
@@ -134,6 +135,13 @@ export function ImmersiveGameTable({
   const [selectedProducerIndex, setSelectedProducerIndex] = useState<number | null>(null);
   const [isProducing, setIsProducing] = useState(false);
   const [productionError, setProductionError] = useState<string | null>(null);
+  
+  const [lastProduction, setLastProduction] = useState<{
+    industryIndex: number;
+    industryName: string;
+    good: string;
+  } | null>(null);
+
 
   const selectedSpace = islandSpaces.find(
     space => space.id === selectedLocation
@@ -160,6 +168,7 @@ export function ImmersiveGameTable({
     setProductionMode(false);
     setSelectedProducerIndex(null);
     setProductionError(null);
+    setLastProduction(null);
   }, [game?.current_player_index]);
 
   function selectDockAction(id: string) {
@@ -292,6 +301,7 @@ async function confirmConstruction() {
     setSelectedProducerIndex(null);
     setProductionError(null);
     setActiveAction("produce");
+    setLastProduction(null);
   }
 
   function closeProductionMode() {
@@ -302,17 +312,34 @@ async function confirmConstruction() {
   }
 
   async function confirmProduction() {
-    if (!canProduce || !selectedProducer?.can_produce ||
-        selectedProducerIndex === null) return;
+    if (
+      !canProduce ||
+      !selectedProducer?.can_produce ||
+      selectedProducerIndex === null
+    ) {
+      return;
+    }
+
+    const completed = {
+      industryIndex: selectedProducer.index,
+      industryName: selectedProducer.name,
+      good: selectedProducer.good,
+    };
 
     setIsProducing(true);
     setProductionError(null);
+
     try {
       await onProduceIndustry(selectedProducerIndex);
+
+      // Show feedback only after backend success.
+      setLastProduction(completed);
       closeProductionMode();
     } catch (error) {
       setProductionError(
-        error instanceof Error ? error.message : "Production failed"
+        error instanceof Error
+          ? error.message
+          : "Production failed."
       );
     } finally {
       setIsProducing(false);
@@ -469,6 +496,30 @@ async function confirmConstruction() {
                   {occupiedSpaces}/{islandSpaces.length}
                 </strong>
               </div>
+              
+              <div className="immersive-stat">
+                <small>Available production (not stock)</small>
+
+                <div className="immersive-resource-summary">
+                  {activePlayer?.industries.some(
+                    industry => industry.can_produce
+                  ) ? (
+                    activePlayer.industries
+                      .filter(industry => industry.can_produce)
+                      .map(industry => (
+                        <ResourceToken
+                          key={industry.index}
+                          good={industry.good}
+                          size="small"
+                          status="ready"
+                        />
+                      ))
+                  ) : (
+                    <span>No available producers</span>
+                  )}
+                </div>
+              </div>
+
 
               <div className="immersive-stat">
                 <small>Cards in hand</small>
@@ -617,14 +668,25 @@ async function confirmConstruction() {
                     aria-pressed={selectedProducerIndex === industry.index}
                     disabled={!canProduce || !industry.can_produce}>
                     <span className="immersive-producer-name">{industry.name}</span>
-                    <span>{pretty(industry.good)}</span>
+                    <ResourceToken
+                      good={industry.good}
+                      size="small"
+                      status={
+                        industry.can_produce
+                          ? "ready"
+                          : "unavailable"
+                      }
+                    />
                     <small>{industry.can_produce ? "Ready" : "Unavailable"}</small>
                   </button>
                 ))}
               </div>
               {selectedProducer && (
                 <p className="immersive-production-hint">
-                  Selected: <strong>{selectedProducer.name}</strong> → {pretty(selectedProducer.good)}
+                  Selected: <strong>{selectedProducer.name}</strong> → <ResourceToken
+                                                                                good={selectedProducer.good}
+                                                                                size="small"
+                                                                              />
                 </p>
               )}
               {productionError && <p role="alert" className="construction-preview-error">{productionError}</p>}
@@ -823,6 +885,40 @@ async function confirmConstruction() {
           </div>
         )}
       </section>
+      
+      {/* STEP 81 — PRODUCTION RESULT */}
+      {lastProduction && (
+        <div
+          className="immersive-production-result"
+          role="status"
+        >
+          <button
+            type="button"
+            className="immersive-production-result-close"
+            onClick={() => setLastProduction(null)}
+            aria-label="Dismiss production result"
+          >
+            ×
+          </button>
+
+          <strong>Production completed</strong>
+
+          <span>
+            {lastProduction.industryName}
+            {" "} (#{lastProduction.industryIndex})
+          </span>
+
+          <div>
+            <ResourceToken good={lastProduction.good} />
+          </div>
+
+          <p>
+            The engine accepted this action.
+            This token represents the output type,
+            not an inventory quantity.
+          </p>
+        </div>
+      )}
 
       {/* GAME FEEDBACK */}
       {notice && (
