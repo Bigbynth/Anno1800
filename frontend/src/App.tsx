@@ -288,6 +288,39 @@ function App() {
   function handleProduce(industryIndex: number) {
     void runGameAction(() => performProduction(industryIndex));
   }
+  async function handleImmersiveProduce(
+    industryIndex: number
+  ): Promise<void> {
+    if (!game) {
+      throw new Error("Game is not loaded.");
+    }
+
+    if (actionLoading || game.main_action_used || game.game_over) {
+      throw new Error("Production is not available right now.");
+    }
+
+    setActionLoading(true);
+
+    try {
+      const result = await performProduction(industryIndex);
+
+      setGame(result.game);
+      setActivePlayer(result.game.current_player_index);
+      setApiError(null);
+      setNotice(result.message);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to produce goods.";
+
+      setNotice(message);
+      throw error;
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
 
   function handleEndTurn() {
     void runGameAction(endTurn);
@@ -690,6 +723,7 @@ useEffect(() => {
       <ImmersiveGameTable
         game={game}  
         onBuildIndustry={handleBoardBuildIndustry}
+        onProduceIndustry={handleImmersiveProduce}
         industryData={industryData}
         islandSpaces={industryData?.spaces ?? []}
         handCards={handCards}

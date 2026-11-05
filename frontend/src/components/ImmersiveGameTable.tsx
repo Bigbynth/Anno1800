@@ -16,6 +16,7 @@ import { TradeHarbor } from "./TradeHarbor";
 
 import type { ComponentProps } from "react";
 import type { GameSnapshot } from "../types";
+import { pretty } from "../types";
 
 type IslandSpaces =
   ComponentProps<typeof IslandCanvas>["spaces"];
@@ -39,6 +40,7 @@ type Props = {
   onEndTurn: () => void;
   onOpenWorkshop: () => void;
   onFulfillPopulationCard: FulfillHandler;
+  onProduceIndustry: (industryIndex: number) => Promise<void>;
   onBuildIndustry: (
     industryId: string,
     spaceId: string,
@@ -99,6 +101,7 @@ export function ImmersiveGameTable({
   onOpenWorkshop,
   onFulfillPopulationCard,
   onBuildIndustry,
+  onProduceIndustry,
 }: Props) {
   const [objectivesOpen, setObjectivesOpen] =
     useState(true);
@@ -126,6 +129,12 @@ export function ImmersiveGameTable({
   const [isBuilding, setIsBuilding] = useState(false);
   const [buildError, setBuildError] = useState<string | null>(null);
 
+  // Step 80 — frontend-only production selection.
+  const [productionMode, setProductionMode] = useState(false);
+  const [selectedProducerIndex, setSelectedProducerIndex] = useState<number | null>(null);
+  const [isProducing, setIsProducing] = useState(false);
+  const [productionError, setProductionError] = useState<string | null>(null);
+
   const selectedSpace = islandSpaces.find(
     space => space.id === selectedLocation
   );
@@ -148,9 +157,21 @@ export function ImmersiveGameTable({
     setConstructionTargetId(null);
     setPaymentSources({});
     setBuildError(null);
+    setProductionMode(false);
+    setSelectedProducerIndex(null);
+    setProductionError(null);
   }, [game?.current_player_index]);
 
   function selectDockAction(id: string) {
+    if (id === "produce") {
+      if (productionMode) {
+        closeProductionMode();
+      } else {
+        openProductionMode();
+      }
+      return;
+    }
+
     if (id === "build") {
       if (constructionMode) {
         closeConstructionMode();
@@ -254,6 +275,50 @@ async function confirmConstruction() {
   }
 }
 
+  // Step 80: no authoritative space -> industry-index mapping is available
+  // in the current frontend snapshot. The player explicitly chooses the
+  // producer from the active player's industry list.
+  const ownedIndustries = activePlayer?.industries ?? [];
+  const selectedProducer = ownedIndustries.find(
+    industry => industry.index === selectedProducerIndex
+  ) ?? null;
+  const canProduce = Boolean(game) && !actionLoading && !isProducing &&
+    !game?.main_action_used && !game?.game_over;
+
+  function openProductionMode() {
+    if (!canProduce) return;
+    closeConstructionMode();
+    setProductionMode(true);
+    setSelectedProducerIndex(null);
+    setProductionError(null);
+    setActiveAction("produce");
+  }
+
+  function closeProductionMode() {
+    setProductionMode(false);
+    setSelectedProducerIndex(null);
+    setProductionError(null);
+    setActiveAction(null);
+  }
+
+  async function confirmProduction() {
+    if (!canProduce || !selectedProducer?.can_produce ||
+        selectedProducerIndex === null) return;
+
+    setIsProducing(true);
+    setProductionError(null);
+    try {
+      await onProduceIndustry(selectedProducerIndex);
+      closeProductionMode();
+    } catch (error) {
+      setProductionError(
+        error instanceof Error ? error.message : "Production failed"
+      );
+    } finally {
+      setIsProducing(false);
+    }
+  }
+
   function openConstructionMode() {
     if (!canEnterConstruction) return;
     setSelectedConstructionId(null);
@@ -261,6 +326,9 @@ async function confirmConstruction() {
     setPaymentSources({});
     setBuildError(null);
     setConstructionMode(true);
+    setProductionMode(false);
+    setSelectedProducerIndex(null);
+    setProductionError(null);
     setActiveAction("build");
   }
 
@@ -285,6 +353,13 @@ async function confirmConstruction() {
 
   function selectBoardSpace(spaceId: string) {
     onSelectLocation(spaceId);
+
+    // Clicking a built space opens the production panel, but does not
+    // select an industry by guessing from the building name.
+    const target = islandSpaces.find(space => space.id === spaceId);
+    if (!constructionMode && !productionMode && target?.occupied && canProduce) {
+      openProductionMode();
+    }
 
     if (!constructionMode || !selectedConstruction) return;
 
@@ -509,6 +584,58 @@ async function confirmConstruction() {
             </div>
           )}
 
+          {/* STEP 80 — ENGINE-BACKED PRODUCTION PANEL */}
+          {productionMode && (
+            <section className="immersive-production-overlay" aria-label="Production controls">
+              <header className="immersive-production-header">
+                <div>
+                  <span className="construction-palette-eyebrow">INDUSTRIAL OUTPUT</span>
+                  <h3>Produce Goods</h3>
+                </div>
+                <button type="button" onClick={closeProductionMode}
+                  className="construction-palette-close" aria-label="Close production mode">×</button>
+              </header>
+              {selectedSpace?.occupied && (
+                <p className="immersive-production-hint">
+                  Inspected space: <strong>{selectedSpace.id}</strong>
+                  {selectedSpace.construction ? ` · ${selectedSpace.construction}` : ""}
+                </p>
+              )}
+              <p className="immersive-production-hint">
+                Choose a producer below. A board space is not yet mapped to an
+                industry index, so selection must be explicit.
+              </p>
+              <div className="immersive-production-list">
+                {ownedIndustries.length === 0 && <p>No industries owned yet.</p>}
+                {ownedIndustries.map(industry => (
+                  <button key={industry.index} type="button"
+                    className={`immersive-producer ${selectedProducerIndex === industry.index ? "is-selected" : ""}`}
+                    onClick={() => {
+                      setSelectedProducerIndex(industry.index);
+                      setProductionError(null);
+                    }}
+                    aria-pressed={selectedProducerIndex === industry.index}
+                    disabled={!canProduce || !industry.can_produce}>
+                    <span className="immersive-producer-name">{industry.name}</span>
+                    <span>{pretty(industry.good)}</span>
+                    <small>{industry.can_produce ? "Ready" : "Unavailable"}</small>
+                  </button>
+                ))}
+              </div>
+              {selectedProducer && (
+                <p className="immersive-production-hint">
+                  Selected: <strong>{selectedProducer.name}</strong> → {pretty(selectedProducer.good)}
+                </p>
+              )}
+              {productionError && <p role="alert" className="construction-preview-error">{productionError}</p>}
+              <button type="button" className="construction-preview-confirm"
+                disabled={!canProduce || !selectedProducer?.can_produce}
+                onClick={() => void confirmProduction()}>
+                {isProducing ? "Producing..." : "Confirm Production"}
+              </button>
+            </section>
+          )}
+
           <div className="immersive-island-footer">
             <span>
               {islandSpaces.length} board spaces
@@ -585,6 +712,14 @@ async function confirmConstruction() {
                     space in the next steps.
                   </p>
 
+                  {selectedSpace.occupied && (
+                    <button type="button" className="immersive-inspector-action"
+                      disabled={!canProduce}
+                      onClick={openProductionMode}>
+                      Produce Goods
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     className="immersive-inspector-action"
@@ -627,8 +762,12 @@ async function confirmConstruction() {
               selectDockAction(action.id)
             }
             title={action.description}
-            aria-pressed={action.id === "build" ? constructionMode : undefined}
-            disabled={action.id === "build" && !constructionMode && !canEnterConstruction}
+            aria-pressed={action.id === "build" ? constructionMode : action.id === "produce" ? productionMode : undefined}
+            disabled={action.id === "build"
+              ? !constructionMode && !canEnterConstruction
+              : action.id === "produce"
+                ? !productionMode && !canProduce
+                : false}
           >
             <span
               className="immersive-dock-symbol"
@@ -637,7 +776,11 @@ async function confirmConstruction() {
               {action.symbol}
             </span>
 
-            <strong>{action.id === "build" && constructionMode ? "Cancel Build" : action.label}</strong>
+            <strong>{action.id === "build" && constructionMode
+              ? "Cancel Build"
+              : action.id === "produce" && productionMode
+                ? "Cancel Produce"
+                : action.label}</strong>
           </button>
         ))}
 
