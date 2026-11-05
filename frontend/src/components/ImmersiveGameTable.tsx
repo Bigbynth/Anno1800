@@ -16,6 +16,7 @@ import type { IndustryCatalogueSnapshot } from "../types";
 
 import { PopulationHand } from "./PopulationHand";
 import { PopulationCardDesk } from "./PopulationCardDesk";
+import { FestivalDialog } from "./FestivalDialog";
 
 import type { ComponentProps } from "react";
 import type { GameSnapshot } from "../types";
@@ -41,6 +42,7 @@ type Props = {
 
   onSelectLocation: (id: string) => void;
   onEndTurn: () => void;
+  onFestival: () => Promise<void>;
   onOpenWorkshop: () => void;
   onFulfillPopulationCard: FulfillHandler;
   onProduceIndustry: (industryIndex: number) => Promise<void>;
@@ -64,6 +66,12 @@ const dockActions: DockAction[] = [
     label: "Build",
     symbol: "⚒",
     description: "Construct industries",
+  },
+  {
+    id: "festival",
+    label: "Festival",
+    symbol: "✦",
+    description: "Hold a Festival",
   },
   {
     id: "produce",
@@ -102,6 +110,7 @@ export function ImmersiveGameTable({
   industryData,
   onSelectLocation,
   onEndTurn,
+  onFestival,
   onOpenWorkshop,
   onFulfillPopulationCard,
   onBuildIndustry,
@@ -118,6 +127,8 @@ export function ImmersiveGameTable({
 
   const [harborOpen, setHarborOpen] =
     useState(false);
+  
+  const [festivalOpen, setFestivalOpen] = useState(false);
 
   const [activeAction, setActiveAction] =
     useState<string | null>(null);
@@ -194,6 +205,26 @@ export function ImmersiveGameTable({
     }
 
     setActiveAction(id);
+    
+    if (id === "festival") {
+      if (
+        !game ||
+        actionLoading ||
+        game.main_action_used ||
+        game.game_over
+      ) {
+        return;
+      }
+
+      setHarborOpen(false);
+      setHandOpen(false);
+      closeConstructionMode();
+      closeProductionMode();
+
+      setActiveAction("festival");
+      setFestivalOpen(true);
+      return;
+    }
 
     if (id === "trade") {
       setHarborOpen(true);
@@ -835,12 +866,15 @@ async function confirmConstruction() {
               selectDockAction(action.id)
             }
             title={action.description}
-            aria-pressed={action.id === "build" ? constructionMode : action.id === "produce" ? productionMode : undefined}
-            disabled={action.id === "build"
-              ? !constructionMode && !canEnterConstruction
-              : action.id === "produce"
-                ? !productionMode && !canProduce
-                : false}
+            aria-pressed={action.id === "build" ? constructionMode : action.id === "produce" ? productionMode : undefined}     
+            disabled={
+              action.id === "festival" &&
+              (
+                actionLoading ||
+                game.main_action_used ||
+                game.game_over
+              )
+            }
           >
             <span
               className="immersive-dock-symbol"
@@ -929,7 +963,22 @@ async function confirmConstruction() {
           </p>
         </div>
       )}
-
+      {/* STEP 86 — FESTIVAL CONFIRMATION */}
+      {festivalOpen && (
+        <FestivalDialog
+          playerName={activePlayer?.name ?? "Current Player"}
+          disabled={
+            actionLoading ||
+            game.main_action_used ||
+            game.game_over
+          }
+          onConfirm={onFestival}
+          onClose={() => {
+            setFestivalOpen(false);
+            setActiveAction(null);
+          }}
+        />
+      )}
       {/* GAME FEEDBACK */}
       {notice && (
         <div

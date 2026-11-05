@@ -285,6 +285,45 @@ function App() {
     void runGameAction(performFestival);
   }
 
+  async function handleImmersiveFestival(): Promise<void> {
+    if (!game) {
+      throw new Error("Game is not loaded.");
+    }
+
+    if (
+      actionLoading ||
+      game.main_action_used ||
+      game.game_over
+    ) {
+      throw new Error(
+        "Festival is not available right now."
+      );
+    }
+
+    setActionLoading(true);
+
+    try {
+      const result = await performFestival();
+
+      setGame(result.game);
+      setActivePlayer(result.game.current_player_index);
+      setApiError(null);
+      setNotice(result.message);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to hold Festival.";
+
+      setNotice(message);
+
+      // Propagate failure so the dialog stays open.
+      throw error;
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
   function handleProduce(industryIndex: number) {
     void runGameAction(() => performProduction(industryIndex));
   }
@@ -733,6 +772,7 @@ useEffect(() => {
         notice={notice ?? ""}
         onSelectLocation={setSelectedLocation}
         onEndTurn={handleEndTurn}
+        onFestival={handleImmersiveFestival}
         onOpenWorkshop={() => setScreen("legacy-table")}
         onFulfillPopulationCard={handleFulfillPopulationCard}
       />

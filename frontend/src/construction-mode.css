@@ -1105,3 +1105,155 @@
     flex-basis: 155px;
   }
 }
+
+/* STEP 86 — FESTIVAL ACTION */
+
+.festival-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 20, 29, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+.festival-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: min(460px, 100%);
+  padding: 24px;
+  border: 2px solid #c59b56;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #284453, #172d3b);
+  color: #e8dcc1;
+  box-shadow: 0 24px 65px rgba(0, 0, 0, .55);
+}
+
+.festival-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.festival-dialog-header h2 {
+  margin: 6px 0 0;
+  font: 27px Georgia, serif;
+  color: #f0dfbd;
+}
+
+.festival-dialog-close {
+  padding: 0 5px;
+  border: none;
+  background: transparent;
+  color: #e8dcc1;
+  font-size: 27px;
+  cursor: pointer;
+}
+
+.festival-dialog-close:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.festival-dialog-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 21px;
+  min-height: 90px;
+  border: 1px solid rgba(197, 155, 86, .6);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle, #6a5840, #273e47);
+  color: #efd7a0;
+  font: 38px Georgia, serif;
+}
+
+.festival-dialog-art span:nth-child(2) {
+  font-size: 51px;
+}
+
+.festival-dialog-player,
+.festival-dialog-description,
+.festival-dialog-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.festival-dialog-player strong {
+  color: #eac98e;
+}
+
+.festival-dialog-note {
+  color: #cdbb98;
+}
+
+.festival-dialog-error {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid #ba6b60;
+  border-radius: 6px;
+  background: #593b3c;
+  color: #ffe0dc;
+  font-size: 12px;
+}
+
+.festival-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(197, 155, 86, .35);
+}
+
+.festival-dialog-actions button {
+  padding: 11px 16px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.festival-dialog-cancel {
+  background: transparent;
+  border: 1px solid #83918b;
+  color: #e8dcc1;
+}
+
+.festival-dialog-confirm {
+  background: #86663d;
+  border: 1px solid #e1bf82;
+  color: #fff2d7;
+}
+
+.festival-dialog-confirm:hover:not(:disabled) {
+  background: #a17c4a;
+}
+
+.festival-dialog-actions button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .festival-dialog {
+    padding: 16px;
+  }
+
+  .festival-dialog-header h2 {
+    font-size: 23px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .festival-dialog,
+  .festival-dialog-art {
+    animation: none;
+    transition: none;
+  }
+}
