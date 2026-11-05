@@ -17,6 +17,7 @@ import "./construction-mode.css";
 import {
   fetchGameData,
   performFestival,
+  exploreNewWorld,
   performProduction,
   endTurn,
   fetchIndustries,
@@ -323,6 +324,59 @@ function App() {
       setActionLoading(false);
     }
   }
+
+  
+  async function handleExploreNewWorld(): Promise<void> {
+    if (!game) {
+      throw new Error("Game is not loaded.");
+    }
+
+    if (
+      actionLoading ||
+      game.main_action_used ||
+      game.game_over
+    ) {
+      throw new Error(
+        "Exploration is not available right now."
+      );
+    }
+
+    setActionLoading(true);
+
+    try {
+      
+        const result = await exploreNewWorld();
+
+        setGame(result.game);
+        setActivePlayer(result.game.current_player_index);
+        setApiError(null);
+        setNotice(result.message);
+
+        // Refresh naval capacity after successful exploration.
+        // A refresh failure must not mark exploration as failed.
+        try {
+          const updatedNaval = await fetchNavalCatalogue();
+          setNavalData(updatedNaval);
+        } catch (refreshError) {
+          console.warn(
+            "Exploration succeeded, but naval data refresh failed:",
+            refreshError
+          );
+        }
+
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to explore the New World.";
+
+      setNotice(message);
+      throw error;
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
 
   function handleProduce(industryIndex: number) {
     void runGameAction(() => performProduction(industryIndex));
@@ -823,6 +877,7 @@ useEffect(() => {
         onSelectLocation={setSelectedLocation}
         onEndTurn={handleEndTurn}
         onFestival={handleImmersiveFestival}
+        onExploreNewWorld={handleExploreNewWorld}
         onOpenWorkshop={() => setScreen("legacy-table")}
         onFulfillPopulationCard={handleFulfillPopulationCard}
       />

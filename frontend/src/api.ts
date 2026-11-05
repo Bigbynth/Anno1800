@@ -65,9 +65,14 @@ async function postGameAction(
   return (await response.json()) as GameActionResponse;
 }
 
-export function performFestival(): Promise<GameActionResponse> {
+export async function performFestival(): Promise<GameActionResponse> {
   return postGameAction('/api/actions/festival');
 }
+
+export function exploreNewWorld(): Promise<GameActionResponse> {
+  return postGameAction('/api/actions/explore-new-world');
+}
+
 
 export function performProduction(
   industryIndex: number

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from anno1800.actions.explore_new_world import (
+    ExploreNewWorldAction,
+)
 import json
 from pathlib import Path
 from threading import RLock
@@ -50,7 +53,7 @@ from anno1800.models.trade import TradeRequest
 app = FastAPI(title="Anno 1800 Board Game API", version="0.2.0")
 
 app.add_middleware(CORSMiddleware, allow_origins= ["http://localhost:5173","http://127.0.0.1:5173",],
-                   allow_methods=["GET"], allow_headers=["*"])
+                   allow_methods=["GET", "POST"], allow_headers=["*"])
 
 DATA_DIR = Path(__file__).parent / "data" / "official"
 
@@ -264,6 +267,30 @@ def perform_festival() -> dict:
             "game": serialize_game(game),
         }
 
+@app.post("/api/actions/explore-new-world")
+def explore_new_world() -> dict:
+    with _game_lock:
+        game = get_demo_game()
+
+        try:
+            result = game.perform_action(
+                ExploreNewWorldAction()
+            )
+        except (InvalidActionError, ValueError) as exc:
+            raise HTTPException(
+                status_code=400,
+                detail=str(exc),
+            ) from exc
+        except RuntimeError as exc:
+            raise HTTPException(
+                status_code=409,
+                detail=str(exc),
+            ) from exc
+
+        return {
+            "message": result.message,
+            "game": serialize_game(game),
+        }
 
 @app.post("/api/actions/produce")
 def perform_production(request: ProduceRequest) -> dict:

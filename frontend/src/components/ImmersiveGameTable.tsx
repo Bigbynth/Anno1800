@@ -21,6 +21,7 @@ import type { IndustryCatalogueSnapshot } from "../types";
 import { PopulationHand } from "./PopulationHand";
 import { PopulationCardDesk } from "./PopulationCardDesk";
 import { FestivalDialog } from "./FestivalDialog";
+import { ExplorationDialog } from "./ExplorationDialog";
 
 import type { ComponentProps } from "react";
 import type { GameSnapshot } from "../types";
@@ -48,6 +49,7 @@ type Props = {
   onSelectLocation: (id: string) => void;
   onEndTurn: () => void;
   onFestival: () => Promise<void>;
+  onExploreNewWorld: () => Promise<void>;
   onOpenWorkshop: () => void;
   onFulfillPopulationCard: FulfillHandler;
   onProduceIndustry: (industryIndex: number) => Promise<void>;
@@ -131,6 +133,7 @@ export function ImmersiveGameTable({
   onSelectLocation,
   onEndTurn,
   onFestival,
+  onExploreNewWorld,
   onOpenWorkshop,
   onFulfillPopulationCard,
   onBuildIndustry,
@@ -150,6 +153,9 @@ export function ImmersiveGameTable({
     useState(false);
   
   const [festivalOpen, setFestivalOpen] = useState(false);
+  
+  const [explorationOpen, setExplorationOpen] =
+    useState(false);
 
   const [activeAction, setActiveAction] =
     useState<string | null>(null);
@@ -217,6 +223,7 @@ export function ImmersiveGameTable({
     setNavalMode(false);
     setNavalTargetId(null);
     setNavalType("shipyard");
+    setExplorationOpen(false);
   }, [game?.current_player_index]);
 
   function selectDockAction(id: string) {
@@ -266,6 +273,29 @@ export function ImmersiveGameTable({
 
       setActiveAction("festival");
       setFestivalOpen(true);
+      return;
+    }
+    
+    if (id === "explore") {
+      if (
+        !game ||
+        actionLoading ||
+        game.main_action_used ||
+        game.game_over
+      ) {
+        return;
+      }
+
+      closeConstructionMode();
+      closeProductionMode();
+      closeNavalMode();
+
+      setHarborOpen(false);
+      setHandOpen(false);
+      setFestivalOpen(false);
+
+      setActiveAction("explore");
+      setExplorationOpen(true);
       return;
     }
 
@@ -982,11 +1012,16 @@ async function confirmConstruction() {
             title={action.description}
             aria-pressed={action.id === "build" ? constructionMode : action.id === "produce" ? productionMode : undefined}     
             disabled={
-              action.id === "festival" &&
+              (action.id === "festival" ||
+              action.id === "explore") &&
               (
                 actionLoading ||
                 game.main_action_used ||
-                game.game_over
+                game.game_over ||
+                (
+                  action.id === "explore" &&
+                  navalData?.naval_capacity.exploration === 0
+                )
               )
             }
           >
@@ -1102,7 +1137,26 @@ async function confirmConstruction() {
           {notice}
         </div>
       )}
-
+      
+      {/* STEP 88 — NEW WORLD EXPLORATION */}
+      {explorationOpen && (
+        <ExplorationDialog
+          playerName={activePlayer?.name ?? "Current Player"}
+          explorationCapacity={
+            navalData?.naval_capacity.exploration ?? null
+          }
+          disabled={
+            actionLoading ||
+            game.main_action_used ||
+            game.game_over
+          }
+          onExplore={onExploreNewWorld}
+          onClose={() => {
+            setExplorationOpen(false);
+            setActiveAction(null);
+          }}
+        />
+      )}
       
       {/* STEP 84 — MARITIME TRADING DIRECTORY */}
       {harborOpen && (
