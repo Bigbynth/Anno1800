@@ -1,14 +1,18 @@
 
 import { useState } from "react";
-import { IslandBoard, locations } from "./IslandBoard";
-import { pretty } from "../types";
+
+import { InteractiveIslandBoard } from "./InteractiveIslandBoard";
 
 import type {
   GameSnapshot,
   PopulationCard,
+  IndustryCatalogueSnapshot,
 } from "../types";
 
+import { pretty } from "../types";
+
 type GameTableProps = {
+  islandSpaces: IndustryCatalogueSnapshot["spaces"];
   game: GameSnapshot | null;
   handCards: PopulationCard[];
   actionLoading: boolean;
@@ -24,6 +28,7 @@ type GameTableProps = {
 
 export function GameTable({
   game,
+  islandSpaces,
   handCards,
   actionLoading,
   notice,
@@ -49,10 +54,6 @@ export function GameTable({
     !game?.game_over &&
     !game?.main_action_used &&
     !actionLoading;
-
-  const location = locations.find(
-    item => item.id === selectedLocation
-  );
 
   return (
     <div className="game-table">
@@ -108,20 +109,13 @@ export function GameTable({
             </button>
           </div>
 
-          <IslandBoard
-            selectedId={selectedLocation}
-            onSelect={onSelectLocation}
-          />
+          
+            <InteractiveIslandBoard
+            spaces={islandSpaces}
+            selectedSpaceId={selectedLocation}
+            onSelectSpace={onSelectLocation}
+            />
 
-          <div className="game-world-caption">
-            <strong>
-              {location?.name ?? "Home Island"}
-            </strong>
-            <span>
-              {location?.description ??
-                "Select a location to inspect it."}
-            </span>
-          </div>
         </section>
 
         <aside className="game-action-panel">

@@ -62,9 +62,7 @@ function App() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<string | null>(
-    "port",
-  );
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [activePlayer, setActivePlayer] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
 
@@ -112,6 +110,18 @@ function App() {
 
 
   const [apiError, setApiError] = useState<string | null>(null);
+  useEffect(() => {
+  if (!industryData) return;
+
+  if (
+    selectedLocation &&
+    !industryData.spaces.some(
+      space => space.id === selectedLocation
+    )
+  ) {
+    setSelectedLocation(null);
+  }
+  }, [industryData, selectedLocation]);
   useEffect(() => {
     if (!game) {
       setNavalData(null);
@@ -257,26 +267,37 @@ function App() {
   function handleEndTurn() {
     void runGameAction(endTurn);
   }
-
-  async function loadIndustryData() {
-    try {
-      const data = await fetchIndustries();
-
-      setIndustryData(data);
-    } catch (error) {
-      setNotice(
-        error instanceof Error
-          ? error.message
-          : "Cannot load industry catalogue",
-      );
-    }
-  }
   
-  useEffect(() => {
-    if (!game) return;
+  
+useEffect(() => {
+  if (!game) {
+    setIndustryData(null);
+    return;
+  }
 
-    void loadIndustryData();
-  }, [game]);
+  let cancelled = false;
+
+  fetchIndustries()
+    .then(data => {
+      if (!cancelled) {
+        setIndustryData(data);
+      }
+    })
+    .catch(error => {
+      if (!cancelled) {
+        setNotice(
+          error instanceof Error
+            ? error.message
+            : "Cannot load industry catalogue"
+        );
+      }
+    });
+
+  return () => {
+    cancelled = true;
+  };
+}, [game]);
+
 
   const selectedIndustry = industryData?.industries.find(
     (item) => item.id === selectedIndustryId,
@@ -658,22 +679,29 @@ function App() {
         {screen === "table" ? (
           <GameTable
             game={game}
+            islandSpaces={industryData?.spaces ?? []}
             handCards={handCards}
             actionLoading={actionLoading}
             notice={notice}
             selectedLocation={selectedLocation}
             onSelectLocation={(id) => {
-              setSelectedLocation(id);
+            setSelectedLocation(id);
 
-              const selected = locations.find(
-                location => location.id === id
-              );
+            const space = industryData?.spaces.find(
+              item => item.id === id
+            );
 
-              setNotice(
-                `${selected?.name ?? "Location"} selected. ` +
-                "This illustrated location is not yet a construction slot."
-              );
-            }}
+            if (!space) {
+              setNotice(`Selected space ${id}.`);
+              return;
+            }
+
+            setNotice(
+              space.occupied
+                ? `${id}: ${space.construction ?? "Occupied construction"}`
+                : `${id}: Empty ${pretty(space.type)} space.`
+            );
+          }}
             onFestival={handleFestival}
             onProduce={handleProduce}
             onEndTurn={handleEndTurn}

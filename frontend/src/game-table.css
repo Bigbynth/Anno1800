@@ -470,3 +470,233 @@
 .app-shell.table-mode .app-footer {
   display: none;
 }
+
+
+/* STEP 69 — INTERACTIVE ISLAND */
+
+.interactive-island {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.interactive-island-header,
+.island-region-heading,
+.island-selection-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.interactive-island-header h3 {
+  color: #ead9b4;
+  font-size: 23px;
+  font-weight: 500;
+  margin: 6px 0 0;
+}
+
+.interactive-island-count {
+  color: #d5c8a6;
+  font: 12px Arial, sans-serif;
+}
+
+.interactive-island-world {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid #8d9778;
+  border-radius: 12px;
+  padding: 20px;
+  background:
+    radial-gradient(
+      ellipse at 30% 40%,
+      rgba(96, 147, 133, 0.24),
+      transparent 60%
+    ),
+    linear-gradient(160deg, #305d65, #173b47);
+  min-height: 390px;
+}
+
+.island-region {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(225, 210, 166, 0.25);
+}
+
+.island-region--land {
+  background: linear-gradient(135deg, #607d55, #425d42);
+}
+
+.island-region--coast {
+  background: linear-gradient(135deg, #827f59, #5c7667);
+}
+
+.island-region--sea {
+  background: linear-gradient(135deg, #2c6575, #174454);
+}
+
+.island-region-heading {
+  margin-bottom: 14px;
+  color: #f5ecd5;
+  font: 700 12px Arial, sans-serif;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.island-region-heading small {
+  color: #e1d6b9;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.island-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(120px, 1fr)
+  );
+  gap: 12px;
+}
+
+.island-tile {
+  position: relative;
+  min-height: 135px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 2px solid rgba(247, 222, 172, 0.65);
+  border-radius: 9px;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.18);
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    border-color 150ms ease;
+  color: #382d1d;
+  text-align: center;
+  cursor: pointer;
+}
+
+.island-tile--land {
+  background: linear-gradient(#d3c69b, #a9a078);
+}
+
+.island-tile--coast {
+  background: linear-gradient(#c6b991, #9eae9e);
+}
+
+.island-tile--sea {
+  background: linear-gradient(#6296a1, #3d7281);
+  color: #f9f0db;
+}
+
+.island-tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 9px 17px rgba(0, 0, 0, 0.3);
+}
+
+.island-tile--selected {
+  border-color: #ffe3a0;
+  outline: 3px solid rgba(255, 226, 150, 0.4);
+  box-shadow: 0 0 22px rgba(255, 212, 118, 0.28);
+}
+
+.island-tile--occupied {
+  filter: saturate(1.05);
+}
+
+.island-tile--empty {
+  opacity: 0.85;
+}
+
+.island-tile-id {
+  position: absolute;
+  top: 9px;
+  left: 10px;
+  font: 700 11px Arial, sans-serif;
+}
+
+.island-tile-symbol {
+  display: block;
+  font-size: 38px;
+  line-height: 1;
+}
+
+.island-tile-name {
+  font-size: 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.island-tile-state {
+  font: 10px Arial, sans-serif;
+  opacity: 0.8;
+}
+
+.island-selection-panel {
+  min-height: 108px;
+  border: 1px solid rgba(215, 183, 117, 0.35);
+  border-radius: 8px;
+  background: rgba(23, 41, 41, 0.85);
+  padding: 16px;
+  color: #e8dbc0;
+}
+
+.island-selection-panel p {
+  font-size: 14px;
+  margin: 10px 0;
+  color: #d6c8a6;
+}
+
+.island-selection-title {
+  margin-top: 9px;
+}
+
+.island-selection-title strong {
+  font-size: 22px;
+}
+
+.island-selection-title span {
+  color: #c8af7b;
+  font-size: 12px;
+}
+
+.island-selection-occupied {
+  color: #e8bb8b;
+  font: 700 11px Arial, sans-serif;
+}
+
+.island-selection-empty {
+  color: #a8d5a2;
+  font: 700 11px Arial, sans-serif;
+}
+
+@media (max-width: 650px) {
+  .interactive-island-world {
+    padding: 10px;
+    min-height: 0;
+  }
+
+  .island-region {
+    padding: 10px;
+  }
+
+  .island-tile-grid {
+    grid-template-columns: repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  }
+
+  .island-tile {
+    min-height: 115px;
+  }
+
+  .island-tile-symbol {
+    font-size: 28px;
+  }
+}
