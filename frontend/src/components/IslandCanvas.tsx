@@ -12,6 +12,8 @@ type Props = {
   spaces: IndustryCatalogueSnapshot["spaces"];
   selectedSpaceId: string | null;
   onSelectSpace: (id: string) => void;
+  constructionMode?: boolean;
+  candidateSpaceIds?: string[];
 };
 
 type Position = {
@@ -141,6 +143,8 @@ export function IslandCanvas({
   spaces,
   selectedSpaceId,
   onSelectSpace,
+  constructionMode = false,
+  candidateSpaceIds = [],
 }: Props) {
   const [hoveredSpaceId, setHoveredSpaceId] =
     useState<string | null>(null);
@@ -394,16 +398,22 @@ export function IslandCanvas({
   function renderSpace({ space, x, y }: Position) {
     const selected = selectedSpaceId === space.id;
     const hovered = hoveredSpaceId === space.id;
+    
+    const isCandidate =
+      constructionMode && candidateSpaceIds.includes(space.id);
 
+    
     const className = [
       "svg-board-space",
       `svg-board-space--${space.type}`,
       space.occupied ? "is-occupied" : "is-empty",
       selected ? "is-selected" : "",
       hovered ? "is-hovered" : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
+      isCandidate ? "is-construction-candidate" : "",
+      constructionMode && !isCandidate
+        ? "is-construction-inactive"
+        : "",
+    ].filter(Boolean).join(" ");
 
     return (
       <g
@@ -480,21 +490,17 @@ export function IslandCanvas({
         >
           {space.id}
         </text>
-
-        {selected && (
-          <>
-            <circle
-              className="svg-board-selection-ring"
-              r="65"
-              cx="0"
-              cy="0"
-              fill="none"
-            />
-            <path
-              className="svg-board-selection-marker"
-              d="M -8 -57 L 0 -70 L 8 -57 Z"
-            />
-          </>
+        {isCandidate && !selected && (
+          <rect
+            className="svg-construction-candidate-ring"
+            x="-61"
+            y="-50"
+            width="122"
+            height="100"
+            rx="17"
+            fill="none"
+            pointerEvents="none"
+          />
         )}
       </g>
     );

@@ -12,7 +12,7 @@ import { GameTable } from "./components/GameTable";
 import "./game-table.css";
 import "./immersive-game.css";
 import "./island-canvas.css";
-
+import "./construction-mode.css";
 
 import {
   fetchGameData,
@@ -689,6 +689,7 @@ useEffect(() => {
     return (
       <ImmersiveGameTable
         game={game}
+        industryData={industryData}
         islandSpaces={industryData?.spaces ?? []}
         handCards={handCards}
         selectedLocation={selectedLocation}

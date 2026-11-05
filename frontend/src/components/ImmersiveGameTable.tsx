@@ -2,6 +2,9 @@
 import { useEffect, useState } from "react";
 import { IslandCanvas } from "./IslandCanvas";
 
+import { ConstructionPalette } from "./ConstructionPalette";
+import type { IndustryCatalogueSnapshot } from "../types";
+
 import { PopulationHand } from "./PopulationHand";
 import { TradeHarbor } from "./TradeHarbor";
 
@@ -21,7 +24,7 @@ type Props = {
   game: GameSnapshot | null;
   islandSpaces: IslandSpaces;
   handCards: HandCards;
-
+  industryData: IndustryCatalogueSnapshot | null;
   selectedLocation: string | null;
   actionLoading: boolean;
   notice: string;
@@ -79,6 +82,7 @@ export function ImmersiveGameTable({
   selectedLocation,
   actionLoading,
   notice,
+  industryData,
   onSelectLocation,
   onEndTurn,
   onOpenWorkshop,
@@ -99,6 +103,13 @@ export function ImmersiveGameTable({
   const [activeAction, setActiveAction] =
     useState<string | null>(null);
 
+  // Step 78: hooks must run on every render, including before game loads.
+  const [constructionMode, setConstructionMode] = useState(false);
+  const [selectedConstructionId, setSelectedConstructionId] =
+    useState<string | null>(null);
+  const [constructionTargetId, setConstructionTargetId] =
+    useState<string | null>(null);
+
   const selectedSpace = islandSpaces.find(
     space => space.id === selectedLocation
   );
@@ -116,9 +127,21 @@ export function ImmersiveGameTable({
 
     setActiveAction(null);
     setHarborOpen(false);
+    setConstructionMode(false);
+    setSelectedConstructionId(null);
+    setConstructionTargetId(null);
   }, [game?.current_player_index]);
 
   function selectDockAction(id: string) {
+    if (id === "build") {
+      if (constructionMode) {
+        closeConstructionMode();
+      } else {
+        openConstructionMode();
+      }
+      return;
+    }
+
     setActiveAction(id);
 
     if (id === "trade") {
@@ -135,6 +158,66 @@ export function ImmersiveGameTable({
     // these with direct board interactions.
     onOpenWorkshop();
   }
+
+const selectedConstruction =
+  industryData?.industries.find(
+    item => item.id === selectedConstructionId
+  ) ?? null;
+
+const canEnterConstruction =
+  Boolean(game) &&
+  Boolean(industryData) &&
+  !actionLoading &&
+  !game?.main_action_used &&
+  !game?.game_over;
+
+const constructionCandidates =
+  constructionMode && selectedConstruction
+    ? islandSpaces
+        .filter(space =>
+          !space.occupied &&
+          (space.type === "land" || space.type === "coast")
+        )
+        .map(space => space.id)
+    : [];
+
+const constructionTarget =
+  islandSpaces.find(space => space.id === constructionTargetId)
+  ?? null;
+
+  function openConstructionMode() {
+    if (!canEnterConstruction) return;
+    setSelectedConstructionId(null);
+    setConstructionTargetId(null);
+    setConstructionMode(true);
+    setActiveAction("build");
+  }
+
+  function closeConstructionMode() {
+    setConstructionMode(false);
+    setSelectedConstructionId(null);
+    setConstructionTargetId(null);
+    setActiveAction(null);
+  }
+
+  function selectConstructionIndustry(industryId: string) {
+    if (!canEnterConstruction) return;
+    const industry = industryData?.industries.find(item => item.id === industryId);
+    if (!industry || industry.remaining <= 0 || industry.already_owned) return;
+    setSelectedConstructionId(industryId);
+    setConstructionTargetId(null);
+  }
+
+  function selectBoardSpace(spaceId: string) {
+    onSelectLocation(spaceId);
+
+    if (!constructionMode || !selectedConstruction) return;
+
+    setConstructionTargetId(
+      constructionCandidates.includes(spaceId) ? spaceId : null
+    );
+  }
+
 
   if (!game) {
     return (
@@ -280,11 +363,51 @@ export function ImmersiveGameTable({
 
             <div className="immersive-island-surface">
             <IslandCanvas
-                spaces={islandSpaces}
-                selectedSpaceId={selectedLocation}
-                onSelectSpace={onSelectLocation}
+              spaces={islandSpaces}
+              selectedSpaceId={selectedLocation}
+              onSelectSpace={selectBoardSpace}
+              constructionMode={constructionMode}
+              candidateSpaceIds={constructionCandidates}
             />
             </div>
+
+          {/* Step 78: construction selection overlay; no backend action yet. */}
+          {constructionMode && (
+            <div className="immersive-construction-overlay">
+              <ConstructionPalette
+                industries={industryData?.industries ?? []}
+                selectedIndustryId={selectedConstructionId}
+                disabled={!canEnterConstruction}
+                onSelect={selectConstructionIndustry}
+                onClose={closeConstructionMode}
+              />
+
+              {selectedConstruction && (
+                <div className="construction-placement-preview">
+                  <span className="construction-palette-eyebrow">
+                    CONSTRUCTION PREVIEW
+                  </span>
+                  <h3>{selectedConstruction.name}</h3>
+                  {constructionTarget ? (
+                    <>
+                      <p>
+                        Selected location: <strong>{constructionTarget.id}</strong>
+                      </p>
+                      <p>Region: {constructionTarget.type}</p>
+                      <p className="construction-preview-warning">
+                        Candidate only. The engine must validate placement before building.
+                      </p>
+                      <button type="button" className="construction-preview-next" disabled>
+                        Continue to Payment — Step 79
+                      </button>
+                    </>
+                  ) : (
+                    <p>Choose a highlighted candidate space on the island.</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="immersive-island-footer">
             <span>
@@ -404,6 +527,8 @@ export function ImmersiveGameTable({
               selectDockAction(action.id)
             }
             title={action.description}
+            aria-pressed={action.id === "build" ? constructionMode : undefined}
+            disabled={action.id === "build" && !constructionMode && !canEnterConstruction}
           >
             <span
               className="immersive-dock-symbol"
@@ -412,7 +537,7 @@ export function ImmersiveGameTable({
               {action.symbol}
             </span>
 
-            <strong>{action.label}</strong>
+            <strong>{action.id === "build" && constructionMode ? "Cancel Build" : action.label}</strong>
           </button>
         ))}
 
