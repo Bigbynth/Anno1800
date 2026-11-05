@@ -609,3 +609,103 @@
   line-height: 1.5;
 }
 
+/* STEP 83 — UNIFIED RESOURCE PAYMENT */
+
+.resource-payment-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+.resource-payment-quick-actions button {
+  min-height: 34px;
+  padding: 8px 11px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.resource-payment-auto {
+  border: 1px solid #c59b56;
+  background: #665332;
+  color: #f5e6c8;
+}
+
+.resource-payment-auto:hover:not(:disabled) {
+  background: #866a3f;
+}
+
+.resource-payment-clear {
+  border: 1px solid #6f8484;
+  background: transparent;
+  color: #d2dbd7;
+}
+
+.resource-payment-clear:hover:not(:disabled) {
+  background: #34525b;
+}
+
+.resource-payment-quick-actions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ASSIGNMENT SUMMARY */
+
+.resource-payment-assignment-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid rgba(197, 155, 86, 0.45);
+  border-radius: 8px;
+  background: #243d45;
+}
+
+.resource-payment-assignment-summary > strong {
+  color: #e9cb96;
+  font: 700 12px Arial, sans-serif;
+}
+
+.resource-payment-summary-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(197, 155, 86, 0.15);
+  font-size: 11px;
+}
+
+.resource-payment-summary-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.resource-payment-summary-row span {
+  overflow-wrap: anywhere;
+}
+
+.resource-payment-summary-row span:last-child {
+  text-align: right;
+}
+
+.resource-payment-source-assigned {
+  color: #bfe0c4;
+}
+
+.resource-payment-source-missing {
+  color: #e1b1a6;
+}
+
+@media (max-width: 600px) {
+  .resource-payment-summary-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+

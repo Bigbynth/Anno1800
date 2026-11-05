@@ -21,6 +21,59 @@ type Props = {
   disabled?: boolean;
 };
 
+
+/**
+ * Assign available local producers to unpaid requirements.
+ *
+ * This prepares frontend selections only.
+ * It does not perform production or change game state.
+ */
+export function autoAssignLocalPayments(
+  game: GameSnapshot,
+  requirements: ResourceRequirement[],
+  existing: Record<string, string>
+): Record<string, string> {
+  const next = { ...existing };
+
+  const player = game.players[game.current_player_index];
+
+  if (!player) return next;
+
+  // Reserve producers already assigned to any requirement.
+  const usedProducers = new Set(
+    requirements
+      .map(item => next[item.key])
+      .filter(
+        (value): value is string =>
+          typeof value === "string" &&
+          value.startsWith("produce:")
+      )
+  );
+
+  for (const requirement of requirements) {
+    // Preserve existing local and trade assignments.
+    if (next[requirement.key]) continue;
+
+    const producer = player.industries.find(
+      industry =>
+        industry.good === requirement.good &&
+        industry.can_produce &&
+        !usedProducers.has(`produce:${industry.index}`)
+    );
+
+    if (!producer) continue;
+
+    const source = `produce:${producer.index}`;
+
+    next[requirement.key] = source;
+    usedProducers.add(source);
+  }
+
+  return next;
+}
+
+
+
 export function hasDuplicateProductionSources(
   sources: Record<string, string>,
   requirements: ResourceRequirement[]
@@ -106,6 +159,32 @@ export function ResourcePaymentPicker({
     });
   }
 
+  
+  function handleAutoAssign() {
+    if (disabled) return;
+
+    onChange(
+      autoAssignLocalPayments(
+        game,
+        requirements,
+        paymentSources
+      )
+    );
+  }
+
+  function handleClearAssignments() {
+    if (disabled) return;
+
+    const next = { ...paymentSources };
+
+    for (const requirement of requirements) {
+      delete next[requirement.key];
+    }
+
+    onChange(next);
+  }
+
+
   if (requirements.length === 0) {
     return (
       <div className="resource-payment-picker">
@@ -130,6 +209,30 @@ export function ResourcePaymentPicker({
         <span className="resource-payment-progress">
           {completed}/{requirements.length} assigned
         </span>
+      </div>
+      
+      {/* STEP 83 — QUICK PAYMENT ACTIONS */}
+      <div className="resource-payment-quick-actions">
+        <button
+          type="button"
+          className="resource-payment-auto"
+          onClick={handleAutoAssign}
+          disabled={disabled || completed === requirements.length}
+          title="Assign unused available local producers"
+        >
+          <span aria-hidden="true">⚙</span>
+          Auto-assign Local
+        </button>
+
+        <button
+          type="button"
+          className="resource-payment-clear"
+          onClick={handleClearAssignments}
+          disabled={disabled || completed === 0}
+          title="Clear resource assignments"
+        >
+          Clear Assignments
+        </button>
       </div>
 
       <div className="resource-requirement-list">
@@ -246,6 +349,63 @@ export function ResourcePaymentPicker({
                   </span>
                 )}
               </div>
+            </div>
+          );
+        })}
+      </div>
+        
+      {/* STEP 83 — ASSIGNMENT SUMMARY */}
+      <div
+        className="resource-payment-assignment-summary"
+        aria-label="Selected resource payment sources"
+      >
+        <strong>Payment Summary</strong>
+
+        {requirements.map(({ key, good }) => {
+          const value = paymentSources[key] ?? "";
+
+          let sourceLabel = "Not assigned";
+
+          if (value.startsWith("produce:")) {
+            const industryIndex = Number(value.split(":")[1]);
+
+            const industry = currentPlayer?.industries.find(
+              item => item.index === industryIndex
+            );
+
+            sourceLabel = industry
+              ? `Produce — ${industry.name}`
+              : "Unknown local producer";
+          }
+
+          if (value.startsWith("trade:")) {
+            const partnerIndex = Number(value.split(":")[1]);
+
+            const partner = game.players[partnerIndex];
+
+            sourceLabel = partner
+              ? `Trade — ${partner.name}`
+              : "Unknown trading partner";
+          }
+
+          return (
+            <div
+              key={key}
+              className="resource-payment-summary-row"
+            >
+              <span>
+                {getResourceIcon(good)} {pretty(good)}
+              </span>
+
+              <span
+                className={
+                  value
+                    ? "resource-payment-source-assigned"
+                    : "resource-payment-source-missing"
+                }
+              >
+                {sourceLabel}
+              </span>
             </div>
           );
         })}
