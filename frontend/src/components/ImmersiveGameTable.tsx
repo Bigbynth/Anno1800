@@ -5,6 +5,9 @@ import { ResourceToken } from "./ResourceToken";
 import { ResourceDependencyPanel } from "./ResourceDependencyPanel";
 import { TradeDirectory } from "./TradeDirectory";
 
+import { TurnStatus } from "./TurnStatus";
+import { EndTurnDialog } from "./EndTurnDialog";
+
 import { NavalConstructionPanel } from "./NavalConstructionPanel";
 
 import type { NavalCatalogueSnapshot } from "../types";
@@ -49,7 +52,7 @@ type Props = {
   notice: string;
 
   onSelectLocation: (id: string) => void;
-  onEndTurn: () => void;
+  onConfirmEndTurn: () => Promise<void>;
   onFestival: () => Promise<void>;
   onExploreNewWorld: () => Promise<void>;
   onOpenWorkshop: () => void;
@@ -145,7 +148,7 @@ export function ImmersiveGameTable({
   notice,
   industryData,
   onSelectLocation,
-  onEndTurn,
+  onConfirmEndTurn,
   onFestival,
   onExploreNewWorld,
   onOpenWorkshop,
@@ -172,6 +175,9 @@ export function ImmersiveGameTable({
     useState(false);
 
   const [objectivesOpen, setObjectivesOpen] =
+    useState(false);
+
+  const [endTurnDialogOpen, setEndTurnDialogOpen] =
     useState(false);
 
   const [activeAction, setActiveAction] =
@@ -243,7 +249,28 @@ export function ImmersiveGameTable({
     setNavalType("shipyard");
     setExplorationOpen(false);
     setNewWorldAtlasOpen(false);
+    setEndTurnDialogOpen(false);
   }, [game?.current_player_index]);
+
+  function openEndTurnDialog() {
+    if (!game || game.game_over || actionLoading) {
+      return;
+    }
+
+    // End-turn confirmation is exclusive.
+    setHarborOpen(false);
+    setFestivalOpen(false);
+    setExplorationOpen(false);
+    setNewWorldAtlasOpen(false);
+    setObjectivesOpen(false);
+    setHandOpen(false);
+
+    closeConstructionMode();
+    closeProductionMode();
+    closeNavalMode();
+
+    setEndTurnDialogOpen(true);
+  }
 
   function selectDockAction(id: string) {
     if (id === "produce") {
@@ -942,12 +969,22 @@ async function confirmConstruction() {
 
         {/* CONTEXT INSPECTOR */}
         <aside
+          
           className={[
             "immersive-inspector",
             inspectorOpen ? "" : "is-collapsed",
           ].join(" ")}
           aria-label="Context inspector"
         >
+
+          
+        {/* STEP 93 — TURN STATUS */}
+        <TurnStatus
+          game={game}
+          actionLoading={actionLoading}
+          onEndTurn={openEndTurnDialog}
+        />
+
           <button
             type="button"
             className="immersive-rail-toggle"
@@ -1087,7 +1124,7 @@ async function confirmConstruction() {
           type="button"
           className="immersive-end-turn"
           disabled={actionLoading || game.game_over}
-          onClick={onEndTurn}
+          onClick={openEndTurnDialog}
         >
           End Turn
         </button>
@@ -1241,6 +1278,20 @@ async function confirmConstruction() {
           onClose={() => {
             setObjectivesOpen(false);
             setActiveAction(null);
+          }}
+        />
+      )}
+      
+      {/* STEP 93 — END TURN CONFIRMATION */}
+      {endTurnDialogOpen && (
+        <EndTurnDialog
+          playerName={activePlayer?.name ?? "Current Player"}
+          round={game.round}
+          mainActionUsed={game.main_action_used}
+          disabled={actionLoading || game.game_over}
+          onConfirm={onConfirmEndTurn}
+          onClose={() => {
+            setEndTurnDialogOpen(false);
           }}
         />
       )}

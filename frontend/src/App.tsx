@@ -431,36 +431,74 @@ function App() {
   function handleEndTurn() {
     void runGameAction(endTurn);
   }
+
   
-  
-useEffect(() => {
-  if (!game) {
-    setIndustryData(null);
-    return;
+  async function handleImmersiveEndTurn(): Promise<void> {
+    if (!game) {
+      throw new Error("Game is not loaded.");
+    }
+
+    if (actionLoading || game.game_over) {
+      throw new Error("End Turn is not available right now.");
+    }
+
+    setActionLoading(true);
+
+    try {
+      // The engine determines the next player and round.
+      const result = await endTurn();
+
+      setGame(result.game);
+      setActivePlayer(result.game.current_player_index);
+      setApiError(null);
+      setNotice(result.message);
+
+      // A successful turn may change the active company's
+      // available naval capacity.
+      await refreshNavalCapacity();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to end the turn.";
+
+      setNotice(message);
+      throw error;
+    } finally {
+      setActionLoading(false);
+    }
   }
 
-  let cancelled = false;
+  
+  
+  useEffect(() => {
+    if (!game) {
+      setIndustryData(null);
+      return;
+    }
 
-  fetchIndustries()
-    .then(data => {
-      if (!cancelled) {
-        setIndustryData(data);
-      }
-    })
-    .catch(error => {
-      if (!cancelled) {
-        setNotice(
-          error instanceof Error
-            ? error.message
-            : "Cannot load industry catalogue"
-        );
-      }
-    });
+    let cancelled = false;
 
-  return () => {
-    cancelled = true;
-  };
-}, [game]);
+    fetchIndustries()
+      .then(data => {
+        if (!cancelled) {
+          setIndustryData(data);
+        }
+      })
+      .catch(error => {
+        if (!cancelled) {
+          setNotice(
+            error instanceof Error
+              ? error.message
+              : "Cannot load industry catalogue"
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [game]);
 
 
   const selectedIndustry = industryData?.industries.find(
@@ -889,8 +927,8 @@ useEffect(() => {
         selectedLocation={selectedLocation}
         actionLoading={actionLoading}
         notice={notice ?? ""}
-        onSelectLocation={setSelectedLocation}
-        onEndTurn={handleEndTurn}
+        onSelectLocation={setSelectedLocation} 
+        onConfirmEndTurn={handleImmersiveEndTurn}
         onFestival={handleImmersiveFestival}
         onExploreNewWorld={handleExploreNewWorld}
         onOpenWorkshop={() => setScreen("legacy-table")}
