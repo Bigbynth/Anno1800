@@ -7,6 +7,7 @@ import { pretty } from "../types";
 import type { GameSnapshot } from "../types";
 
 import { TradeHarbor } from "./TradeHarbor";
+import { NavalCapacityDisplay } from "./NavalCapacityDisplay";
 
 export type ResourceRequirement = {
   key: string;
@@ -16,6 +17,7 @@ export type ResourceRequirement = {
 type Props = {
   game: GameSnapshot;
   allowNewWorld?: boolean;
+  tradeCapacity?: number | null;
   requirements: ResourceRequirement[];
   paymentSources: Record<string, string>;
   onChange: (sources: Record<string, string>) => void;
@@ -165,6 +167,7 @@ export function toPopulationCardPayments(
 export function ResourcePaymentPicker({
   game,
   allowNewWorld = false,
+  tradeCapacity = null,
   requirements,
   paymentSources,
   onChange,
@@ -513,6 +516,15 @@ export function ResourcePaymentPicker({
           );
         })}
       </div>
+        
+      {/* STEP 91 — NAVAL SHIPPING CAPACITY */}
+      {allowNewWorld && (
+        <NavalCapacityDisplay
+          tradeCapacity={tradeCapacity}
+          requiredTrade={selectedNewWorldCount}
+          compact
+        />
+      )}
         
       {allowNewWorld && selectedNewWorldCount > 0 && (
         <p className="resource-payment-new-world-note">

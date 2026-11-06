@@ -1,13 +1,13 @@
-
 import { useState } from "react";
-
 import type { NewWorldIslandSnapshot } from "../types";
-
+import { NavalCapacityDisplay } from "./NavalCapacityDisplay";
 import { ResourceToken } from "./ResourceToken";
 
 type Props = {
   islands: NewWorldIslandSnapshot[];
   playerName: string;
+  tradeCapacity?: number | null;
+  explorationCapacity?: number | null;
   onClose: () => void;
   onExplore: () => void;
   canExplore: boolean;
@@ -16,6 +16,8 @@ type Props = {
 export function NewWorldAtlas({
   islands,
   playerName,
+  tradeCapacity = null,
+  explorationCapacity = null,
   onClose,
   onExplore,
   canExplore,
@@ -89,6 +91,13 @@ export function NewWorldAtlas({
             </strong>
           </div>
         </div>
+
+        {/* STEP 91 — NAVAL CAPACITY */}
+        <NavalCapacityDisplay
+          tradeCapacity={tradeCapacity}
+          explorationCapacity={explorationCapacity}
+          compact
+        />
 
         <div className="new-world-atlas-content">
           <div

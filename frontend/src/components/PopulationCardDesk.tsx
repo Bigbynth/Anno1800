@@ -11,6 +11,7 @@ type Props = {
   game: GameSnapshot;
   cards: PopulationCard[];
   actionLoading: boolean;
+  tradeCapacity?: number | null;
   onFulfill: ComponentProps<typeof PopulationHand>["onFulfill"];
 };
 
@@ -18,6 +19,7 @@ export function PopulationCardDesk({
   game,
   cards,
   actionLoading,
+  tradeCapacity = null,
   onFulfill,
 }: Props) {
   const [selectedCardId, setSelectedCardId] =
@@ -192,6 +194,7 @@ export function PopulationCardDesk({
                 <PopulationHand
                   key={`${game.current_player_index}:${selectedCard.id}`}
                   game={game}
+                  tradeCapacity={tradeCapacity}
                   cards={[selectedCard]}
                   actionLoading={
                     actionLoading || actionUnavailable

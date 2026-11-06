@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 
+import { NavalCapacityDisplay } from "./NavalCapacityDisplay";
 import type { GameSnapshot } from "../types";
 import { pretty } from "../types";
 import { ResourceToken } from "./ResourceToken";
@@ -56,9 +57,6 @@ export function TradeDirectory({
       goods.length > 0
     );
 
-  const capacityKnown =
-    typeof tradeCapacity === "number";
-
   const canStartConstruction =
     !game.main_action_used && !game.game_over;
 
@@ -103,14 +101,13 @@ export function TradeDirectory({
             <small>Trading partners</small>
             <strong>{partners.length}</strong>
           </div>
-
-          <div>
-            <small>Available trade tokens</small>
-            <strong>
-              {capacityKnown ? tradeCapacity : "Unknown"}
-            </strong>
-          </div>
         </div>
+
+        {/* STEP 91 — NAVAL CAPACITY */}
+        <NavalCapacityDisplay
+          tradeCapacity={tradeCapacity}
+          compact
+        />
 
         <p className="trade-directory-explanation">
           Foreign industries identify potential goods

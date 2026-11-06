@@ -2021,3 +2021,154 @@
   font-size: 12px;
   line-height: 1.5;
 }
+
+/* STEP 91 — NAVAL CAPACITY DISPLAY */
+
+.naval-capacity-display {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(197, 155, 86, .65);
+  border-radius: 9px;
+  background: #203c47;
+  color: #e8dcc1;
+}
+
+.naval-capacity-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.naval-capacity-heading strong {
+  color: #f0dfbd;
+  font: 17px Georgia, serif;
+}
+
+.naval-capacity-heading > span {
+  color: #c59b56;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.naval-capacity-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.naval-capacity-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid #5e7a7d;
+  border-radius: 7px;
+  background: #294650;
+}
+
+.naval-capacity-stat > span {
+  color: #d6dfd8;
+  font-size: 11px;
+}
+
+.naval-capacity-stat > strong {
+  color: #e5c282;
+  font-size: 25px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.naval-capacity-usage {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding-top: 9px;
+  border-top: 1px solid #597477;
+}
+
+.naval-capacity-usage-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.naval-capacity-usage-label strong {
+  color: #e5c282;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.naval-capacity-track {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #49616a;
+}
+
+.naval-capacity-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #c59b56;
+  transition: width .2s ease;
+}
+
+.naval-capacity-fill.is-over {
+  background: #d98b7c;
+}
+
+.naval-capacity-warning {
+  margin: 0;
+  padding: 9px;
+  border: 1px solid #c37a6d;
+  border-radius: 6px;
+  background: #523b3c;
+  color: #ffddd6;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.naval-capacity-note {
+  margin: 0;
+  color: #d3d8d0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.naval-capacity--compact {
+  padding: 11px;
+  gap: 9px;
+}
+
+.naval-capacity--compact .naval-capacity-heading strong {
+  font-size: 15px;
+}
+
+.naval-capacity--compact .naval-capacity-stat strong {
+  font-size: 20px;
+}
+
+@media (max-width: 600px) {
+  .naval-capacity-heading {
+    align-items: flex-start;
+  }
+
+  .naval-capacity-usage-label {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .naval-capacity-fill {
+    transition: none;
+  }
+}

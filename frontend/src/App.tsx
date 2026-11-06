@@ -271,6 +271,7 @@ function App() {
       setActivePlayer(result.game.current_player_index);
       setApiError(null);
       setNotice(result.message);
+      await refreshNavalCapacity();
     } catch (error) {
       setNotice(
         error instanceof Error
@@ -324,7 +325,18 @@ function App() {
       setActionLoading(false);
     }
   }
-
+  
+  async function refreshNavalCapacity(): Promise<void> {
+    try {
+      const updatedNaval = await fetchNavalCatalogue();
+      setNavalData(updatedNaval);
+    } catch (error) {
+      console.warn(
+        "Naval catalogue refresh failed:",
+        error
+      );
+    }
+  }
   
   async function handleExploreNewWorld(): Promise<void> {
     if (!game) {
@@ -351,6 +363,7 @@ function App() {
         setActivePlayer(result.game.current_player_index);
         setApiError(null);
         setNotice(result.message);
+        await refreshNavalCapacity();
 
         // Refresh naval capacity after successful exploration.
         // A refresh failure must not mark exploration as failed.
@@ -760,6 +773,7 @@ useEffect(() => {
       );
 
       setGame(result.game);
+      await refreshNavalCapacity();
       setActivePlayer(result.game.current_player_index);
       setSelectedLocation(spaceId);
       setApiError(null);
@@ -841,6 +855,7 @@ useEffect(() => {
       );
 
       setGame(result.game);
+      await refreshNavalCapacity();
       setActivePlayer(result.game.current_player_index);
       setApiError(null);
       setNotice(result.message);

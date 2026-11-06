@@ -1091,6 +1091,9 @@ async function confirmConstruction() {
             <PopulationCardDesk
               key={game.current_player_index}
               game={game}
+              tradeCapacity={
+                navalData?.naval_capacity.trade ?? null
+              }
               cards={handCards}
               actionLoading={actionLoading}
               onFulfill={onFulfillPopulationCard}
@@ -1183,6 +1186,12 @@ async function confirmConstruction() {
         <NewWorldAtlas
           islands={activePlayer?.new_world_islands ?? []}
           playerName={activePlayer?.name ?? "Current Player"}
+          tradeCapacity={
+            navalData?.naval_capacity.trade ?? null
+          }
+          explorationCapacity={
+            navalData?.naval_capacity.exploration ?? null
+          }
           canExplore={
             !actionLoading &&
             !game.main_action_used &&

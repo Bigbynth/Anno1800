@@ -19,6 +19,7 @@ type Props = {
   game: GameSnapshot | null;
   cards: PopulationCard[];
   actionLoading: boolean;
+  tradeCapacity?: number | null;
   onFulfill: (
     cardId: string,
     payments: PopulationCardPayment[]
@@ -29,6 +30,7 @@ export function PopulationHand({
   game,
   cards,
   actionLoading,
+  tradeCapacity = null,
   onFulfill,
 }: Props) {
   const [selectedIndex, setSelectedIndex] =
@@ -200,6 +202,7 @@ export function PopulationHand({
             <ResourcePaymentPicker
               game={game}
               allowNewWorld
+              tradeCapacity={tradeCapacity}
               requirements={requirements}
               paymentSources={paymentSources}
               onChange={setPaymentSources}
