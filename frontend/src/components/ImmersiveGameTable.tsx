@@ -8,7 +8,7 @@ import { pretty } from "../types";
 import { TurnStatus } from "./TurnStatus";
 import { EndTurnDialog } from "./EndTurnDialog";
 import { FinalResultsDialog } from "./FinalResultsDialog";
-
+import { GameHistoryPanel } from "./GameHistoryPanel";
 
 import { NavalConstructionPanel } from "./NavalConstructionPanel";
 
@@ -138,6 +138,12 @@ const dockActions: DockAction[] = [
     description: "View current or final scores",
   },
   {
+    id: "history",
+    label: "History",
+    symbol: "☷",
+    description: "Review completed game actions",
+  },
+  {
     id: "cards",
     label: "Cards",
     symbol: "▤",
@@ -187,6 +193,9 @@ export function ImmersiveGameTable({
 
     
   const [finalResultsOpen, setFinalResultsOpen] =
+    useState(false);
+
+  const [gameHistoryOpen, setGameHistoryOpen] =
     useState(false);
 
   const resultsShownForGame = useRef(false);
@@ -265,6 +274,7 @@ export function ImmersiveGameTable({
     setExplorationOpen(false);
     setNewWorldAtlasOpen(false);
     setEndTurnDialogOpen(false);
+    setGameHistoryOpen(false);
   }, [game?.current_player_index]);
   
 /* STEP 94 — PRESENT RESULTS WHEN GAME ENDS */
@@ -301,6 +311,26 @@ export function ImmersiveGameTable({
   }
 
   function selectDockAction(id: string) {
+    
+    if (id === "history") {
+      setHarborOpen(false);
+      setFestivalOpen(false);
+      setExplorationOpen(false);
+      setNewWorldAtlasOpen(false);
+      setObjectivesOpen(false);
+      setEndTurnDialogOpen(false);
+      setFinalResultsOpen(false);
+      setHandOpen(false);
+
+      closeConstructionMode();
+      closeProductionMode();
+      closeNavalMode();
+
+      setGameHistoryOpen(true);
+      setActiveAction("history");
+      return;
+    }
+
     if (id === "results") {
       setHarborOpen(false);
       setFestivalOpen(false);
@@ -1364,6 +1394,16 @@ async function confirmConstruction() {
           game={game}
           onClose={() => {
             setFinalResultsOpen(false);
+            setActiveAction(null);
+          }}
+        />
+      )}
+
+      {/* STEP 95 — GAME ACTION HISTORY */}
+      {gameHistoryOpen && (
+        <GameHistoryPanel
+          onClose={() => {
+            setGameHistoryOpen(false);
             setActiveAction(null);
           }}
         />

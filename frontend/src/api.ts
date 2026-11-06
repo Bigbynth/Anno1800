@@ -177,3 +177,34 @@ export function fulfillPopulationCard(
     }
   );
 }
+
+
+/* STEP 95 — GAME ACTION HISTORY */
+
+export interface GameHistoryEvent {
+  id: number;
+  round: number;
+  player_index: number;
+  player_name: string;
+  action_type: string;
+  message: string;
+}
+
+export interface GameHistoryResponse {
+  events: GameHistoryEvent[];
+  total_recorded: number;
+  retained: number;
+}
+
+export async function fetchGameHistory():
+  Promise<GameHistoryResponse> {
+  const response = await fetch("/api/action-history");
+
+  if (!response.ok) {
+    throw new Error(
+      `Unable to load game history (HTTP ${response.status})`
+    );
+  }
+
+  return (await response.json()) as GameHistoryResponse;
+}

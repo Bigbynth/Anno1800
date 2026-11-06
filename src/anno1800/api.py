@@ -81,6 +81,53 @@ _demo_game: Game | None = None
 # Protect the single in-memory game from concurrent requests.
 _game_lock = RLock()
 
+# STEP 95 — SERVER-SIDE ACTION HISTORY
+#
+# History belongs to the current in-memory game session.
+# Keep a bounded record of successful actions only.
+
+_action_history: list[dict] = []
+_next_action_event_id = 1
+_MAX_ACTION_HISTORY = 500
+
+
+def record_game_action(
+    game: Game,
+    action_type: str,
+    message: str,
+    actor_index: int | None = None,
+    round_number: int | None = None,
+) -> None:
+    """Record a successfully completed game action.
+
+    Call while holding _game_lock, after the engine succeeds.
+    """
+    global _next_action_event_id
+
+    if actor_index is None:
+        actor_index = game.state.current_player_index
+
+    if round_number is None:
+        round_number = game.state.turn_number
+
+    actor = game.state.players[actor_index]
+
+    event = {
+        "id": _next_action_event_id,
+        "round": round_number,
+        "player_index": actor_index,
+        "player_name": actor.name,
+        "action_type": action_type,
+        "message": message,
+    }
+
+    _action_history.append(event)
+    _next_action_event_id += 1
+
+    # Prevent unlimited memory growth.
+    if len(_action_history) > _MAX_ACTION_HISTORY:
+        del _action_history[:-_MAX_ACTION_HISTORY]
+
 
 
 class BuildIndustryRequest(BaseModel):
@@ -151,6 +198,14 @@ def get_demo_game() -> Game:
 
     return _demo_game
 
+@app.get("/api/action-history")
+def get_action_history() -> dict:
+    with _game_lock:
+        return {
+            "events": list(reversed(_action_history)),
+            "total_recorded": _next_action_event_id - 1,
+            "retained": len(_action_history),
+        }
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
@@ -354,6 +409,12 @@ def perform_festival() -> dict:
                 status_code=409,
                 detail=str(exc),
             ) from exc
+                
+        record_game_action(
+            game,
+            action_type="festival",
+            message=result.message,
+        )
 
         return {
             "message": result.message,
@@ -379,6 +440,12 @@ def explore_new_world() -> dict:
                 status_code=409,
                 detail=str(exc),
             ) from exc
+  
+        record_game_action(
+            game,
+            action_type="exploration",
+            message=result.message,
+        )
 
         return {
             "message": result.message,
@@ -415,6 +482,12 @@ def perform_production(request: ProduceRequest) -> dict:
                 status_code=409,
                 detail=str(exc),
             ) from exc
+        
+        record_game_action(
+            game,
+            action_type="production",
+            message=result.message,
+        )
 
         return {
             "message": result.message,
@@ -596,6 +669,12 @@ def build_industry(request: AdvancedBuildRequest) -> dict:
                 status_code=409,
                 detail=str(exc),
             ) from exc
+        
+        record_game_action(
+            game,
+            action_type="industry_construction",
+            message=result.message,
+        )
 
         return {
             "message": result.message,
@@ -668,19 +747,31 @@ def remove_construction(
                 detail=str(exc),
             ) from exc
 
+        
+        message = (
+            f"{player.name} demolished "
+            f"{construction_name} at {request.space_id}"
+        )
+
+        record_game_action(
+            game,
+            action_type="demolition",
+            message=message,
+        )
+
         return {
-            "message": (
-                f"{player.name} demolished "
-                f"{construction_name} at {request.space_id}"
-            ),
+            "message": message,
             "game": serialize_game(game),
         }
+
 
 @app.post("/api/actions/end-turn")
 def end_current_turn() -> dict:
     with _game_lock:
         game = get_demo_game()
         previous_player = game.current_player.name
+        previous_player_index = game.state.current_player_index
+        previous_round = game.state.turn_number
 
         try:
             game.end_turn()
@@ -694,9 +785,19 @@ def end_current_turn() -> dict:
                 status_code=409,
                 detail=str(exc),
             ) from exc
+   
+        message = f"{previous_player} ended their turn."
+
+        record_game_action(
+            game,
+            action_type="end_turn",
+            message=message,
+            actor_index=previous_player_index,
+            round_number=previous_round,
+        )
 
         return {
-            "message": f"{previous_player} ended their turn.",
+            "message": message,
             "game": serialize_game(game),
         }
 
@@ -1002,6 +1103,12 @@ def build_naval(request: NavalBuildRequest) -> dict:
                 detail=str(exc),
             ) from exc
 
+        record_game_action(
+            game,
+            action_type="naval_construction",
+            message=result.message,
+        )
+
         return {
             "message": result.message,
             "game": serialize_game(game),
@@ -1275,6 +1382,12 @@ def fulfill_population_card(
                 status_code=409,
                 detail=str(exc),
             ) from exc
+        
+        record_game_action(
+            game,
+            action_type="population_fulfillment",
+            message=result.message,
+        )
 
         return {
             "message": result.message,
