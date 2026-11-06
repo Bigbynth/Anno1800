@@ -1,12 +1,14 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { IslandCanvas } from "./IslandCanvas";
 import { ResourceToken } from "./ResourceToken";
 import { ResourceDependencyPanel } from "./ResourceDependencyPanel";
 import { TradeDirectory } from "./TradeDirectory";
-
+import { pretty } from "../types";
 import { TurnStatus } from "./TurnStatus";
 import { EndTurnDialog } from "./EndTurnDialog";
+import { FinalResultsDialog } from "./FinalResultsDialog";
+
 
 import { NavalConstructionPanel } from "./NavalConstructionPanel";
 
@@ -130,6 +132,12 @@ const dockActions: DockAction[] = [
     description: "Inspect objectives and victory progress",
   },
   {
+    id: "results",
+    label: "Results",
+    symbol: "★",
+    description: "View current or final scores",
+  },
+  {
     id: "cards",
     label: "Cards",
     symbol: "▤",
@@ -176,6 +184,13 @@ export function ImmersiveGameTable({
 
   const [objectivesOpen, setObjectivesOpen] =
     useState(false);
+
+    
+  const [finalResultsOpen, setFinalResultsOpen] =
+    useState(false);
+
+  const resultsShownForGame = useRef(false);
+
 
   const [endTurnDialogOpen, setEndTurnDialogOpen] =
     useState(false);
@@ -251,6 +266,19 @@ export function ImmersiveGameTable({
     setNewWorldAtlasOpen(false);
     setEndTurnDialogOpen(false);
   }, [game?.current_player_index]);
+  
+/* STEP 94 — PRESENT RESULTS WHEN GAME ENDS */
+  useEffect(() => {
+    if (!game?.game_over) {
+      resultsShownForGame.current = false;
+      return;
+    }
+
+    if (!resultsShownForGame.current) {
+      resultsShownForGame.current = true;
+      setFinalResultsOpen(true);
+    }
+  }, [game?.game_over]);
 
   function openEndTurnDialog() {
     if (!game || game.game_over || actionLoading) {
@@ -273,6 +301,24 @@ export function ImmersiveGameTable({
   }
 
   function selectDockAction(id: string) {
+    if (id === "results") {
+      setHarborOpen(false);
+      setFestivalOpen(false);
+      setExplorationOpen(false);
+      setNewWorldAtlasOpen(false);
+      setObjectivesOpen(false);
+      setEndTurnDialogOpen(false);
+      setHandOpen(false);
+
+      closeConstructionMode();
+      closeProductionMode();
+      closeNavalMode();
+
+      setFinalResultsOpen(true);
+      setActiveAction("results");
+      return;
+    }
+
     if (id === "produce") {
       if (productionMode) {
         closeProductionMode();
@@ -975,8 +1021,24 @@ async function confirmConstruction() {
             inspectorOpen ? "" : "is-collapsed",
           ].join(" ")}
           aria-label="Context inspector"
-        >
+        > 
+        {/* STEP 94 — GAME OVER BANNER */}
+        {game.game_over && (
+          <div className="immersive-game-over-banner">
+            <strong>Game Complete</strong>
 
+            <span>
+              Final phase: {pretty(game.phase)}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => setFinalResultsOpen(true)}
+            >
+              View Results
+            </button>
+          </div>
+        )}
           
         {/* STEP 93 — TURN STATUS */}
         <TurnStatus
@@ -1292,6 +1354,17 @@ async function confirmConstruction() {
           onConfirm={onConfirmEndTurn}
           onClose={() => {
             setEndTurnDialogOpen(false);
+          }}
+        />
+      )}
+      
+      {/* STEP 94 — FINAL RESULTS */}
+      {finalResultsOpen && (
+        <FinalResultsDialog
+          game={game}
+          onClose={() => {
+            setFinalResultsOpen(false);
+            setActiveAction(null);
           }}
         />
       )}

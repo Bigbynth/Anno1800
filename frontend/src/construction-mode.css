@@ -2652,3 +2652,253 @@
     flex-direction: column;
   }
 }
+
+/* STEP 94 — FINAL RESULTS */
+
+.final-results-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 170;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 20, 29, 0.87);
+  backdrop-filter: blur(5px);
+}
+
+.final-results-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(900px, 100%);
+  max-height: 92dvh;
+  overflow: hidden;
+  padding: 22px;
+  border: 2px solid #c59b56;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #294550, #172d3b);
+  color: #e8dcc1;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6);
+}
+
+.final-results-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.final-results-header h2 {
+  margin: 7px 0;
+  color: #f0dfbd;
+  font: 30px Georgia, serif;
+}
+
+.final-results-header p,
+.final-results-footer p {
+  margin: 0;
+  color: #cbd5cd;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.final-results-header button {
+  border: 0;
+  background: transparent;
+  color: #e8dcc1;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.final-results-leader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid #e5c282;
+  border-radius: 9px;
+  background: #493d2d;
+  text-align: center;
+}
+
+.final-results-leader > span {
+  color: #d9bc88;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.final-results-leader > strong {
+  color: #f1dcae;
+  font: 29px Georgia, serif;
+}
+
+.final-results-leader p {
+  margin: 0;
+  color: #f0dfbd;
+  font-size: 14px;
+}
+
+.final-results-standings {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(220px, 1fr)
+  );
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.final-results-player {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 15px;
+  border: 1px solid #668082;
+  border-radius: 9px;
+  background: #284651;
+}
+
+.final-results-player.is-leading {
+  border-color: #e5c282;
+  background: #3d453e;
+}
+
+.final-results-player-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.final-results-player-heading > div:nth-child(2) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.final-results-player-heading strong {
+  overflow-wrap: anywhere;
+}
+
+.final-results-player-heading small {
+  color: #c4d1ca;
+  font-size: 10px;
+}
+
+.final-results-rank {
+  color: #e5c282;
+  font: 26px Georgia, serif;
+}
+
+.final-results-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.final-results-total strong {
+  color: #f2dba6;
+  font-size: 29px;
+  font-variant-numeric: tabular-nums;
+}
+
+.final-results-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.final-results-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid #577174;
+  font-size: 12px;
+}
+
+.final-results-breakdown-row strong {
+  color: #e8d09f;
+  font-variant-numeric: tabular-nums;
+}
+
+.final-results-warning {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #c59b56;
+  border-radius: 7px;
+  color: #f0dcb6;
+  background: #493d2d;
+  font-size: 12px;
+}
+
+.final-results-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding-top: 13px;
+  border-top: 1px solid #687d7c;
+}
+
+.final-results-footer button {
+  flex-shrink: 0;
+  padding: 11px 16px;
+  border: 1px solid #e5c282;
+  border-radius: 7px;
+  background: #81623b;
+  color: #fff0cf;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* GAME OVER — INSPECTOR BANNER */
+
+.immersive-game-over-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #e5c282;
+  border-radius: 9px;
+  background: #493d2d;
+  color: #f0dfbd;
+}
+
+.immersive-game-over-banner strong {
+  font: 20px Georgia, serif;
+}
+
+.immersive-game-over-banner span {
+  font-size: 12px;
+}
+
+.immersive-game-over-banner button {
+  padding: 10px;
+  border: 1px solid #e5c282;
+  border-radius: 7px;
+  background: #81623b;
+  color: #fff0cf;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 650px) {
+  .final-results-dialog {
+    padding: 14px;
+  }
+
+  .final-results-header h2 {
+    font-size: 23px;
+  }
+
+  .final-results-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
