@@ -42,6 +42,14 @@ from anno1800.models.industry import OwnedIndustry
 from anno1800.models.ship import Ship, Shipyard, NavalTokenType
 from anno1800.models.population import PopulationType
 
+from anno1800.models.objective import (
+    IndustryObjectiveRule,
+    PopulationObjectiveRule,
+    ResourceObjectiveRule,
+)
+from anno1800.services.objective_scoring import score_objective
+from anno1800.scoring import ScoringEngine
+
 
 from typing import Literal
 
@@ -210,6 +218,35 @@ def get_industries() -> dict:
         }
 
 
+def serialize_objective_rule(rule) -> dict:
+    if isinstance(rule, IndustryObjectiveRule):
+        return {
+            "type": "industry",
+            "industries": list(rule.industries),
+            "points_per_industry": rule.points_per_industry,
+        }
+
+    if isinstance(rule, PopulationObjectiveRule):
+        return {
+            "type": "population",
+            "population_type": rule.population_type,
+            "minimum": rule.minimum,
+            "points": rule.points,
+        }
+
+    if isinstance(rule, ResourceObjectiveRule):
+        return {
+            "type": "resource",
+            "resource": rule.resource,
+            "minimum": rule.minimum,
+            "points": rule.points,
+        }
+
+    raise TypeError(
+        f"Unsupported scoring objective: {type(rule).__name__}"
+    )
+
+
 def serialize_game(game: Game) -> dict:
     state = game.state
 
@@ -219,6 +256,38 @@ def serialize_game(game: Game) -> dict:
         "phase": state.end_game_phase.value,
         "game_over": state.game_over,
         "main_action_used": game.turn_state.main_action_used,
+                
+        # STEP 92 — Shared scoring objectives.
+        "objectives": [
+            {
+                "id": card.id,
+                "name": card.name,
+                "objective_type": card.objective_type.value,
+                "rule": serialize_objective_rule(card.rule),
+                "scores": [
+                    score_objective(card, player)
+                    for player in state.players
+                ],
+            }
+            for card in state.objective_cards
+        ],
+
+        # Live score preview; final scoring still belongs
+        # to ScoringEngine when the game finishes.
+        "score_preview": [
+            {
+                "player_index": index,
+                "population_cards": score.population_cards,
+                "expeditions": score.expeditions,
+                "gold": score.gold,
+                "fireworks": score.fireworks,
+                "objectives": score.objectives,
+                "total": score.total,
+            }
+            for index, player in enumerate(state.players)
+            for score in [ScoringEngine().score_player(state, player)]
+        ],
+
         "players": [
             {
                 "name": player.name,

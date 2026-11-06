@@ -64,6 +64,8 @@ export interface GameSnapshot {
   game_over: boolean;
   main_action_used: boolean;
   players: GamePlayerSnapshot[];
+  objectives: ActiveObjectiveSnapshot[];
+  score_preview: ScorePreviewSnapshot[];
 }
 
 
@@ -131,3 +133,31 @@ export interface NavalCatalogueSnapshot {
   };
   spaces: IslandSpaceSnapshot[];
 }
+
+
+export interface ActiveObjectiveSnapshot {
+  id: string;
+  name: string;
+  objective_type: string;
+  rule: {
+    type: "industry" | "population" | "resource";
+    industries?: string[];
+    points_per_industry?: number;
+    population_type?: string;
+    resource?: string;
+    minimum?: number;
+    points?: number;
+  };
+  scores: number[];
+}
+
+export interface ScorePreviewSnapshot {
+  player_index: number;
+  population_cards: number;
+  expeditions: number;
+  gold: number;
+  fireworks: number;
+  objectives: number;
+  total: number;
+}
+

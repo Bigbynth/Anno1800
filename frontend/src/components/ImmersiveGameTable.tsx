@@ -23,6 +23,7 @@ import { PopulationCardDesk } from "./PopulationCardDesk";
 import { FestivalDialog } from "./FestivalDialog";
 import { ExplorationDialog } from "./ExplorationDialog";
 import { NewWorldAtlas } from "./NewWorldAtlas";
+import { ObjectivesPanel } from "./ObjectivesPanel";
 
 import type { ComponentProps } from "react";
 import type { GameSnapshot } from "../types";
@@ -120,6 +121,12 @@ const dockActions: DockAction[] = [
     description: "View discovered New World islands",
   },
   {
+    id: "objectives",
+    label: "Objectives",
+    symbol: "★",
+    description: "Inspect objectives and victory progress",
+  },
+  {
     id: "cards",
     label: "Cards",
     symbol: "▤",
@@ -147,9 +154,6 @@ export function ImmersiveGameTable({
   onProduceIndustry,
   onBuildNaval,
 }: Props) {
-  const [objectivesOpen, setObjectivesOpen] =
-    useState(true);
-
   const [inspectorOpen, setInspectorOpen] =
     useState(true);
 
@@ -165,6 +169,9 @@ export function ImmersiveGameTable({
     useState(false);
 
   const [newWorldAtlasOpen, setNewWorldAtlasOpen] =
+    useState(false);
+
+  const [objectivesOpen, setObjectivesOpen] =
     useState(false);
 
   const [activeAction, setActiveAction] =
@@ -230,6 +237,7 @@ export function ImmersiveGameTable({
     setSelectedProducerIndex(null);
     setProductionError(null);
     setLastProduction(null);
+    setObjectivesOpen(false);
     setNavalMode(false);
     setNavalTargetId(null);
     setNavalType("shipyard");
@@ -284,6 +292,21 @@ export function ImmersiveGameTable({
 
       setActiveAction("festival");
       setFestivalOpen(true);
+      return;
+    }
+    
+    if (id === "objectives") {
+      setHarborOpen(false);
+      setFestivalOpen(false);
+      setExplorationOpen(false);
+      setNewWorldAtlasOpen(false);
+      closeNavalMode();
+      closeProductionMode();
+      closeConstructionMode();
+      setHandOpen(false);
+
+      setObjectivesOpen(true);
+      setActiveAction("objectives");
       return;
     }
     
@@ -1207,6 +1230,17 @@ async function confirmConstruction() {
             setNewWorldAtlasOpen(false);
             setActiveAction("explore");
             setExplorationOpen(true);
+          }}
+        />
+      )}
+
+      {/* STEP 92 — OBJECTIVES AND VICTORY PROGRESS */}
+      {objectivesOpen && (
+        <ObjectivesPanel
+          game={game}
+          onClose={() => {
+            setObjectivesOpen(false);
+            setActiveAction(null);
           }}
         />
       )}

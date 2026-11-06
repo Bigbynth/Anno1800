@@ -2172,3 +2172,215 @@
     transition: none;
   }
 }
+
+/* STEP 92 — OBJECTIVES & VICTORY PROGRESS */
+
+.objectives-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 20, 29, 0.83);
+  backdrop-filter: blur(4px);
+}
+
+.objectives-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+  width: min(940px, 100%);
+  max-height: 92dvh;
+  overflow: hidden;
+  padding: 23px;
+  border: 2px solid #c59b56;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #2a4652, #172d3b);
+  color: #e8dcc1;
+  box-shadow: 0 24px 65px rgba(0, 0, 0, 0.55);
+}
+
+.objectives-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.objectives-header h2 {
+  margin: 7px 0;
+  color: #f0dfbd;
+  font: 28px Georgia, serif;
+}
+
+.objectives-header p,
+.objectives-disclaimer {
+  margin: 0;
+  color: #cad2c9;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.objectives-header button {
+  border: 0;
+  background: transparent;
+  color: #e8dcc1;
+  font-size: 27px;
+  cursor: pointer;
+}
+
+.objectives-content {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 16px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.objectives-score-section,
+.objectives-active-section,
+.objectives-standings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #637f80;
+  border-radius: 9px;
+  background: #274550;
+}
+
+.objectives-score-main {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 15px;
+  border: 1px solid #c59b56;
+  border-radius: 8px;
+  background: #493d2d;
+}
+
+.objectives-score-main small,
+.objectives-score-main span {
+  color: #e0d3b6;
+  font-size: 11px;
+}
+
+.objectives-score-main strong {
+  color: #f4dba4;
+  font-size: 44px;
+  font-variant-numeric: tabular-nums;
+}
+
+.objectives-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.objectives-score-row,
+.objectives-card-score {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(197, 155, 86, 0.25);
+  font-size: 12px;
+}
+
+.objectives-score-row strong,
+.objectives-card-score strong {
+  color: #e5c282;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.objectives-active-section h3,
+.objectives-standings-section h3 {
+  margin: 0;
+  color: #efd9b1;
+  font: 21px Georgia, serif;
+}
+
+.objectives-card-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.objectives-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #a28b60;
+  border-radius: 8px;
+  background: #334b4c;
+}
+
+.objectives-card-number {
+  color: #d9bc88;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.objectives-card h4 {
+  margin: 0;
+  color: #f1dcba;
+  font: 18px Georgia, serif;
+}
+
+.objectives-card p,
+.objectives-card small {
+  margin: 0;
+  color: #d2dcd2;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.objectives-card-score {
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.objectives-standings-section {
+  grid-column: 1 / -1;
+}
+
+.objectives-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding-top: 13px;
+  border-top: 1px solid #70817b;
+  color: #cbd5cc;
+  font-size: 12px;
+}
+
+.objectives-footer button {
+  padding: 10px 18px;
+  border: 1px solid #e1bf82;
+  border-radius: 7px;
+  background: #81623b;
+  color: #fff0cf;
+  cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .objectives-panel {
+    padding: 14px;
+  }
+
+  .objectives-content,
+  .objectives-card-list {
+    grid-template-columns: 1fr;
+  }
+
+  .objectives-standings-section {
+    grid-column: auto;
+  }
+}
