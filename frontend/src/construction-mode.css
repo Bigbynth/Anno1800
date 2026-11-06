@@ -3160,3 +3160,165 @@
     align-items: stretch;
   }
 }
+
+/* STEP 96 — GAME SAVE / LOAD */
+
+.save-load-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 20, 29, .85);
+  backdrop-filter: blur(5px);
+}
+
+.save-load-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+  width: min(650px, 100%);
+  max-height: 92dvh;
+  overflow-y: auto;
+  padding: 23px;
+  border: 2px solid #c59b56;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #294550, #172d3b);
+  color: #e8dcc1;
+  box-shadow: 0 25px 70px rgba(0,0,0,.6);
+}
+
+.save-load-header,
+.save-load-footer,
+.save-load-slot,
+.save-load-slot-actions,
+.save-load-confirm-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.save-load-header h2 {
+  margin: 7px 0 0;
+  color: #f0dfbd;
+  font: 27px Georgia, serif;
+}
+
+.save-load-header > button {
+  border: 0;
+  background: transparent;
+  color: #e8dcc1;
+  font-size: 27px;
+  cursor: pointer;
+}
+
+.save-load-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.save-load-slot {
+  padding: 14px;
+  border: 1px solid #71817b;
+  border-radius: 9px;
+  background: #294650;
+}
+
+.save-load-slot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.save-load-slot-info strong {
+  color: #f1dcba;
+  font: 18px Georgia, serif;
+}
+
+.save-load-slot-info small {
+  color: #cad5cc;
+  font-size: 11px;
+}
+
+.save-load-dialog button {
+  cursor: pointer;
+}
+
+.save-load-slot-actions button,
+.save-load-confirm-actions button,
+.save-load-footer button {
+  padding: 10px 14px;
+  border: 1px solid #c59b56;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #f4e4c6;
+  font-weight: 700;
+}
+
+.save-load-slot-actions button:last-child,
+.save-load-confirm-actions button:last-child {
+  background: #81623b;
+}
+
+.save-load-dialog button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.save-load-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid #c59b56;
+  border-radius: 9px;
+  background: #493d2d;
+}
+
+.save-load-confirm p,
+.save-load-footer p {
+  margin: 0;
+  color: #e3d6bb;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.save-load-error,
+.save-load-success {
+  margin: 0;
+  padding: 11px;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+.save-load-error {
+  border: 1px solid #bd756a;
+  background: #56393a;
+  color: #ffe0d8;
+}
+
+.save-load-success {
+  border: 1px solid #7fa78a;
+  background: #294b40;
+  color: #ccebd0;
+}
+
+.save-load-footer {
+  padding-top: 12px;
+  border-top: 1px solid #70817d;
+}
+
+@media (max-width: 600px) {
+  .save-load-dialog {
+    padding: 15px;
+  }
+
+  .save-load-slot,
+  .save-load-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

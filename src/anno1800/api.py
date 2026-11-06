@@ -13,6 +13,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from anno1800.game import Game
+import random
+
+from anno1800.services.game_persistence import (
+    SaveError,
+    save_game,
+    load_game,
+    list_saves,
+)
 
 from anno1800.actions.base import InvalidActionError
 from anno1800.actions.festival import FestivalAction
@@ -206,6 +214,98 @@ def get_action_history() -> dict:
             "total_recorded": _next_action_event_id - 1,
             "retained": len(_action_history),
         }
+
+
+# STEP 96 — SAVE / LOAD GAME
+
+
+@app.get("/api/saves")
+def get_save_slots() -> dict:
+    with _game_lock:
+        return {"slots": list_saves()}
+
+
+@app.post("/api/saves/{slot}")
+def save_current_game(slot: str) -> dict:
+    with _game_lock:
+        game = get_demo_game()
+
+        try:
+            metadata = save_game(
+                slot=slot,
+                game=game,
+                history=_action_history,
+                next_event_id=_next_action_event_id,
+            )
+        except SaveError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail=str(exc),
+            ) from exc
+
+        return {
+            "message": f"Game saved to {slot}.",
+            "metadata": metadata,
+        }
+
+
+@app.post("/api/saves/{slot}/load")
+def load_saved_game(slot: str) -> dict:
+    global _demo_game
+    global _action_history
+    global _next_action_event_id
+
+    with _game_lock:
+        try:
+            data = load_game(slot)
+        except SaveError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail=str(exc),
+            ) from exc
+
+        restored_game = data["game"]
+
+        # Verify basic consistency before replacing the
+        # running game.
+        state = restored_game.state
+
+        if not state.players:
+            raise HTTPException(
+                status_code=400,
+                detail="Save has no players.",
+            )
+
+        if not (
+            0 <= state.current_player_index
+            < len(state.players)
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid saved player index.",
+            )
+
+        # Validate RNG state before replacing the game.
+        try:
+            rng = random.Random()
+            rng.setstate(data["random_state"])
+        except (TypeError, ValueError, KeyError) as exc:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid saved random state.",
+            ) from exc
+        restored_snapshot = serialize_game(restored_game)
+        # Only now replace the active session.
+        _demo_game = restored_game
+        _action_history = data["history"]
+        _next_action_event_id = data["next_event_id"]
+        random.setstate(data["random_state"])
+
+        return {
+            "message": f"Game loaded from {slot}.",
+            "game": restored_snapshot,
+        }
+
 
 @app.get("/api/health")
 def health() -> dict[str, str]:

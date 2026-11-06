@@ -208,3 +208,75 @@ export async function fetchGameHistory():
 
   return (await response.json()) as GameHistoryResponse;
 }
+
+/* STEP 96 — GAME SESSION SAVE / LOAD */
+
+export type SaveSlotId =
+  | "slot1"
+  | "slot2"
+  | "slot3";
+
+export interface SaveSlotInfo {
+  slot: SaveSlotId;
+  exists: boolean;
+  valid: boolean;
+  metadata: {
+    round: number;
+    current_player: string;
+    game_over: boolean;
+  } | null;
+}
+
+export interface SaveSlotsResponse {
+  slots: SaveSlotInfo[];
+}
+
+async function readSaveResponse<T>(
+  response: Response
+): Promise<T> {
+  if (!response.ok) {
+    let message = `Save operation failed (${response.status})`;
+
+    try {
+      const body = await response.json();
+
+      if (typeof body.detail === "string") {
+        message = body.detail;
+      }
+    } catch {
+      // Keep the HTTP fallback.
+    }
+
+    throw new Error(message);
+  }
+
+  return (await response.json()) as T;
+}
+
+export function fetchSaveSlots():
+  Promise<SaveSlotsResponse> {
+  return fetch("/api/saves")
+    .then(response =>
+      readSaveResponse<SaveSlotsResponse>(response)
+    );
+}
+
+export function saveGameSlot(
+  slot: SaveSlotId
+): Promise<{ message: string }> {
+  return fetch(`/api/saves/${slot}`, {
+    method: "POST",
+  }).then(response =>
+    readSaveResponse<{ message: string }>(response)
+  );
+}
+
+export function loadGameSlot(
+  slot: SaveSlotId
+): Promise<GameActionResponse> {
+  return fetch(`/api/saves/${slot}/load`, {
+    method: "POST",
+  }).then(response =>
+    readSaveResponse<GameActionResponse>(response)
+  );
+}

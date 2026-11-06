@@ -9,7 +9,8 @@ import { TurnStatus } from "./TurnStatus";
 import { EndTurnDialog } from "./EndTurnDialog";
 import { FinalResultsDialog } from "./FinalResultsDialog";
 import { GameHistoryPanel } from "./GameHistoryPanel";
-
+import { SaveLoadDialog } from "./SaveLoadDialog";
+import type { SaveSlotId } from "../api";
 import { NavalConstructionPanel } from "./NavalConstructionPanel";
 
 import type { NavalCatalogueSnapshot } from "../types";
@@ -73,6 +74,8 @@ type Props = {
     payments: ConstructionPayment[],
     shipyardIndex?: number
   ) => Promise<void>;
+  onSaveGame: (slot: SaveSlotId) => Promise<void>;
+  onLoadGame: (slot: SaveSlotId) => Promise<void>;
 };
 
 type DockAction = {
@@ -144,6 +147,12 @@ const dockActions: DockAction[] = [
     description: "Review completed game actions",
   },
   {
+    id: "archive",
+    label: "Archive",
+    symbol: "▣",
+    description: "Save or load the current game",
+  },
+  {
     id: "cards",
     label: "Cards",
     symbol: "▤",
@@ -170,6 +179,8 @@ export function ImmersiveGameTable({
   onBuildIndustry,
   onProduceIndustry,
   onBuildNaval,
+  onSaveGame,
+  onLoadGame,
 }: Props) {
   const [inspectorOpen, setInspectorOpen] =
     useState(true);
@@ -196,6 +207,9 @@ export function ImmersiveGameTable({
     useState(false);
 
   const [gameHistoryOpen, setGameHistoryOpen] =
+    useState(false);
+
+  const [saveLoadOpen, setSaveLoadOpen] =
     useState(false);
 
   const resultsShownForGame = useRef(false);
@@ -275,6 +289,7 @@ export function ImmersiveGameTable({
     setNewWorldAtlasOpen(false);
     setEndTurnDialogOpen(false);
     setGameHistoryOpen(false);
+    setSaveLoadOpen(false);
   }, [game?.current_player_index]);
   
 /* STEP 94 — PRESENT RESULTS WHEN GAME ENDS */
@@ -419,6 +434,28 @@ export function ImmersiveGameTable({
       setExplorationOpen(false);
       setNewWorldAtlasOpen(true);
       setActiveAction("world");
+      return;
+    }
+    
+    if (id === "archive") {
+      if (actionLoading) return;
+
+      setHarborOpen(false);
+      setFestivalOpen(false);
+      setExplorationOpen(false);
+      setNewWorldAtlasOpen(false);
+      setObjectivesOpen(false);
+      setEndTurnDialogOpen(false);
+      setFinalResultsOpen(false);
+      setGameHistoryOpen(false);
+      setHandOpen(false);
+
+      closeConstructionMode();
+      closeProductionMode();
+      closeNavalMode();
+
+      setSaveLoadOpen(true);
+      setActiveAction("archive");
       return;
     }
 
@@ -1404,6 +1441,18 @@ async function confirmConstruction() {
         <GameHistoryPanel
           onClose={() => {
             setGameHistoryOpen(false);
+            setActiveAction(null);
+          }}
+        />
+      )}
+
+      {/* STEP 96 — SAVE / LOAD GAME */}
+      {saveLoadOpen && (
+        <SaveLoadDialog
+          onSave={onSaveGame}
+          onLoad={onLoadGame}
+          onClose={() => {
+            setSaveLoadOpen(false);
             setActiveAction(null);
           }}
         />

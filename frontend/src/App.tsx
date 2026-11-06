@@ -25,10 +25,12 @@ import {
   removeConstruction,
   fetchNavalCatalogue,
   buildNavalConstruction,
-  fulfillPopulationCard
+  fulfillPopulationCard,
+  saveGameSlot,
+  loadGameSlot,
 } from "./api";
 
-import type { GameActionResponse, ConstructionPayment, PopulationCardPayment } from "./api";
+import type { GameActionResponse, ConstructionPayment, PopulationCardPayment, SaveSlotId} from "./api";
 
 import { CardFace, isPopulation, isExpedition } from "./components/CardFace";
 import { IslandBoard, locations } from "./components/IslandBoard";
@@ -77,6 +79,8 @@ function App() {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [activePlayer, setActivePlayer] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
+  const [sessionRevision, setSessionRevision] =
+    useState(0);
 
   const [paymentSources, setPaymentSources] = useState<Record<string, string>>(
     {},
@@ -469,8 +473,71 @@ function App() {
     }
   }
 
-  
-  
+  async function handleSaveGame(
+    slot: SaveSlotId
+  ): Promise<void> {
+    if (actionLoading) {
+      throw new Error(
+        "Cannot save while a game action is running."
+      );
+    }
+
+    setActionLoading(true);
+
+    try {
+      const result = await saveGameSlot(slot);
+      setNotice(result.message);
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleLoadGame(
+    slot: SaveSlotId
+  ): Promise<void> {
+    if (actionLoading) {
+      throw new Error(
+        "Cannot load while a game action is running."
+      );
+    }
+
+    setActionLoading(true);
+
+    try {
+      const result = await loadGameSlot(slot);
+
+      // The backend has restored the authoritative game.
+      setGame(result.game);
+      setActivePlayer(result.game.current_player_index);
+      setApiError(null);
+      setNotice(result.message);
+
+      // Clear transient UI state after restoration.
+      setSelectedLocation(null);
+      setSessionRevision(value => value + 1);
+
+      // Refresh catalogues for the restored player.
+      // Their failure must not turn a successful load
+      // into a false "load failed" notification.
+      try {
+        const [industries, naval] = await Promise.all([
+          fetchIndustries(),
+          fetchNavalCatalogue(),
+        ]);
+
+        setIndustryData(industries);
+        setNavalData(naval);
+      } catch (refreshError) {
+        console.warn(
+          "Game restored, but catalogue refresh failed:",
+          refreshError
+        );
+      }
+    } finally {
+      setActionLoading(false);
+    }
+  }
+ 
   useEffect(() => {
     if (!game) {
       setIndustryData(null);
@@ -933,6 +1000,9 @@ function App() {
         onExploreNewWorld={handleExploreNewWorld}
         onOpenWorkshop={() => setScreen("legacy-table")}
         onFulfillPopulationCard={handleFulfillPopulationCard}
+        key={sessionRevision}
+        onSaveGame={handleSaveGame}
+        onLoadGame={handleLoadGame}
       />
     );
   }
