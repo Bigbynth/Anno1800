@@ -3322,3 +3322,222 @@
     flex-direction: column;
   }
 }
+
+/* STEP 97 — NEW GAME / COMPANY REGISTRY */
+
+.new-game-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 20, 29, .87);
+  backdrop-filter: blur(5px);
+}
+
+.new-game-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: min(640px, 100%);
+  max-height: 92dvh;
+  overflow-y: auto;
+  padding: 23px;
+  border: 2px solid #c59b56;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #294550, #172d3b);
+  color: #e8dcc1;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, .6);
+}
+
+.new-game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.new-game-header h2 {
+  margin: 7px 0;
+  color: #f0dfbd;
+  font: 28px Georgia, serif;
+}
+
+.new-game-header p {
+  margin: 9px 0 0;
+  color: #cbd5cc;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.new-game-header > button {
+  border: 0;
+  background: transparent;
+  color: #e8dcc1;
+  font-size: 27px;
+  cursor: pointer;
+}
+
+.new-game-player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.new-game-player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #6a8382;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.new-game-player-number {
+  display: grid;
+  place-items: center;
+  flex: 0 0 34px;
+  height: 34px;
+  border: 1px solid #c59b56;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #e5c282;
+  font-weight: 700;
+}
+
+.new-game-player label {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  color: #d5ddcf;
+  font-size: 11px;
+}
+
+.new-game-player input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px;
+  border: 1px solid #839993;
+  border-radius: 7px;
+  background: #203c47;
+  color: #f0dfbd;
+  font-size: 13px;
+}
+
+.new-game-player > button {
+  border: 0;
+  background: transparent;
+  color: #e8dcc1;
+  font-size: 23px;
+  cursor: pointer;
+}
+
+.new-game-player-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  color: #cbd5cc;
+  font-size: 12px;
+}
+
+.new-game-player-controls button {
+  padding: 10px 14px;
+  border: 1px solid #c59b56;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #f0dfbd;
+  cursor: pointer;
+}
+
+.new-game-confirmation {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid #c59b56;
+  border-radius: 8px;
+  background: #493d2d;
+}
+
+.new-game-confirmation strong {
+  color: #f0dfbd;
+}
+
+.new-game-confirmation p {
+  margin: 0;
+  color: #e3d6bb;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.new-game-validation,
+.new-game-error {
+  margin: 0;
+  padding: 11px;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+.new-game-validation {
+  border: 1px solid #c59b56;
+  background: #493d2d;
+  color: #f0dfbd;
+}
+
+.new-game-error {
+  border: 1px solid #bd756a;
+  background: #56393a;
+  color: #ffe0d8;
+}
+
+.new-game-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #70817d;
+}
+
+.new-game-footer button {
+  padding: 11px 17px;
+  border-radius: 7px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.new-game-cancel {
+  border: 1px solid #82958e;
+  background: transparent;
+  color: #e8dcc1;
+}
+
+.new-game-confirm {
+  border: 1px solid #e5c282;
+  background: #81623b;
+  color: #fff0cf;
+}
+
+.new-game-dialog button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .new-game-dialog {
+    padding: 15px;
+  }
+
+  .new-game-player {
+    gap: 8px;
+    padding: 9px;
+  }
+
+  .new-game-footer {
+    flex-direction: column;
+  }
+}

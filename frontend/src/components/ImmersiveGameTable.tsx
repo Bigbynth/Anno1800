@@ -10,6 +10,7 @@ import { EndTurnDialog } from "./EndTurnDialog";
 import { FinalResultsDialog } from "./FinalResultsDialog";
 import { GameHistoryPanel } from "./GameHistoryPanel";
 import { SaveLoadDialog } from "./SaveLoadDialog";
+import { NewGameDialog } from "./NewGameDialog";
 import type { SaveSlotId } from "../api";
 import { NavalConstructionPanel } from "./NavalConstructionPanel";
 
@@ -76,7 +77,18 @@ type Props = {
   ) => Promise<void>;
   onSaveGame: (slot: SaveSlotId) => Promise<void>;
   onLoadGame: (slot: SaveSlotId) => Promise<void>;
+  onCreateNewGame: (names: string[]) => Promise<void>;
 };
+
+
+const sessionActions = new Set([
+  "objectives",
+  "results",
+  "history",
+  "archive",
+  "new_game",
+]);
+
 
 type DockAction = {
   id: string;
@@ -151,6 +163,12 @@ const dockActions: DockAction[] = [
     label: "Archive",
     symbol: "▣",
     description: "Save or load the current game",
+  }, 
+  {
+    id: "new_game",
+    label: "New Game",
+    symbol: "+",
+    description: "Establish a fresh company match",
   },
   {
     id: "cards",
@@ -181,6 +199,7 @@ export function ImmersiveGameTable({
   onBuildNaval,
   onSaveGame,
   onLoadGame,
+  onCreateNewGame,
 }: Props) {
   const [inspectorOpen, setInspectorOpen] =
     useState(true);
@@ -210,6 +229,9 @@ export function ImmersiveGameTable({
     useState(false);
 
   const [saveLoadOpen, setSaveLoadOpen] =
+    useState(false);
+
+  const [newGameOpen, setNewGameOpen] =
     useState(false);
 
   const resultsShownForGame = useRef(false);
@@ -290,6 +312,7 @@ export function ImmersiveGameTable({
     setEndTurnDialogOpen(false);
     setGameHistoryOpen(false);
     setSaveLoadOpen(false);
+    setNewGameOpen(false);
   }, [game?.current_player_index]);
   
 /* STEP 94 — PRESENT RESULTS WHEN GAME ENDS */
@@ -327,6 +350,29 @@ export function ImmersiveGameTable({
 
   function selectDockAction(id: string) {
     
+    if (id === "new_game") {
+      if (actionLoading) return;
+
+      setHarborOpen(false);
+      setFestivalOpen(false);
+      setExplorationOpen(false);
+      setNewWorldAtlasOpen(false);
+      setObjectivesOpen(false);
+      setEndTurnDialogOpen(false);
+      setFinalResultsOpen(false);
+      setGameHistoryOpen(false);
+      setSaveLoadOpen(false);
+      setHandOpen(false);
+
+      closeConstructionMode();
+      closeProductionMode();
+      closeNavalMode();
+
+      setNewGameOpen(true);
+      setActiveAction("new_game");
+      return;
+    }
+
     if (id === "history") {
       setHarborOpen(false);
       setFestivalOpen(false);
@@ -1221,16 +1267,10 @@ async function confirmConstruction() {
             title={action.description}
             aria-pressed={action.id === "build" ? constructionMode : action.id === "produce" ? productionMode : undefined}     
             disabled={
-              (action.id === "festival" ||
-              action.id === "explore") &&
+              actionLoading ||
               (
-                actionLoading ||
-                game.main_action_used ||
-                game.game_over ||
-                (
-                  action.id === "explore" &&
-                  navalData?.naval_capacity.exploration === 0
-                )
+                !sessionActions.has(action.id) &&
+                (game.main_action_used || game.game_over)
               )
             }
           >
@@ -1457,6 +1497,22 @@ async function confirmConstruction() {
           }}
         />
       )}
+
+      
+      {/* STEP 97 — NEW GAME SETUP */}
+      {newGameOpen && (
+        <NewGameDialog
+          currentPlayerNames={
+            game.players.map(player => player.name)
+          }
+          onCreate={onCreateNewGame}
+          onClose={() => {
+            setNewGameOpen(false);
+            setActiveAction(null);
+          }}
+        />
+      )}
+
 
       {/* STEP 84 — MARITIME TRADING DIRECTORY */}
       {harborOpen && (

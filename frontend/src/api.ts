@@ -280,3 +280,17 @@ export function loadGameSlot(
     readSaveResponse<GameActionResponse>(response)
   );
 }
+
+/* STEP 97 — NEW GAME */
+
+export interface NewGameRequest {
+  player_names: string[];
+}
+
+export function createNewGame(
+  playerNames: string[]
+): Promise<GameActionResponse> {
+  return postGameAction("/api/games/new", {
+    player_names: playerNames,
+  });
+}

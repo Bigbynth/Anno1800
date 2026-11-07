@@ -28,6 +28,7 @@ import {
   fulfillPopulationCard,
   saveGameSlot,
   loadGameSlot,
+  createNewGame,
 } from "./api";
 
 import type { GameActionResponse, ConstructionPayment, PopulationCardPayment, SaveSlotId} from "./api";
@@ -537,6 +538,51 @@ function App() {
       setActionLoading(false);
     }
   }
+  
+  async function handleCreateNewGame(
+    playerNames: string[]
+  ): Promise<void> {
+    if (actionLoading) {
+      throw new Error(
+        "A game action is already in progress."
+      );
+    }
+
+    setActionLoading(true);
+
+    try {
+      const result = await createNewGame(playerNames);
+
+      // Backend game state is authoritative.
+      setGame(result.game);
+      setActivePlayer(result.game.current_player_index);
+      setApiError(null);
+      setNotice(result.message);
+
+      // Force all transient immersive UI state to reset.
+      setSessionRevision(value => value + 1);
+
+      // Refresh catalogues for the new game.
+      // A catalogue refresh failure must not be mistaken
+      // for a failed game creation.
+      try {
+        const [industries, naval] = await Promise.all([
+          fetchIndustries(),
+          fetchNavalCatalogue(),
+        ]);
+
+        setIndustryData(industries);
+        setNavalData(naval);
+      } catch (refreshError) {
+        console.warn(
+          "New game created, but catalogue refresh failed:",
+          refreshError
+        );
+      }
+    } finally {
+      setActionLoading(false);
+    }
+  }
  
   useEffect(() => {
     if (!game) {
@@ -1003,6 +1049,7 @@ function App() {
         key={sessionRevision}
         onSaveGame={handleSaveGame}
         onLoadGame={handleLoadGame}
+        onCreateNewGame={handleCreateNewGame}
       />
     );
   }

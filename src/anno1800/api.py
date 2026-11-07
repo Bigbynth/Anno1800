@@ -158,6 +158,9 @@ class PopulationCardPaymentStep(BaseModel):
     island_id: str | None = None
 
 
+class NewGameRequest(BaseModel):
+    player_names: list[str]
+
 
 class FulfillPopulationCardRequest(BaseModel):
     card_id: str = Field(min_length=1)
@@ -194,15 +197,26 @@ class ProduceRequest(BaseModel):
     industry_index: int = Field(ge=0)
 
 
+def create_new_game(player_names: list[str]) -> Game:
+    """Create a fresh game with the configured players."""
+
+    return Game.from_names(
+        player_names,
+        use_custom_population=True,
+        use_custom_new_world=True,
+        use_custom_expeditions=True,
+        use_custom_objectives=True,
+    )
+
+
 def get_demo_game() -> Game:
+    """Return the current game, initializing it if necessary."""
     global _demo_game
 
     if _demo_game is None:
-        _demo_game = Game.from_names(["Your Company", "Rival Company"], 
-                                     use_custom_population=True,
-                                     use_custom_new_world=True,
-                                     use_custom_expeditions=True,
-                                     use_custom_objectives=True)
+        _demo_game = create_new_game(
+            ["Your Company", "Rival Company"]
+        )
 
     return _demo_game
 
@@ -306,6 +320,68 @@ def load_saved_game(slot: str) -> dict:
             "game": restored_snapshot,
         }
 
+
+@app.post("/api/games/new")
+def start_new_game(request: NewGameRequest) -> dict:
+    global _demo_game
+    global _action_history
+    global _next_action_event_id
+
+    names = [
+        name.strip()
+        for name in request.player_names
+    ]
+
+    if not 2 <= len(names) <= 4:
+        raise HTTPException(
+            status_code=400,
+            detail="A game must have 2 to 4 players.",
+        )
+
+    if any(not name for name in names):
+        raise HTTPException(
+            status_code=400,
+            detail="Player names cannot be empty.",
+        )
+
+    if any(len(name) > 40 for name in names):
+        raise HTTPException(
+            status_code=400,
+            detail="Player names must be at most 40 characters.",
+        )
+
+    if len({name.casefold() for name in names}) != len(names):
+        raise HTTPException(
+            status_code=400,
+            detail="Player names must be unique.",
+        )
+
+    with _game_lock:
+        try:
+            # Construct first. Do not destroy the current
+            # session if initialization fails.
+            new_game = create_new_game(names)
+
+            # Verify it can be shown in the frontend.
+            snapshot = serialize_game(new_game)
+
+        except Exception as exc:
+            raise HTTPException(
+                status_code=500,
+                detail="Unable to initialize a new game.",
+            ) from exc
+
+        # Commit the new session only after successful setup.
+        _demo_game = new_game
+        _action_history = []
+        _next_action_event_id = 1
+
+        return {
+            "message": (
+                f"New game created for {len(names)} companies."
+            ),
+            "game": snapshot,
+        }
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
