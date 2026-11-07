@@ -158,9 +158,18 @@ class PopulationCardPaymentStep(BaseModel):
     island_id: str | None = None
 
 
+class GameSetupSettings(BaseModel):
+    use_custom_population: bool = True
+    use_custom_new_world: bool = True
+    use_custom_expeditions: bool = True
+    use_custom_objectives: bool = True
+
+
 class NewGameRequest(BaseModel):
     player_names: list[str]
-
+    settings: GameSetupSettings = Field(
+        default_factory=GameSetupSettings
+    )
 
 class FulfillPopulationCardRequest(BaseModel):
     card_id: str = Field(min_length=1)
@@ -197,16 +206,24 @@ class ProduceRequest(BaseModel):
     industry_index: int = Field(ge=0)
 
 
-def create_new_game(player_names: list[str]) -> Game:
-    """Create a fresh game with the configured players."""
+
+def create_new_game(
+    player_names: list[str],
+    settings: GameSetupSettings | None = None,
+) -> Game:
+    """Create a fresh game using selected engine options."""
+
+    if settings is None:
+        settings = GameSetupSettings()
 
     return Game.from_names(
         player_names,
-        use_custom_population=True,
-        use_custom_new_world=True,
-        use_custom_expeditions=True,
-        use_custom_objectives=True,
+        use_custom_population=settings.use_custom_population,
+        use_custom_new_world=settings.use_custom_new_world,
+        use_custom_expeditions=settings.use_custom_expeditions,
+        use_custom_objectives=settings.use_custom_objectives,
     )
+
 
 
 def get_demo_game() -> Game:
@@ -360,7 +377,10 @@ def start_new_game(request: NewGameRequest) -> dict:
         try:
             # Construct first. Do not destroy the current
             # session if initialization fails.
-            new_game = create_new_game(names)
+            new_game = create_new_game(
+                                    names,
+                                    settings=request.settings,
+                                )
 
             # Verify it can be shown in the frontend.
             snapshot = serialize_game(new_game)

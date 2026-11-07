@@ -29,6 +29,7 @@ import {
   saveGameSlot,
   loadGameSlot,
   createNewGame,
+  GameSetupSettings
 } from "./api";
 
 import type { GameActionResponse, ConstructionPayment, PopulationCardPayment, SaveSlotId} from "./api";
@@ -540,8 +541,9 @@ function App() {
   }
   
   async function handleCreateNewGame(
-    playerNames: string[]
-  ): Promise<void> {
+      playerNames: string[],
+      settings: GameSetupSettings
+    ): Promise<void> {
     if (actionLoading) {
       throw new Error(
         "A game action is already in progress."
@@ -551,7 +553,12 @@ function App() {
     setActionLoading(true);
 
     try {
-      const result = await createNewGame(playerNames);
+      
+      const result = await createNewGame(
+        playerNames,
+        settings
+      );
+
 
       // Backend game state is authoritative.
       setGame(result.game);

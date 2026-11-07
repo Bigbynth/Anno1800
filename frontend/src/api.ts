@@ -283,14 +283,34 @@ export function loadGameSlot(
 
 /* STEP 97 — NEW GAME */
 
+
 export interface NewGameRequest {
   player_names: string[];
+  settings: GameSetupSettings;
 }
 
+/* STEP 98 — GAME SETUP SETTINGS */
+
+export interface GameSetupSettings {
+  use_custom_population: boolean;
+  use_custom_new_world: boolean;
+  use_custom_expeditions: boolean;
+  use_custom_objectives: boolean;
+}
+
+export const DEFAULT_GAME_SETUP: GameSetupSettings = {
+  use_custom_population: true,
+  use_custom_new_world: true,
+  use_custom_expeditions: true,
+  use_custom_objectives: true,
+};
+
 export function createNewGame(
-  playerNames: string[]
+  playerNames: string[],
+  settings: GameSetupSettings = DEFAULT_GAME_SETUP
 ): Promise<GameActionResponse> {
   return postGameAction("/api/games/new", {
     player_names: playerNames,
+    settings,
   });
 }

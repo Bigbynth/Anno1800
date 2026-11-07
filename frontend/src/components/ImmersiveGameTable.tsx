@@ -11,7 +11,7 @@ import { FinalResultsDialog } from "./FinalResultsDialog";
 import { GameHistoryPanel } from "./GameHistoryPanel";
 import { SaveLoadDialog } from "./SaveLoadDialog";
 import { NewGameDialog } from "./NewGameDialog";
-import type { SaveSlotId } from "../api";
+import type { SaveSlotId, GameSetupSettings } from "../api";
 import { NavalConstructionPanel } from "./NavalConstructionPanel";
 
 import type { NavalCatalogueSnapshot } from "../types";
@@ -77,7 +77,10 @@ type Props = {
   ) => Promise<void>;
   onSaveGame: (slot: SaveSlotId) => Promise<void>;
   onLoadGame: (slot: SaveSlotId) => Promise<void>;
-  onCreateNewGame: (names: string[]) => Promise<void>;
+  onCreateNewGame: (
+      names: string[],
+      settings: GameSetupSettings
+    ) => Promise<void>;
 };
 
 

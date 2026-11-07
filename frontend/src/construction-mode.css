@@ -3541,3 +3541,110 @@
     flex-direction: column;
   }
 }
+
+/* STEP 98 — GAME SETUP CUSTOMIZATION */
+
+.new-game-setup-section {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  min-width: 0;
+}
+
+.new-game-setup-section > h3,
+.new-game-settings-heading h3 {
+  margin: 0;
+  color: #f0dfbd;
+  font: 20px Georgia, serif;
+}
+
+.new-game-settings-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.new-game-settings-heading > div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.new-game-settings-heading p {
+  margin: 0;
+  color: #cbd5cc;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.new-game-settings-heading > button {
+  flex-shrink: 0;
+  padding: 8px 11px;
+  border: 1px solid #c59b56;
+  border-radius: 6px;
+  background: #493d2d;
+  color: #f0dfbd;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.new-game-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.new-game-setting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 13px;
+  border: 1px solid #637f80;
+  border-radius: 8px;
+  background: #294650;
+  cursor: pointer;
+}
+
+.new-game-setting-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.new-game-setting-info strong {
+  color: #f0dfbd;
+  font-size: 13px;
+}
+
+.new-game-setting-info small {
+  color: #cbd5cc;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.new-game-setting input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  accent-color: #c59b56;
+  cursor: pointer;
+}
+
+.new-game-setting:focus-within {
+  outline: 2px solid #e5c282;
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .new-game-settings-heading {
+    flex-direction: column;
+  }
+
+  .new-game-setting {
+    padding: 11px;
+  }
+}
