@@ -9,6 +9,83 @@ export type TutorialStepId =
   | "naval"
   | "turn";
 
+
+/* STEP 106 — OBSERVABLE TUTORIAL INTERACTIONS */
+
+export type TutorialInteraction =
+  | "space_selected"
+  | "construction_opened"
+  | "production_opened"
+  | "population_opened"
+  | "naval_opened";
+
+
+export interface TutorialMilestone {
+  id: string;
+  label: string;
+  interaction: TutorialInteraction | null;
+}
+
+export const TUTORIAL_MILESTONES: Record<
+  TutorialStepId,
+  readonly TutorialMilestone[]
+> = {
+  island: [
+    {
+      id: "island-select",
+      label: "Select a space on your island",
+      interaction: "space_selected",
+    },
+  ],
+
+  construction: [
+    {
+      id: "construction-open",
+      label: "Open the Construction Palette",
+      interaction: "construction_opened",
+    },
+  ],
+
+  production: [
+    {
+      id: "production-open",
+      label: "Open the Production panel",
+      interaction: "production_opened",
+    },
+  ],
+
+  population: [
+    {
+      id: "population-open",
+      label: "Open your Population Cards",
+      interaction: "population_opened",
+    },
+  ],
+
+  naval: [
+    {
+      id: "naval-open",
+      label: "Open Naval Construction",
+      interaction: "naval_opened",
+    },
+  ],
+
+  turn: [
+    {
+      id: "turn-review",
+      label: "Review Turn Status and End Turn",
+      interaction: null,
+    },
+  ],
+};
+
+
+export interface TutorialInteractionEvent {
+  id: TutorialInteraction;
+  sequence: number;
+}
+
+
 export interface TutorialStep {
   id: TutorialStepId;
   title: string;

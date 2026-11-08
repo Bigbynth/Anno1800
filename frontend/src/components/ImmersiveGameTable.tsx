@@ -26,6 +26,11 @@ import { ContextHelp } from "./ContextHelp";
 import { GameHelpDialog } from "./GameHelpDialog";
 import { GameTutorial } from "./GameTutorial";
 
+import type {
+  TutorialInteraction,
+  TutorialInteractionEvent,
+} from "../game-tutorial";
+
 import {
   getKeyboardShortcut,
 } from "../keyboard-shortcuts";
@@ -319,6 +324,28 @@ export function ImmersiveGameTable({
   const [tutorialOpen, setTutorialOpen] =
     useState(false);
 
+  
+  /* STEP 106 — TUTORIAL INTERACTION SIGNALS */
+
+  const [tutorialEvent, setTutorialEvent] =
+    useState<TutorialInteractionEvent | null>(null);
+
+  const tutorialSequenceRef = useRef(0);
+
+  function emitTutorialInteraction(
+    id: TutorialInteraction
+  ) {
+    if (!tutorialOpen) return;
+
+    tutorialSequenceRef.current += 1;
+
+    setTutorialEvent({
+      id,
+      sequence: tutorialSequenceRef.current,
+    });
+  }
+
+
   const resultsShownForGame = useRef(false);
 
 
@@ -402,6 +429,7 @@ export function ImmersiveGameTable({
     setKeyboardHelpOpen(false);
     setGameHelpOpen(false);
     setTutorialOpen(false);
+    setTutorialEvent(null);
   }, [game?.current_player_index]);
   
   
@@ -434,6 +462,7 @@ export function ImmersiveGameTable({
     setInspectorOpen(true);
 
     // Start at Lesson 1.
+    setTutorialEvent(null);
     setTutorialOpen(true);
     setActiveAction("tutorial");
 
@@ -593,6 +622,7 @@ async function confirmConstruction() {
     if (!canProduce) return;
     closeConstructionMode();
     setProductionMode(true);
+    emitTutorialInteraction("production_opened");
     setSelectedProducerIndex(null);
     setProductionError(null);
     setActiveAction("produce");
@@ -648,6 +678,7 @@ async function confirmConstruction() {
     setPaymentSources({});
     setBuildError(null);
     setConstructionMode(true);
+    emitTutorialInteraction("construction_opened");
     setProductionMode(false);
     setSelectedProducerIndex(null);
     setProductionError(null);
@@ -689,6 +720,7 @@ async function confirmConstruction() {
     setNavalType("shipyard");
     setNavalTargetId(null);
     setNavalMode(true);
+    emitTutorialInteraction("naval_opened");
     setActiveAction("naval");
   }
 
@@ -704,7 +736,7 @@ async function confirmConstruction() {
 
   function selectBoardSpace(spaceId: string) {
     onSelectLocation(spaceId);
-    
+    emitTutorialInteraction("space_selected");
     if (navalMode) {
       setNavalTargetId(
         navalCandidates.includes(spaceId)
@@ -769,6 +801,7 @@ async function confirmConstruction() {
       setHarborOpen(false);
 // Ensure the Context Inspector is visible for the tour.
       setInspectorOpen(true);
+      setTutorialEvent(null);
       setTutorialOpen(true);
       setActiveAction("tutorial");
       return;
@@ -1548,7 +1581,13 @@ async function confirmConstruction() {
         <button
           type="button"
           className="immersive-hand-toggle"
-          onClick={() => setHandOpen(value => !value)}
+          onClick={() => {
+              if (!handOpen) {
+                emitTutorialInteraction("population_opened");
+              }
+
+              setHandOpen(value => !value);
+            }}
           aria-expanded={handOpen}
         >
           <span>▤</span>
@@ -1784,17 +1823,22 @@ async function confirmConstruction() {
         />
       )}
 
-      {/* STEPS 104–105 — GUIDED FIRST TURN */}
+      {/* STEPS 104–106 — CONTEXT-AWARE TUTORIAL */}
       {tutorialOpen && (
         <GameTutorial
+          interactionEvent={tutorialEvent}
+          mainActionUsed={game.main_action_used}
+          gameOver={game.game_over}
           onClose={() => {
             setTutorialOpen(false);
             setActiveAction(null);
+            setTutorialEvent(null);
             onTutorialSkipped();
           }}
           onComplete={() => {
             setTutorialOpen(false);
             setActiveAction(null);
+            setTutorialEvent(null);
             onTutorialCompleted();
           }}
         />

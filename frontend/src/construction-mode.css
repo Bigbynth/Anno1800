@@ -5256,3 +5256,151 @@ button.tutorial-highlight {
     width: 100%;
   }
 }
+
+/* STEP 106 — INTERACTIVE TUTORIAL MILESTONES */
+
+.game-tutorial-milestones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid #708581;
+  border-radius: 9px;
+  background: #294650;
+}
+
+.game-tutorial-milestone-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.game-tutorial-milestone-heading strong {
+  color: #f0dfbd;
+  font-size: 13px;
+}
+
+.game-tutorial-milestone-heading span {
+  color: #e5c282;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.game-tutorial-milestone {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px;
+  border: 1px solid #647b7d;
+  border-radius: 8px;
+  background: #203c47;
+}
+
+.game-tutorial-milestone > span {
+  display: grid;
+  place-items: center;
+  flex: 0 0 25px;
+  height: 25px;
+  border: 1px solid #b79c6a;
+  border-radius: 50%;
+  color: #e5c282;
+  font-size: 15px;
+}
+
+.game-tutorial-milestone > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.game-tutorial-milestone strong {
+  color: #e8dcc1;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.game-tutorial-milestone small {
+  color: #cad4cd;
+  font-size: 11px;
+}
+
+.game-tutorial-milestone.is-complete {
+  border-color: #7aaa90;
+  background: #294b40;
+}
+
+.game-tutorial-milestone.is-complete > span {
+  border-color: #a9dfb5;
+  color: #b8dfc0;
+}
+
+.game-tutorial-milestone.is-complete small {
+  color: #b8dfc0;
+}
+
+.game-tutorial-mark-reviewed {
+  align-self: flex-start;
+  padding: 9px 12px;
+  border: 1px solid #e5c282;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #f0dfbd;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.game-tutorial-guidance {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px;
+  border: 1px solid #c59b56;
+  border-radius: 8px;
+  background: #493d2d;
+}
+
+.game-tutorial-guidance > strong {
+  color: #e5c282;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.game-tutorial-guidance p {
+  margin: 0;
+  color: #f0dfbd;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.game-tutorial-success {
+  margin: 0;
+  padding: 11px;
+  border: 1px solid #7aaa90;
+  border-radius: 7px;
+  background: #294b40;
+  color: #b8dfc0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Preserve keyboard navigation */
+
+.game-tutorial-mark-reviewed:focus-visible,
+.game-tutorial-milestones button:focus-visible {
+  outline: 3px solid #ffdc8a;
+  outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+  .game-tutorial-milestones {
+    padding: 10px;
+  }
+
+  .game-tutorial-milestone {
+    padding: 10px;
+  }
+}
