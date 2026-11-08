@@ -24,6 +24,7 @@ import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog";
 
 import { ContextHelp } from "./ContextHelp";
 import { GameHelpDialog } from "./GameHelpDialog";
+import { GameTutorial } from "./GameTutorial";
 
 import {
   getKeyboardShortcut,
@@ -112,6 +113,7 @@ const sessionActions = new Set([
   "settings",
   "keyboard_help",
   "game_help",
+  "tutorial",
 ]);
 
 
@@ -220,6 +222,12 @@ const dockActions: DockAction[] = [
     description: "Read the in-game rules and interface guide",
   },
   {
+    id: "tutorial",
+    label: "Tutorial",
+    symbol: "◎",
+    description: "Learn the game through a guided first turn",
+  },
+  {
     id: "cards",
     label: "Cards",
     symbol: "▤",
@@ -296,6 +304,9 @@ export function ImmersiveGameTable({
     useState(false);
 
   const [gameHelpOpen, setGameHelpOpen] =
+    useState(false);
+    
+  const [tutorialOpen, setTutorialOpen] =
     useState(false);
 
   const resultsShownForGame = useRef(false);
@@ -380,6 +391,7 @@ export function ImmersiveGameTable({
     setObjectivesPanelOpen(false);
     setKeyboardHelpOpen(false);
     setGameHelpOpen(false);
+    setTutorialOpen(false);
   }, [game?.current_player_index]);
   
 /* STEP 94 — PRESENT RESULTS WHEN GAME ENDS */
@@ -685,6 +697,31 @@ async function confirmConstruction() {
     }
 
     if (!game || actionLoading) return;
+    
+    // STEP 104 — INTERACTIVE TUTORIAL
+    if (id === "tutorial") {
+      if (actionLoading) return;
+
+      // Close other panels before opening the tutorial.
+      setPreferencesOpen(false);
+      setKeyboardHelpOpen(false);
+      setGameHelpOpen(false);
+      setObjectivesPanelOpen(false);
+      setFinalResultsOpen(false);
+      setGameHistoryOpen(false);
+      setSaveLoadOpen(false);
+      setNewGameOpen(false);
+      setEndTurnDialogOpen(false);
+      setFestivalOpen(false);
+      setExplorationOpen(false);
+      setNewWorldAtlasOpen(false);
+      setHarborOpen(false);
+// Ensure the Context Inspector is visible for the tour.
+      setInspectorOpen(true);
+      setTutorialOpen(true);
+      setActiveAction("tutorial");
+      return;
+    }
 
     const isSessionAction = sessionActions.has(id);
 
@@ -823,6 +860,7 @@ async function confirmConstruction() {
       if (
         festivalOpen ||
         explorationOpen ||
+        tutorialOpen ||
         newWorldAtlasOpen ||
         objectivesPanelOpen ||
         endTurnDialogOpen ||
@@ -901,6 +939,7 @@ async function confirmConstruction() {
     navalMode,
     isBuilding,
     isProducing,
+    tutorialOpen,
     selectDockAction,
   ]);
 
@@ -1053,6 +1092,7 @@ async function confirmConstruction() {
         <section
           className="immersive-island-stage"
           aria-label="Interactive island"
+          data-tutorial="island"
         >
           <div className="immersive-stage-heading">
             <div>
@@ -1311,12 +1351,14 @@ async function confirmConstruction() {
             </div>
 
             {/* STEP 93 — TURN STATUS */}
-            <TurnStatus
-              game={game}
-              actionLoading={actionLoading}
-              onEndTurn={openEndTurnDialog}
-            />
-
+            
+            <div data-tutorial="turn">
+              <TurnStatus
+                game={game}
+                actionLoading={actionLoading}
+                onEndTurn={openEndTurnDialog}
+              />
+            </div>
               <span className="immersive-overline">
                 CONTEXT INSPECTOR
               </span>
@@ -1392,6 +1434,13 @@ async function confirmConstruction() {
       >
         {dockActions.map(action => (
           <button
+            data-tutorial={
+              action.id === "build" ||
+              action.id === "produce" ||
+              action.id === "naval"
+                ? action.id
+                : undefined
+            }
             key={action.id}
             type="button"
             className={[
@@ -1439,7 +1488,12 @@ async function confirmConstruction() {
       </nav>
 
       {/* EXPANDABLE POPULATION HAND */}
-      <section className="immersive-hand">
+      
+        <section
+          className="immersive-hand"
+          data-tutorial="population"
+        >
+
         <button
           type="button"
           className="immersive-hand-toggle"
@@ -1674,6 +1728,20 @@ async function confirmConstruction() {
         <GameHelpDialog
           onClose={() => {
             setGameHelpOpen(false);
+            setActiveAction(null);
+          }}
+        />
+      )}
+
+      {/* STEP 104 — FIRST TURN TUTORIAL */}
+      {tutorialOpen && (
+        <GameTutorial
+          onClose={() => {
+            setTutorialOpen(false);
+            setActiveAction(null);
+          }}
+          onComplete={() => {
+            setTutorialOpen(false);
             setActiveAction(null);
           }}
         />

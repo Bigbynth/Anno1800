@@ -4909,3 +4909,231 @@ html[data-anno-compact="true"]
     flex-direction: column;
   }
 }
+
+/* STEP 104 — INTERACTIVE FIRST TURN TUTORIAL */
+
+.game-tutorial-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 270;
+  pointer-events: none;
+}
+
+.game-tutorial-panel {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  box-sizing: border-box;
+
+  padding: 19px;
+  border: 2px solid #c59b56;
+  border-radius: 12px;
+
+  background: linear-gradient(
+    145deg,
+    #294650,
+    #172d3b
+  );
+
+  color: #e8dcc1;
+  box-shadow: 0 24px 60px rgba(0,0,0,.65);
+
+  pointer-events: auto;
+}
+
+.game-tutorial-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.game-tutorial-header h2 {
+  margin: 7px 0 0;
+  color: #f0dfbd;
+  font: 23px Georgia, serif;
+}
+
+.game-tutorial-header > button {
+  border: 0;
+  background: transparent;
+  color: #f0dfbd;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.game-tutorial-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.game-tutorial-progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #d3d9d0;
+  font-size: 11px;
+}
+
+.game-tutorial-progress-label strong {
+  color: #e5c282;
+  font-variant-numeric: tabular-nums;
+}
+
+.game-tutorial-progress-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #48616a;
+}
+
+.game-tutorial-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #c59b56;
+  transition: width .2s ease;
+}
+
+.game-tutorial-lesson {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #708581;
+  border-radius: 9px;
+  background: #294650;
+}
+
+.game-tutorial-lesson > span {
+  color: #d6b67b;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.game-tutorial-lesson h3 {
+  margin: 0;
+  color: #f0dfbd;
+  font: 21px Georgia, serif;
+}
+
+.game-tutorial-lesson p {
+  margin: 0;
+  color: #d5ded5;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.game-tutorial-lesson ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.game-tutorial-lesson li {
+  margin-bottom: 7px;
+  color: #d5ded5;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.game-tutorial-note {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid #98825c;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #e8dcc1;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.game-tutorial-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+
+  padding-top: 12px;
+  border-top: 1px solid #71817d;
+}
+
+.game-tutorial-actions button {
+  padding: 10px 12px;
+  border: 1px solid #9c927b;
+  border-radius: 7px;
+  background: #294650;
+  color: #f0dfbd;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.game-tutorial-actions .game-tutorial-next {
+  border-color: #e5c282;
+  background: #81623b;
+  color: #fff0cf;
+}
+
+.game-tutorial-actions button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+/* Highlight the current tutorial target. */
+
+.tutorial-highlight {
+  outline: 3px solid #f0c878 !important;
+  outline-offset: 4px;
+  box-shadow:
+    0 0 0 7px rgba(197,155,86,.2),
+    0 0 25px rgba(240,200,120,.35);
+}
+
+button.tutorial-highlight {
+  position: relative;
+  z-index: 2;
+}
+
+.game-tutorial-panel button:focus-visible {
+  outline: 3px solid #ffdc8a;
+  outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+  .game-tutorial-panel {
+    right: 12px;
+    left: 12px;
+    bottom: 12px;
+
+    width: auto;
+    max-height: min(65dvh, 560px);
+    padding: 14px;
+  }
+
+  .game-tutorial-header h2 {
+    font-size: 20px;
+  }
+
+  .game-tutorial-actions {
+    justify-content: stretch;
+  }
+
+  .game-tutorial-actions button {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-tutorial-progress-fill {
+    transition: none;
+  }
+}
