@@ -6256,3 +6256,206 @@ button.tutorial-highlight {
     flex-direction: column;
   }
 }
+
+/* STEP 112 — TRADE & PAYMENT INSPECTOR */
+
+.trade-payment-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 15px;
+  border: 1px solid #c59b56;
+  border-radius: 10px;
+  background: #203c47;
+  color: #e8dcc1;
+}
+
+.trade-payment-header h3 {
+  margin: 7px 0;
+  color: #f0dfbd;
+  font: 21px Georgia, serif;
+}
+
+.trade-payment-header p {
+  margin: 0;
+  color: #cbd7ce;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.trade-payment-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.trade-payment-stats > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 6px;
+  border: 1px solid #647f80;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.trade-payment-stats strong {
+  color: #f0dfbd;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.trade-payment-stats span {
+  color: #d1ddd4;
+  font-size: 10px;
+}
+
+.trade-shipping-status {
+  padding: 12px;
+  border: 1px solid #8b9d91;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.trade-shipping-status > strong {
+  color: #f0dfbd;
+  font-size: 13px;
+}
+
+.trade-shipping-status > span {
+  float: right;
+  color: #e5c282;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.trade-shipping-status p {
+  clear: both;
+  margin: 8px 0 0;
+  color: #d5ded5;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.trade-payment-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.trade-payment-checks > strong {
+  color: #f0dfbd;
+  font-size: 13px;
+}
+
+.trade-payment-row {
+  padding: 11px;
+  border: 1px solid #708581;
+  border-radius: 7px;
+  background: #294650;
+}
+
+.trade-payment-row.is-valid {
+  border-left: 3px solid #9bc8aa;
+}
+
+.trade-payment-row.is-invalid {
+  border-left: 3px solid #b77c73;
+}
+
+.trade-payment-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.trade-payment-row-top strong {
+  color: #f0dfbd;
+  font-size: 12px;
+}
+
+.trade-payment-row-top span {
+  color: #d9e4d9;
+  font-size: 10px;
+}
+
+.trade-payment-row small {
+  display: block;
+  margin-top: 5px;
+  color: #e5c282;
+  font-size: 11px;
+}
+
+.trade-payment-row p {
+  margin: 7px 0 0;
+  color: #d7dfd6;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.trade-payment-warnings,
+.trade-payment-errors,
+.trade-payment-verdict {
+  padding: 12px;
+  border: 1px solid #8e8d72;
+  border-radius: 8px;
+  background: #493d2d;
+}
+
+.trade-payment-warnings strong {
+  color: #e5c282;
+}
+
+.trade-payment-errors {
+  border-color: #b77c73;
+}
+
+.trade-payment-errors strong {
+  color: #f0c0b3;
+}
+
+.trade-payment-verdict.is-ready {
+  border-color: #9bc8aa;
+  background: #294650;
+}
+
+.trade-payment-verdict.is-blocked {
+  border-color: #b77c73;
+}
+
+.trade-payment-verdict strong {
+  display: block;
+  color: #f0dfbd;
+  font-size: 13px;
+}
+
+.trade-payment-verdict span {
+  display: block;
+  margin-top: 6px;
+  color: #cbd7ce;
+  font-size: 11px;
+}
+
+.trade-payment-warnings p,
+.trade-payment-errors p,
+.trade-payment-verdict p,
+.trade-payment-empty {
+  margin: 7px 0 0;
+  color: #d7dfd6;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+@media (max-width: 650px) {
+  .trade-payment-inspector {
+    padding: 11px;
+  }
+
+  .trade-payment-stats strong {
+    font-size: 18px;
+  }
+}

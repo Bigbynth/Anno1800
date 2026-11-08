@@ -30,7 +30,13 @@ import {
 import {
   ProductionReadinessPanel,
 } from "./ProductionReadinessPanel";
+import {
+  validateConstructionPayments,
+} from "../payment-validation";
 
+import {
+  TradePaymentInspector,
+} from "./TradePaymentInspector";
 import type { AppPreferences } from "../app-preferences";
 
 import { PreferencesDialog } from "./PreferencesDialog";
@@ -664,6 +670,22 @@ export function ImmersiveGameTable({
     requirements,
   );
 
+  /* STEP 112 — TRADING & SHIPPING VALIDATION */
+
+  const paymentValidation = validateConstructionPayments({
+    requirements,
+    paymentSources,
+
+    players: game?.players ?? [],
+    currentPlayerIndex:
+      game?.current_player_index ?? -1,
+
+    tradeCapacity:
+      navalData?.naval_capacity.trade ??
+      tradeCapacity ??
+      null,
+  });
+
   /* STEP 108 — LIVE CONSTRUCTION READINESS */
 
   const constructionReadiness = getConstructionReadiness({
@@ -684,6 +706,9 @@ export function ImmersiveGameTable({
     mainActionUsed: game?.main_action_used ?? false,
   });
 
+  
+/* STEP 112 — CONSTRUCTION CONFIRMATION */
+
   const canConfirmBuild =
     canEnterConstruction &&
     !isBuilding &&
@@ -692,12 +717,13 @@ export function ImmersiveGameTable({
     Boolean(
       constructionTarget &&
       effectiveConstructionCandidates.includes(
-                          constructionTarget.id
-                        ),
+        constructionTarget.id
+      )
     ) &&
     paymentComplete &&
     !duplicateProduction &&
-    constructionReadiness.canSubmit;
+    constructionReadiness.canSubmit &&
+    paymentValidation.canSubmit;
 
   async function confirmConstruction() {
     if (!canConfirmBuild || !selectedConstruction || !constructionTarget)
@@ -1370,6 +1396,12 @@ export function ImmersiveGameTable({
                         requirements={requirements}
                         paymentSources={paymentSources}
                       />
+
+                      {/* STEP 112 — TRADE & PAYMENT INSPECTOR */}
+                      <TradePaymentInspector
+                        validation={paymentValidation}
+                      />
+
                       {/* STEP 108 — CONSTRUCTION READINESS */}
                       <ConstructionReadinessPanel
                         readiness={constructionReadiness}
