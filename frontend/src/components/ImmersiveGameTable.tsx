@@ -30,6 +30,15 @@ import {
 } from "../action-advisor";
 
 import { ActionAdvisor } from "./ActionAdvisor";
+
+import {
+  getConstructionReadiness,
+} from "../construction-readiness";
+
+import {
+  ConstructionReadinessPanel,
+} from "./ConstructionReadinessPanel";
+
 import type {
   TutorialInteraction,
   TutorialInteractionEvent,
@@ -614,6 +623,26 @@ const duplicateProduction = hasDuplicateProductionSources(
   requirements
 );
 
+  /* STEP 108 — LIVE CONSTRUCTION READINESS */
+
+  const constructionReadiness = getConstructionReadiness({
+    industry: selectedConstruction,
+    target: constructionTarget,
+    candidateSpaceIds: constructionCandidates,
+    requirements,
+    paymentSources,
+
+    producers: activePlayer?.industries ?? [],
+
+    duplicateProduction,
+
+    actionLoading: actionLoading || isBuilding,
+
+    gameOver: game?.game_over ?? false,
+
+    mainActionUsed: game?.main_action_used ?? false,
+  });
+
 const canConfirmBuild =
   canEnterConstruction &&
   !isBuilding &&
@@ -621,7 +650,8 @@ const canConfirmBuild =
   Boolean(constructionTarget) &&
   Boolean(constructionTarget && constructionCandidates.includes(constructionTarget.id)) &&
   paymentComplete &&
-  !duplicateProduction;
+  !duplicateProduction
+  && constructionReadiness.canSubmit;
 
 async function confirmConstruction() {
   if (!canConfirmBuild || !selectedConstruction || !constructionTarget) return;
@@ -1292,6 +1322,11 @@ async function confirmConstruction() {
                         requirements={requirements}
                         paymentSources={paymentSources}
                       />
+                      {/* STEP 108 — CONSTRUCTION READINESS */}
+                      <ConstructionReadinessPanel
+                        readiness={constructionReadiness}
+                      />
+
                       <div className="construction-payment-section">
                       <div className="context-help-inline-heading">
                         <strong>Resource Payments</strong>
@@ -1894,6 +1929,11 @@ async function confirmConstruction() {
 
       <ActionAdvisor
         recommendations={advisorRecommendations}
+        constructionReadiness={
+          selectedConstruction
+            ? constructionReadiness
+            : null
+        }
         disabled={actionLoading}
         onSelectAction={selectDockAction}
         onClose={() => {

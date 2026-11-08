@@ -5632,3 +5632,196 @@ button.tutorial-highlight {
     flex-direction: column;
   }
 }
+
+/* STEP 108 — CONSTRUCTION READINESS */
+
+.construction-readiness {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 15px;
+  border: 1px solid #c59b56;
+  border-radius: 10px;
+  background: #203c47;
+  color: #e8dcc1;
+}
+
+.construction-readiness-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.construction-readiness-header h3 {
+  margin: 6px 0 0;
+  color: #f0dfbd;
+  font: 20px Georgia, serif;
+}
+
+.construction-readiness-status {
+  padding: 6px 9px;
+  border: 1px solid #a89472;
+  border-radius: 6px;
+  color: #e5c282;
+  font-size: 11px;
+}
+
+.construction-readiness.is-blocked {
+  border-color: #b77c73;
+}
+
+.construction-readiness.is-ready_for_backend {
+  border-color: #7aaa90;
+}
+
+.construction-readiness.is-ready_for_backend
+.construction-readiness-status {
+  border-color: #7aaa90;
+  color: #b8dfc0;
+}
+
+.construction-readiness-industry {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.construction-readiness-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.construction-readiness-progress > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.construction-readiness-track {
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #48616a;
+}
+
+.construction-readiness-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #c59b56;
+  transition: width .2s ease;
+}
+
+.construction-readiness-resources {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.construction-readiness-resource {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 11px;
+  border: 1px solid #647f80;
+  border-radius: 7px;
+  background: #294650;
+}
+
+.construction-readiness-resource-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #f0dfbd;
+  font-size: 12px;
+}
+
+.construction-readiness-resource small {
+  color: #cbd7ce;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.construction-readiness-blockers,
+.construction-readiness-warnings {
+  padding: 12px;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+.construction-readiness-blockers {
+  border: 1px solid #b77c73;
+  background: #56393a;
+}
+
+.construction-readiness-warnings {
+  border: 1px solid #a89472;
+  background: #493d2d;
+}
+
+.construction-readiness-blockers strong,
+.construction-readiness-warnings strong {
+  color: #f0dfbd;
+}
+
+.construction-readiness-blockers ul,
+.construction-readiness-warnings ul {
+  margin: 9px 0 0;
+  padding-left: 18px;
+  line-height: 1.6;
+}
+
+.construction-readiness-footer {
+  padding-top: 11px;
+  border-top: 1px solid #647f80;
+  color: #d6dfd7;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* STEP 108 — ADVISOR READINESS SUMMARY */
+
+.action-advisor-readiness {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #c59b56;
+  border-radius: 8px;
+  background: #203c47;
+}
+
+.action-advisor-readiness strong {
+  color: #e5c282;
+}
+
+.action-advisor-readiness span {
+  color: #f0dfbd;
+}
+
+.action-advisor-readiness small,
+.action-advisor-readiness p {
+  margin: 0;
+  color: #cbd7ce;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .construction-readiness {
+    padding: 11px;
+  }
+
+  .construction-readiness-resource-main {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .construction-readiness-fill {
+    transition: none;
+  }
+}

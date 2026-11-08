@@ -8,8 +8,13 @@ import type {
   AdvisorStatus,
 } from "../action-advisor";
 
+import type {
+  ConstructionReadinessResult,
+} from "../construction-readiness";
+
 type Props = {
   recommendations: AdvisorRecommendation[];
+    constructionReadiness?: ConstructionReadinessResult | null;
   onSelectAction: (actionId: string) => void;
   disabled?: boolean;
   onClose: () => void;
@@ -26,6 +31,7 @@ const STATUS_LABELS: Record<
 
 export function ActionAdvisor({
   recommendations,
+  constructionReadiness = null,
   onSelectAction,
   disabled = false,
   onClose,
@@ -78,6 +84,40 @@ export function ActionAdvisor({
           gameplay panel(s) available to inspect
         </span>
       </div>
+        {/* STEP 108 — SELECTED CONSTRUCTION READINESS */}
+        {constructionReadiness?.industryName && (
+        <div className="action-advisor-readiness">
+            <strong>Selected Construction</strong>
+
+            <span>
+            {constructionReadiness.industryName}
+            </span>
+
+            <small>
+            Resources assigned:
+            {" "}
+            {constructionReadiness.assignedCount}
+            {" / "}
+            {constructionReadiness.requiredCount}
+            </small>
+
+            <small>
+            {constructionReadiness.status ===
+            "ready_for_backend"
+                ? "Ready for backend validation"
+                : constructionReadiness.status ===
+                "blocked"
+                ? "Known blockers must be resolved"
+                : "Additional selections required"}
+            </small>
+
+            {constructionReadiness.blockers.map(
+            (blocker, index) => (
+                <p key={index}>{blocker}</p>
+            )
+            )}
+        </div>
+        )}
 
       <div className="action-advisor-list">
         {visible.map(item => (
