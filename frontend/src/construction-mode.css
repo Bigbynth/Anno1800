@@ -6766,3 +6766,158 @@ button.tutorial-highlight {
     font-size: 16px;
   }
 }
+
+/* STEP 116 — INDUSTRY LIFECYCLE */
+
+.industry-lifecycle-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 15px;
+  border: 1px solid #c59b56;
+  border-radius: 10px;
+  background: #203c47;
+  color: #e8dcc1;
+}
+
+.industry-lifecycle-header h3 {
+  margin: 7px 0;
+  color: #f0dfbd;
+  font: 21px Georgia, serif;
+}
+
+.industry-lifecycle-header p {
+  margin: 0;
+  color: #d2ddd4;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.industry-lifecycle-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.industry-lifecycle-stats > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 5px;
+  border: 1px solid #647f80;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.industry-lifecycle-stats strong {
+  color: #f0dfbd;
+  font-size: 23px;
+  font-variant-numeric: tabular-nums;
+}
+
+.industry-lifecycle-stats span {
+  color: #d2ddd4;
+  font-size: 10px;
+  text-align: center;
+}
+
+.industry-lifecycle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 270px;
+  overflow-y: auto;
+}
+
+.industry-lifecycle-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px;
+  border: 1px solid #647f80;
+  border-radius: 7px;
+  background: #294650;
+}
+
+.industry-lifecycle-item.is-ready {
+  border-left: 3px solid #9bc8aa;
+}
+
+.industry-lifecycle-item.is-occupied {
+  border-left: 3px solid #e5c282;
+}
+
+.industry-lifecycle-item.is-unavailable {
+  border-left: 3px solid #b77c73;
+}
+
+.industry-lifecycle-item.is-selected {
+  border-color: #e5c282;
+  background: #493d2d;
+}
+
+.industry-lifecycle-item > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.industry-lifecycle-item strong {
+  color: #f0dfbd;
+  font-size: 13px;
+}
+
+.industry-lifecycle-item small {
+  color: #d2ddd4;
+  font-size: 11px;
+}
+
+.industry-lifecycle-item > span {
+  color: #e5c282;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.industry-lifecycle-detail {
+  padding: 12px;
+  border: 1px solid #738c87;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.industry-lifecycle-detail > strong {
+  color: #f0dfbd;
+}
+
+.industry-lifecycle-detail p,
+.industry-lifecycle-note {
+  margin: 8px 0 0;
+  color: #d9e1d9;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.industry-lifecycle-note {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid #98825c;
+  border-radius: 7px;
+  background: #493d2d;
+}
+
+@media (max-width: 650px) {
+  .industry-lifecycle-panel {
+    padding: 11px;
+  }
+
+  .industry-lifecycle-stats strong {
+    font-size: 19px;
+  }
+
+  .industry-lifecycle-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

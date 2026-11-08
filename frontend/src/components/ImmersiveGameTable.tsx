@@ -37,6 +37,15 @@ import {
 import {
   ProductionReadinessPanel,
 } from "./ProductionReadinessPanel";
+
+import {
+  analyzeIndustryLifecycle,
+} from "../industry-lifecycle";
+
+import {
+  IndustryLifecyclePanel,
+} from "./IndustryLifecyclePanel";
+
 import {
   validateConstructionPayments,
 } from "../payment-validation";
@@ -454,6 +463,13 @@ export function ImmersiveGameTable({
       actionExplanation:
         availability.produce.explanation,
     });
+
+  /* STEP 116 — INDUSTRY LIFECYCLE ANALYSIS */
+
+  const industryLifecycle = analyzeIndustryLifecycle(
+    activePlayer?.industries ?? [],
+    selectedProducerIndex
+  );
 
   const occupiedSpaces = islandSpaces.filter((space) => space.occupied).length;
 
@@ -1554,6 +1570,10 @@ export function ImmersiveGameTable({
               <ProductionReadinessPanel
                 readiness={productionReadiness}
                 onSelectProducer={setSelectedProducerIndex}
+              />
+              {/* STEP 116 — INDUSTRY LIFECYCLE */}
+              <IndustryLifecyclePanel
+                lifecycle={industryLifecycle}
               />
               {selectedSpace?.occupied && (
                 <p className="immersive-production-hint">
