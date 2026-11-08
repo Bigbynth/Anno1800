@@ -6644,3 +6644,125 @@ button.tutorial-highlight {
     font-size: 19px;
   }
 }
+
+/* STEP 115 — POPULATION FULFILLMENT READINESS */
+
+.population-readiness {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 14px;
+  border: 1px solid #c59b56;
+  border-radius: 10px;
+  background: #203c47;
+  color: #e8dcc1;
+}
+
+.population-readiness-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.population-readiness-heading strong {
+  color: #f0dfbd;
+  font: 18px Georgia, serif;
+}
+
+.population-readiness-heading span {
+  color: #e5c282;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.population-readiness-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.population-readiness-summary span {
+  padding: 7px 10px;
+  border: 1px solid #647f80;
+  border-radius: 6px;
+  background: #294650;
+  color: #d7e0d7;
+  font-size: 11px;
+}
+
+.population-readiness-check {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 5px 12px;
+  padding: 10px;
+  border: 1px solid #718b87;
+  border-radius: 7px;
+  background: #294650;
+}
+
+.population-readiness-check.is-valid {
+  border-left: 3px solid #9bc8aa;
+}
+
+.population-readiness-check.is-missing,
+.population-readiness-check.is-invalid {
+  border-left: 3px solid #b77c73;
+}
+
+.population-readiness-check strong {
+  color: #f0dfbd;
+  font-size: 12px;
+}
+
+.population-readiness-check span {
+  color: #e5c282;
+  font-size: 11px;
+}
+
+.population-readiness-check p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #d7e0d7;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.population-readiness-error,
+.population-readiness-warning,
+.population-readiness-success {
+  margin: 0;
+  padding: 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.population-readiness-error {
+  border: 1px solid #b77c73;
+  background: #49332e;
+  color: #f2c5b9;
+}
+
+.population-readiness-warning {
+  border: 1px solid #b89a65;
+  background: #493d2d;
+  color: #ead8ad;
+}
+
+.population-readiness-success {
+  border: 1px solid #9bc8aa;
+  background: #294650;
+  color: #bde4c4;
+}
+
+@media (max-width: 650px) {
+  .population-readiness {
+    padding: 11px;
+  }
+
+  .population-readiness-heading strong {
+    font-size: 16px;
+  }
+}

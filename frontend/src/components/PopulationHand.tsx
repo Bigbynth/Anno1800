@@ -10,6 +10,10 @@ import type {
 import type { PopulationCardPayment } from "../api";
 
 import {
+  analyzePopulationFulfillment,
+} from "../population-fulfillment-readiness";
+
+import {
   ResourcePaymentPicker,
   hasDuplicateProductionSources,
   toPopulationCardPayments
@@ -38,6 +42,11 @@ export function PopulationHand({
   const [paymentSources, setPaymentSources] =
     useState<Record<string, string>>({});
 
+  /* STEP 115 — LOCAL SUBMISSION PROTECTION */
+  const [submitting, setSubmitting] = useState(false);
+  const [fulfillmentError, setFulfillmentError] =
+    useState<string | null>(null);
+
   const selectedCard =
     selectedIndex === null
       ? null
@@ -63,6 +72,17 @@ export function PopulationHand({
     requirements
   );
 
+  /* STEP 115 — PAYMENT SOURCE VALIDATION */
+
+  const fulfillmentReadiness = game
+    ? analyzePopulationFulfillment({
+        game,
+        requirements,
+        paymentSources,
+        tradeCapacity,
+      })
+    : null;
+
   const canFulfill =
     Boolean(game) &&
     Boolean(game?.players[game.current_player_index]) &&
@@ -70,17 +90,23 @@ export function PopulationHand({
     !game?.main_action_used &&
     !game?.game_over &&
     !actionLoading &&
+    !submitting &&
     paymentsComplete &&
-    !duplicateProduction;
+    !duplicateProduction &&
+    fulfillmentReadiness?.canSubmit === true;
 
   function selectCard(index: number) {
+    if (submitting || actionLoading) return;
+
     if (selectedIndex === index) {
       setSelectedIndex(null);
     } else {
       setSelectedIndex(index);
     }
 
+    // Payment selections belong to one card only.
     setPaymentSources({});
+    setFulfillmentError(null);
   }
 
   function buildPayments(): PopulationCardPayment[] {
@@ -91,16 +117,43 @@ export function PopulationHand({
   }
 
   async function handleFulfill() {
-    if (!canFulfill || !selectedCard) return;
+    if (!canFulfill || !selectedCard || submitting) {
+      return;
+    }
 
-    const successful = await onFulfill(
-      selectedCard.id,
-      buildPayments()
-    );
+    setSubmitting(true);
+    setFulfillmentError(null);
 
-    if (successful) {
-      setSelectedIndex(null);
-      setPaymentSources({});
+    try {
+      const cardId = selectedCard.id;
+
+      const payments = buildPayments();
+
+      // Backend performs the complete transaction.
+      const successful = await onFulfill(
+        cardId,
+        payments
+      );
+
+      if (successful) {
+        // Only clear the selection after success.
+        setSelectedIndex(null);
+        setPaymentSources({});
+        setFulfillmentError(null);
+      } else {
+        setFulfillmentError(
+          "The card could not be fulfilled. " +
+          "Review the game notification and your payment selections."
+        );
+      }
+    } catch (error) {
+      setFulfillmentError(
+        error instanceof Error
+          ? error.message
+          : "Unable to fulfill population card."
+      );
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -205,15 +258,109 @@ export function PopulationHand({
               tradeCapacity={tradeCapacity}
               requirements={requirements}
               paymentSources={paymentSources}
-              onChange={setPaymentSources}
+              onChange={(next) => {
+                if (submitting) return;
+
+                setPaymentSources(next);
+                setFulfillmentError(null);
+              }}
               disabled={
                 actionLoading ||
+                submitting ||
                 game.main_action_used ||
                 game.game_over
               }
             />
           )}
 
+          {/* STEP 115 — POPULATION FULFILLMENT READINESS */}
+          {fulfillmentReadiness && (
+            <section
+              className="population-readiness"
+              aria-label="Population fulfillment readiness"
+            >
+              <header className="population-readiness-heading">
+                <strong>Fulfillment Readiness</strong>
+
+                <span>
+                  {fulfillmentReadiness.validCount}
+                  /
+                  {fulfillmentReadiness.requiredCount}
+                  {" "}valid
+                </span>
+              </header>
+
+              <div className="population-readiness-summary">
+                <span>
+                  Local: {fulfillmentReadiness.localProductionCount}
+                </span>
+
+                <span>
+                  Trades: {fulfillmentReadiness.tradeCount}
+                </span>
+
+                <span>
+                  New World: {fulfillmentReadiness.newWorldCount}
+                </span>
+              </div>
+
+              {fulfillmentReadiness.checks.map(check => (
+                <div
+                  key={check.key}
+                  className={[
+                    "population-readiness-check",
+                    `is-${check.status}`,
+                  ].join(" ")}
+                >
+                  <strong>{pretty(check.good)}</strong>
+
+                  <span>
+                    {check.status === "valid"
+                      ? "Valid"
+                      : check.status === "missing"
+                        ? "Missing"
+                        : "Invalid"}
+                  </span>
+
+                  <p>{check.message}</p>
+                </div>
+              ))}
+
+              {fulfillmentReadiness.errors.length > 0 && (
+                <p className="population-readiness-error">
+                  Resolve the payment issues before submitting.
+                </p>
+              )}
+
+              {fulfillmentReadiness.warnings.map(
+                (warning, index) => (
+                  <p
+                    key={index}
+                    className="population-readiness-warning"
+                  >
+                    {warning}
+                  </p>
+                )
+              )}
+
+              {fulfillmentReadiness.canSubmit && (
+                <p className="population-readiness-success">
+                  Payment assignments pass the available
+                  frontend checks. The engine must still
+                  validate the action.
+                </p>
+              )}
+            </section>
+          )}
+
+          {fulfillmentError && (
+            <p
+              className="population-readiness-error"
+              role="alert"
+            >
+              {fulfillmentError}
+            </p>
+          )}
           
           {/* STEP 90 — SUBMIT CARD FULFILLMENT */}
           <div className="population-fulfillment-actions">
@@ -223,7 +370,7 @@ export function PopulationHand({
               disabled={!canFulfill}
               onClick={() => void handleFulfill()}
             >
-              {actionLoading
+              {actionLoading || submitting
                 ? "Fulfilling..."
                 : "Fulfill Population Card"}
             </button>

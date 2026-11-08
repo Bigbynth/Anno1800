@@ -277,15 +277,31 @@ function App() {
   const selectedCard =
     visibleCards.find((card) => card.id === selectedCardId) ?? visibleCards[0];
   const location = locations.find((item) => item.id === selectedLocation)
-  const handCards = visibleHand
-    .map(cardId =>
-      catalogue.population.find(
-        card => card.id === cardId
-      )
-    )
+  /* STEP 115 — RESOLVE OLD WORLD AND NEW WORLD HAND CARDS */
+
+  /* STEP 115.1 — OLD WORLD AND NEW WORLD CARD LOOKUP */
+
+  const populationCardLookup = new Map<string, PopulationCard>();
+
+  for (const card of [
+    ...catalogue.population,
+    ...catalogue.new_world,
+  ]) {
+    // Narrow AnyCard to PopulationCard.
+    if (!isPopulation(card)) {
+      continue;
+    }
+
+    if (!populationCardLookup.has(card.id)) {
+      populationCardLookup.set(card.id, card);
+    }
+  }
+
+  const handCards: PopulationCard[] = visibleHand
+    .map(cardId => populationCardLookup.get(cardId))
     .filter(
       (card): card is PopulationCard =>
-        card !== undefined && isPopulation(card)
+        card !== undefined
     );
 
   function openDeck(deck: DeckName) {
