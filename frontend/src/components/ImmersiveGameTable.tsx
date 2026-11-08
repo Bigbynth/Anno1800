@@ -13,6 +13,16 @@ import { NewGameDialog } from "./NewGameDialog";
 import type { SaveSlotId, GameSetupSettings } from "../api";
 import { NavalConstructionPanel } from "./NavalConstructionPanel";
 
+import {
+  analyzeConstructionPlacement,
+  getPlacementResult,
+  getSelectablePlacementIds,
+} from "../construction-placement";
+
+import {
+  ConstructionPlacementInspector,
+} from "./ConstructionPlacementInspector";
+
 import type { AppPreferences } from "../app-preferences";
 
 import { PreferencesDialog } from "./PreferencesDialog";
@@ -560,6 +570,29 @@ export function ImmersiveGameTable({
           .map((space) => space.id)
       : [];
 
+    
+  /* STEP 110 — INDUSTRY PLACEMENT ANALYSIS */
+
+  const placementAnalysis =
+    analyzeConstructionPlacement({
+      spaces: islandSpaces,
+      candidateSpaceIds: constructionCandidates,
+
+      // No authoritative per-industry eligibility
+      // endpoint exists in the current integration.
+      authoritativeSpaceIds: null,
+    });
+
+  const effectiveConstructionCandidates =
+    getSelectablePlacementIds(placementAnalysis);
+
+  const inspectedConstructionSpace =
+    getPlacementResult(
+      placementAnalysis,
+      selectedLocation
+    );
+
+
   const navalCandidates =
     navalMode && navalData
       ? navalData.spaces
@@ -597,7 +630,7 @@ export function ImmersiveGameTable({
   const constructionReadiness = getConstructionReadiness({
     industry: selectedConstruction,
     target: constructionTarget,
-    candidateSpaceIds: constructionCandidates,
+    candidateSpaceIds: effectiveConstructionCandidates,
     requirements,
     paymentSources,
 
@@ -619,7 +652,9 @@ export function ImmersiveGameTable({
     Boolean(constructionTarget) &&
     Boolean(
       constructionTarget &&
-      constructionCandidates.includes(constructionTarget.id),
+      effectiveConstructionCandidates.includes(
+                          constructionTarget.id
+                        ),
     ) &&
     paymentComplete &&
     !duplicateProduction &&
@@ -795,7 +830,9 @@ export function ImmersiveGameTable({
     if (!constructionMode || !selectedConstruction) return;
 
     setConstructionTargetId(
-      constructionCandidates.includes(spaceId) ? spaceId : null,
+      effectiveConstructionCandidates.includes(spaceId)
+        ? spaceId
+        : null
     );
     setBuildError(null);
   }
@@ -1237,9 +1274,11 @@ export function ImmersiveGameTable({
               onSelectSpace={selectBoardSpace}
               constructionMode={constructionMode || navalMode}
               candidateSpaceIds={
-                navalMode ? navalCandidates : constructionCandidates
+                navalMode
+                  ? navalCandidates
+                  : effectiveConstructionCandidates
               }
-            />
+                          />
           </div>
 
           {/* Step 79: board selection, payment, backend construction. */}
@@ -1252,7 +1291,15 @@ export function ImmersiveGameTable({
                 onSelect={selectConstructionIndustry}
                 onClose={closeConstructionMode}
               />
-
+              {/* STEP 110 — PLACEMENT INSPECTOR */}
+              {selectedConstruction && (
+                <ConstructionPlacementInspector
+                  industryName={selectedConstruction.name}
+                  analysis={placementAnalysis}
+                  inspectedSpace={inspectedConstructionSpace}
+                  onInspectSpace={selectBoardSpace}
+                />
+              )}
               {selectedConstruction && (
                 <div className="construction-placement-preview">
                   <span className="construction-palette-eyebrow">

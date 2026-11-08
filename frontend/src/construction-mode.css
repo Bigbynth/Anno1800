@@ -5857,3 +5857,227 @@ button.tutorial-highlight {
     font-size: 9px;
   }
 }
+
+/* STEP 110 — CONSTRUCTION PLACEMENT INSPECTOR */
+
+.construction-placement-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 15px;
+  border: 1px solid #c59b56;
+  border-radius: 10px;
+  background: #203c47;
+  color: #e8dcc1;
+}
+
+.construction-placement-header h3 {
+  margin: 7px 0;
+  color: #f0dfbd;
+  font: 21px Georgia, serif;
+}
+
+.construction-placement-header p {
+  margin: 0;
+  color: #d2dad2;
+  font-size: 12px;
+}
+
+.construction-placement-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.construction-placement-summary > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 5px;
+  border: 1px solid #617d7c;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.construction-placement-summary strong {
+  color: #f0dfbd;
+  font-size: 23px;
+  font-variant-numeric: tabular-nums;
+}
+
+.construction-placement-summary span {
+  color: #d2dad2;
+  font-size: 10px;
+}
+
+.construction-placement-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 13px;
+  border: 1px solid #7b9290;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.construction-placement-detail.is-candidate {
+  border-left: 3px solid #9bc8aa;
+}
+
+.construction-placement-detail.is-occupied,
+.construction-placement-detail.is-unsupported,
+.construction-placement-detail.is-not_eligible {
+  border-left: 3px solid #b77c73;
+}
+
+.construction-placement-detail-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.construction-placement-detail-heading strong {
+  color: #f0dfbd;
+  font-size: 14px;
+}
+
+.construction-placement-detail-heading span {
+  color: #e5c282;
+  font-size: 11px;
+}
+
+.construction-placement-detail p,
+.construction-placement-detail small {
+  margin: 0;
+  color: #d9e0da;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.construction-placement-instruction {
+  margin: 0;
+  padding: 12px;
+  border: 1px dashed #8d9c93;
+  border-radius: 8px;
+  color: #d9e0da;
+  font-size: 12px;
+}
+
+.construction-placement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.construction-placement-list-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 3px;
+}
+
+.construction-placement-list-heading strong {
+  color: #f0dfbd;
+  font-size: 12px;
+}
+
+.construction-placement-list-heading span {
+  color: #cbd7ce;
+  font-size: 11px;
+}
+
+.construction-placement-space {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #647f80;
+  border-radius: 7px;
+  background: #294650;
+  color: #e8dcc1;
+  text-align: left;
+  cursor: pointer;
+}
+
+.construction-placement-space > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.construction-placement-space strong {
+  font-size: 12px;
+}
+
+.construction-placement-space small {
+  color: #cbd7ce;
+  font-size: 11px;
+}
+
+.construction-placement-space.is-candidate {
+  border-left: 3px solid #9bc8aa;
+}
+
+.construction-placement-space.is-occupied,
+.construction-placement-space.is-unsupported,
+.construction-placement-space.is-not_eligible {
+  border-left: 3px solid #b77c73;
+}
+
+.construction-placement-space.is-selected {
+  background: #493d2d;
+  border-color: #e5c282;
+}
+
+.construction-placement-show-all {
+  padding: 10px;
+  border: 1px solid #c59b56;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #f0dfbd;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.construction-placement-disclaimer {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid #98825c;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #e8dcc1;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.construction-placement-quick-summary {
+  color: #d3ddcf;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.construction-placement-space:focus-visible,
+.construction-placement-show-all:focus-visible {
+  outline: 3px solid #ffdc8a;
+  outline-offset: 3px;
+}
+
+@media (max-width: 650px) {
+  .construction-placement-inspector {
+    padding: 11px;
+  }
+
+  .construction-placement-summary > div {
+    padding: 9px 4px;
+  }
+
+  .construction-placement-summary strong {
+    font-size: 19px;
+  }
+}
