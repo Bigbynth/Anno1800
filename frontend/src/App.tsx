@@ -8,6 +8,7 @@ import {
 
 import { ImmersiveGameTable } from "./components/ImmersiveGameTable";
 import { GameTable } from "./components/GameTable";
+import { StartScreen } from "./components/StartScreen";
 
 import "./game-table.css";
 import "./immersive-game.css";
@@ -83,6 +84,10 @@ function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [sessionRevision, setSessionRevision] =
     useState(0);
+
+  /* STEP 100 — APPLICATION MAIN MENU */
+  const [showStartScreen, setShowStartScreen] =
+    useState(true);
 
   const [paymentSources, setPaymentSources] = useState<Record<string, string>>(
     {},
@@ -540,6 +545,14 @@ function App() {
     }
   }
   
+  async function handleStartScreenLoadGame(
+    slot: SaveSlotId
+  ): Promise<void> {
+    await handleLoadGame(slot);
+
+    setShowStartScreen(false);
+  }
+  
   async function handleCreateNewGame(
       playerNames: string[],
       settings: GameSetupSettings
@@ -590,6 +603,20 @@ function App() {
       setActionLoading(false);
     }
   }
+
+  
+  async function handleStartScreenNewGame(
+    playerNames: string[],
+    settings: GameSetupSettings
+  ): Promise<void> {
+    await handleCreateNewGame(
+      playerNames,
+      settings
+    );
+
+    setShowStartScreen(false);
+  }
+
  
   useEffect(() => {
     if (!game) {
@@ -1034,30 +1061,41 @@ function App() {
   
   if (screen === "table") {
     return (
-      <ImmersiveGameTable
-        game={game}
-        tradeCapacity={navalData?.naval_capacity.trade ?? null}
-        navalData={navalData}
-        onBuildNaval={handleImmersiveBuildNaval}
-        onBuildIndustry={handleBoardBuildIndustry}
-        onProduceIndustry={handleImmersiveProduce}
-        industryData={industryData}
-        islandSpaces={industryData?.spaces ?? []}
-        handCards={handCards}
-        selectedLocation={selectedLocation}
-        actionLoading={actionLoading}
-        notice={notice ?? ""}
-        onSelectLocation={setSelectedLocation} 
-        onConfirmEndTurn={handleImmersiveEndTurn}
-        onFestival={handleImmersiveFestival}
-        onExploreNewWorld={handleExploreNewWorld}
-        onOpenWorkshop={() => setScreen("legacy-table")}
-        onFulfillPopulationCard={handleFulfillPopulationCard}
-        key={sessionRevision}
-        onSaveGame={handleSaveGame}
-        onLoadGame={handleLoadGame}
-        onCreateNewGame={handleCreateNewGame}
-      />
+      <>
+        <ImmersiveGameTable
+          game={game}
+          onOpenMainMenu={() => setShowStartScreen(true)}
+          tradeCapacity={navalData?.naval_capacity.trade ?? null}
+          navalData={navalData}
+          onBuildNaval={handleImmersiveBuildNaval}
+          onBuildIndustry={handleBoardBuildIndustry}
+          onProduceIndustry={handleImmersiveProduce}
+          industryData={industryData}
+          islandSpaces={industryData?.spaces ?? []}
+          handCards={handCards}
+          selectedLocation={selectedLocation}
+          actionLoading={actionLoading}
+          notice={notice ?? ""}
+          onSelectLocation={setSelectedLocation}
+          onConfirmEndTurn={handleImmersiveEndTurn}
+          onFestival={handleImmersiveFestival}
+          onExploreNewWorld={handleExploreNewWorld}
+          onOpenWorkshop={() => setScreen("legacy-table")}
+          onFulfillPopulationCard={handleFulfillPopulationCard}
+          key={sessionRevision}
+          onSaveGame={handleSaveGame}
+          onLoadGame={handleLoadGame}
+          onCreateNewGame={handleCreateNewGame}
+        />
+        {showStartScreen && (
+          <StartScreen
+            game={game}
+            onContinue={() => setShowStartScreen(false)}
+            onCreateNewGame={handleStartScreenNewGame}
+            onLoadGame={handleStartScreenLoadGame}
+          />
+        )}
+      </>
     );
   }
 

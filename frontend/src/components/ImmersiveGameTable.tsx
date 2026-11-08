@@ -55,6 +55,7 @@ type Props = {
   actionLoading: boolean;
   notice: string;
 
+  onOpenMainMenu: () => void;
   onSelectLocation: (id: string) => void;
   onConfirmEndTurn: () => Promise<void>;
   onFestival: () => Promise<void>;
@@ -90,6 +91,7 @@ const sessionActions = new Set([
   "history",
   "archive",
   "new_game",
+  "main_menu",
 ]);
 
 
@@ -174,6 +176,12 @@ const dockActions: DockAction[] = [
     description: "Establish a fresh company match",
   },
   {
+    id: "main_menu",
+    label: "Main Menu",
+    symbol: "⌂",
+    description: "Return to the game start screen",
+  },
+  {
     id: "cards",
     label: "Cards",
     symbol: "▤",
@@ -191,6 +199,7 @@ export function ImmersiveGameTable({
   actionLoading,
   notice,
   industryData,
+  onOpenMainMenu,
   onSelectLocation,
   onConfirmEndTurn,
   onFestival,
@@ -352,6 +361,14 @@ export function ImmersiveGameTable({
   }
 
   function selectDockAction(id: string) {
+    
+    if (id === "main_menu") {
+      if (actionLoading) return;
+
+      onOpenMainMenu();
+      return;
+    }
+
     
     if (id === "new_game") {
       if (actionLoading) return;

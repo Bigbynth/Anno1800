@@ -3328,7 +3328,7 @@
 .new-game-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 230;
   display: grid;
   place-items: center;
   padding: 20px;
@@ -3814,5 +3814,351 @@
   .game-setup-preview-option {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+/* STEP 100 — MAIN MENU / START SCREEN */
+
+.start-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 210;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 30px 20px;
+  box-sizing: border-box;
+  background: #172d3b;
+  color: #e8dcc1;
+}
+
+.start-screen-atmosphere {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse at 72% 20%,
+      rgba(197, 155, 86, .23),
+      transparent 52%
+    ),
+    linear-gradient(
+      145deg,
+      #294650 0%,
+      #172d3b 52%,
+      #101f2a 100%
+    );
+}
+
+.start-screen-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 27px;
+  width: min(560px, 100%);
+  margin: auto;
+}
+
+.start-screen-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 11px;
+  text-align: center;
+}
+
+.start-screen-eyebrow {
+  color: #c59b56;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+}
+
+.start-screen-brand h1 {
+  margin: 0;
+  color: #f2e3c3;
+  font: clamp(48px, 9vw, 84px) Georgia, serif;
+  letter-spacing: 5px;
+  line-height: 1.1;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, .45);
+}
+
+.start-screen-brand p {
+  margin: 0;
+  color: #d0c6af;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.start-screen-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  width: 100%;
+}
+
+.start-screen-menu > button {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  width: 100%;
+  padding: 18px;
+  border: 1px solid #627b7c;
+  border-radius: 9px;
+  background: #294650;
+  color: #f0dfbd;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background .18s ease,
+    border-color .18s ease;
+}
+
+.start-screen-menu > button:hover:not(:disabled) {
+  border-color: #e5c282;
+  background: #365763;
+}
+
+.start-screen-menu > button.start-screen-primary {
+  border-color: #e5c282;
+  background: #81623b;
+}
+
+.start-screen-menu > button.start-screen-primary:hover:not(:disabled) {
+  background: #9f7b48;
+}
+
+.start-screen-menu > button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.start-screen-menu-symbol {
+  display: grid;
+  place-items: center;
+  flex: 0 0 40px;
+  height: 40px;
+  border: 1px solid #a88a57;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #f2dba6;
+  font-size: 23px;
+}
+
+.start-screen-menu > button > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.start-screen-menu strong {
+  font-size: 16px;
+}
+
+.start-screen-menu small {
+  color: #d0d8ce;
+  font-size: 12px;
+}
+
+.start-screen-current-session {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  border: 1px solid #647b79;
+  border-radius: 9px;
+  background: rgba(41, 70, 80, .7);
+}
+
+.start-screen-current-session > span {
+  color: #c59b56;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.start-screen-current-session strong {
+  color: #f0dfbd;
+  font: 19px Georgia, serif;
+}
+
+.start-screen-current-session small {
+  color: #cbd5cc;
+  font-size: 12px;
+}
+
+.start-screen-footer {
+  padding-top: 14px;
+  border-top: 1px solid #597177;
+  color: #aabcb5;
+  font-size: 11px;
+  text-align: center;
+}
+
+.start-screen-load-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 20, 29, .83);
+}
+
+.start-screen-load-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+  width: min(560px, 100%);
+  max-height: 90dvh;
+  overflow-y: auto;
+  padding: 22px;
+  box-sizing: border-box;
+  border: 2px solid #c59b56;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #294650, #172d3b);
+  color: #e8dcc1;
+}
+
+.start-screen-load-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.start-screen-load-heading span {
+  color: #c59b56;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.start-screen-load-heading h2 {
+  margin: 7px 0 0;
+  color: #f0dfbd;
+  font: 27px Georgia, serif;
+}
+
+.start-screen-load-heading > button {
+  border: 0;
+  background: transparent;
+  color: #e8dcc1;
+  font-size: 27px;
+  cursor: pointer;
+}
+
+.start-screen-save-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.start-screen-save-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #637f80;
+  border-radius: 8px;
+  background: #294650;
+  color: #f0dfbd;
+  text-align: left;
+  cursor: pointer;
+}
+
+.start-screen-save-slot span {
+  color: #ccd6cd;
+  font-size: 12px;
+}
+
+.start-screen-save-slot.is-selected {
+  border-color: #e5c282;
+  background: #493d2d;
+}
+
+.start-screen-save-slot:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.start-screen-load-warning {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #c59b56;
+  border-radius: 8px;
+  background: #493d2d;
+  color: #f0dfbd;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.start-screen-load-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 11px;
+}
+
+.start-screen-load-actions button {
+  padding: 11px 16px;
+  border: 1px solid #c59b56;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #f0dfbd;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.start-screen-load-actions button:last-child {
+  background: #81623b;
+}
+
+.start-screen-load-actions button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.start-screen-error {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #bd756a;
+  border-radius: 7px;
+  background: #56393a;
+  color: #ffe0d8;
+  font-size: 12px;
+}
+
+@media (max-width: 600px) {
+  .start-screen {
+    padding: 18px 12px;
+  }
+
+  .start-screen-brand h1 {
+    letter-spacing: 2px;
+  }
+
+  .start-screen-menu > button {
+    padding: 13px;
+  }
+
+  .start-screen-load-dialog {
+    padding: 15px;
+  }
+
+  .start-screen-load-actions {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .start-screen-menu > button {
+    transition: none;
   }
 }
