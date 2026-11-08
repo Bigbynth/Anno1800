@@ -4162,3 +4162,253 @@
     transition: none;
   }
 }
+
+/* STEP 101 — APPLICATION SETTINGS */
+
+.preferences-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 20, 29, .88);
+  backdrop-filter: blur(4px);
+}
+
+.preferences-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: min(620px, 100%);
+  max-height: 92dvh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 23px;
+  border: 2px solid #c59b56;
+  border-radius: 12px;
+  background: linear-gradient(
+    145deg,
+    #294650,
+    #172d3b
+  );
+  color: #e8dcc1;
+  box-shadow: 0 25px 70px rgba(0,0,0,.6);
+}
+
+.preferences-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.preferences-header h2 {
+  margin: 7px 0;
+  font: 28px Georgia, serif;
+  color: #f0dfbd;
+}
+
+.preferences-header p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #cbd5cc;
+}
+
+.preferences-header > button {
+  border: 0;
+  background: transparent;
+  color: #e8dcc1;
+  font-size: 27px;
+  cursor: pointer;
+}
+
+.preferences-content {
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+}
+
+.preferences-section {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.preferences-section h3 {
+  margin: 0;
+  font: 20px Georgia, serif;
+  color: #f0dfbd;
+}
+
+.preferences-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 14px;
+  border: 1px solid #647f80;
+  border-radius: 8px;
+  background: #294650;
+  cursor: pointer;
+}
+
+.preferences-setting-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.preferences-setting-info strong {
+  color: #f0dfbd;
+  font-size: 13px;
+}
+
+.preferences-setting-info small {
+  color: #cbd5cc;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.preferences-setting input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 21px;
+  height: 21px;
+  accent-color: #c59b56;
+  cursor: pointer;
+}
+
+.preferences-warning {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #c59b56;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #f0dfbd;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.preferences-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 15px;
+  border-top: 1px solid #71817c;
+}
+
+.preferences-footer button {
+  padding: 11px 16px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.preferences-reset {
+  border: 1px solid #82958e;
+  background: transparent;
+  color: #e8dcc1;
+}
+
+.preferences-done {
+  border: 1px solid #e5c282;
+  background: #81623b;
+  color: #fff0cf;
+}
+
+/* STEP 101 — ACCESSIBILITY OVERRIDES */
+
+html[data-anno-reduced-motion="true"] *,
+html[data-anno-reduced-motion="true"] *::before,
+html[data-anno-reduced-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* High contrast overrides for immersive UI */
+
+html[data-anno-high-contrast="true"] {
+  --anno-contrast-text: #fff5d8;
+  --anno-contrast-border: #efcc86;
+}
+
+html[data-anno-high-contrast="true"] .start-screen,
+html[data-anno-high-contrast="true"] .preferences-dialog,
+html[data-anno-high-contrast="true"] .immersive-inspector,
+html[data-anno-high-contrast="true"] .new-game-dialog,
+html[data-anno-high-contrast="true"] .save-load-dialog,
+html[data-anno-high-contrast="true"] .game-history-panel,
+html[data-anno-high-contrast="true"] .objectives-panel,
+html[data-anno-high-contrast="true"] .final-results-dialog {
+  color: var(--anno-contrast-text);
+}
+
+html[data-anno-high-contrast="true"] button,
+html[data-anno-high-contrast="true"] input,
+html[data-anno-high-contrast="true"] select {
+  border-color: var(--anno-contrast-border);
+}
+
+html[data-anno-high-contrast="true"] :is(
+  button,
+  input,
+  select,
+  textarea,
+  a
+):focus-visible {
+  outline: 3px solid #ffdc8a;
+  outline-offset: 3px;
+}
+
+/* Compact mode — selected application panels */
+
+html[data-anno-compact="true"] .preferences-dialog,
+html[data-anno-compact="true"] .new-game-dialog,
+html[data-anno-compact="true"] .save-load-dialog,
+html[data-anno-compact="true"] .game-history-panel,
+html[data-anno-compact="true"] .objectives-panel {
+  gap: 10px;
+  padding: 13px;
+}
+
+html[data-anno-compact="true"] .preferences-setting,
+html[data-anno-compact="true"] .new-game-player,
+html[data-anno-compact="true"] .game-history-event,
+html[data-anno-compact="true"] .turn-status,
+html[data-anno-compact="true"] .naval-capacity-display {
+  padding: 8px;
+}
+
+html[data-anno-compact="true"] .start-screen-content {
+  gap: 14px;
+}
+
+html[data-anno-compact="true"] .start-screen-menu {
+  gap: 7px;
+}
+
+html[data-anno-compact="true"]
+.start-screen-menu > button {
+  padding: 10px 13px;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .preferences-dialog {
+    padding: 15px;
+  }
+
+  .preferences-footer {
+    flex-direction: column;
+  }
+
+  .preferences-setting {
+    padding: 11px;
+  }
+}

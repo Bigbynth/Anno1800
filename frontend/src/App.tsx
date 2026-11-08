@@ -2,6 +2,16 @@
 import { useEffect, useMemo, useState } from "react";
 
 import {
+  loadAppPreferences,
+  saveAppPreferences,
+  applyAppPreferences,
+} from "./app-preferences";
+
+import type {
+  AppPreferences,
+} from "./app-preferences";
+
+import {
   catalogue as fallbackCatalogue,
   deckLabels,
 } from "./data/catalogue";
@@ -89,6 +99,12 @@ function App() {
   const [showStartScreen, setShowStartScreen] =
     useState(true);
 
+  
+  /* STEP 101 — USER PREFERENCES */
+  const [preferences, setPreferences] =
+    useState<AppPreferences>(loadAppPreferences);
+
+
   const [paymentSources, setPaymentSources] = useState<Record<string, string>>(
     {},
   );
@@ -172,6 +188,12 @@ function App() {
     };
   }, [game]);
 
+  
+  /* STEP 101 — APPLY AND PERSIST SETTINGS */
+  useEffect(() => {
+    applyAppPreferences(preferences);
+    saveAppPreferences(preferences);
+  }, [preferences]);
 
   useEffect(() => {
     let active = true;
@@ -1064,6 +1086,8 @@ function App() {
       <>
         <ImmersiveGameTable
           game={game}
+          preferences={preferences}
+          onChangePreferences={setPreferences}
           onOpenMainMenu={() => setShowStartScreen(true)}
           tradeCapacity={navalData?.naval_capacity.trade ?? null}
           navalData={navalData}
@@ -1090,6 +1114,8 @@ function App() {
         {showStartScreen && (
           <StartScreen
             game={game}
+            preferences={preferences}
+            onChangePreferences={setPreferences}
             onContinue={() => setShowStartScreen(false)}
             onCreateNewGame={handleStartScreenNewGame}
             onLoadGame={handleStartScreenLoadGame}

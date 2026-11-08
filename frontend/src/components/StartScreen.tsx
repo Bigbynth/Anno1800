@@ -1,6 +1,12 @@
 
 import { useEffect, useState } from "react";
 
+import type {
+  AppPreferences,
+} from "../app-preferences";
+
+import { PreferencesDialog } from "./PreferencesDialog";
+
 import {
   fetchSaveSlots,
 } from "../api";
@@ -17,6 +23,9 @@ import { NewGameDialog } from "./NewGameDialog";
 
 type Props = {
   game: GameSnapshot | null;
+  preferences: AppPreferences;
+  onChangePreferences: (value: AppPreferences) => void;
+
   onContinue: () => void;
   onCreateNewGame: (
     names: string[],
@@ -33,12 +42,19 @@ const SAVE_SLOTS: SaveSlotId[] = [
 
 export function StartScreen({
   game,
+  preferences,
+  onChangePreferences,
   onContinue,
   onCreateNewGame,
   onLoadGame,
 }: Props) {
   const [newGameOpen, setNewGameOpen] = useState(false);
   const [loadOpen, setLoadOpen] = useState(false);
+
+  
+  const [settingsOpen, setSettingsOpen] =
+  useState(false);
+
 
   const [slots, setSlots] = useState<SaveSlotInfo[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -199,7 +215,26 @@ export function StartScreen({
               </small>
             </span>
           </button>
-        </section>
+          
+            {/* STEP 101 — APPLICATION SETTINGS */}
+            <button
+            type="button"
+            disabled={busy}
+            onClick={() => setSettingsOpen(true)}
+            >
+            <span className="start-screen-menu-symbol">
+                ⚙
+            </span>
+
+            <span>
+                <strong>Settings</strong>
+                <small>
+                Accessibility and gameplay preferences
+                </small>
+            </span>
+            </button>
+
+                    </section>
 
         {game && (
           <div className="start-screen-current-session">
@@ -363,6 +398,17 @@ export function StartScreen({
           onClose={() => setNewGameOpen(false)}
         />
       )}
+
+      
+        {/* STEP 101 — APPLICATION SETTINGS */}
+        {settingsOpen && (
+        <PreferencesDialog
+            preferences={preferences}
+            onChange={onChangePreferences}
+            onClose={() => setSettingsOpen(false)}
+        />
+        )}
+
     </div>
   );
 }

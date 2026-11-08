@@ -14,6 +14,12 @@ import { NewGameDialog } from "./NewGameDialog";
 import type { SaveSlotId, GameSetupSettings } from "../api";
 import { NavalConstructionPanel } from "./NavalConstructionPanel";
 
+import type {
+  AppPreferences,
+} from "../app-preferences";
+
+import { PreferencesDialog } from "./PreferencesDialog";
+
 import type { NavalCatalogueSnapshot } from "../types";
 
 import { ConstructionPalette } from "./ConstructionPalette";
@@ -54,7 +60,8 @@ type Props = {
   selectedLocation: string | null;
   actionLoading: boolean;
   notice: string;
-
+  preferences: AppPreferences;
+  onChangePreferences: (value: AppPreferences) => void; 
   onOpenMainMenu: () => void;
   onSelectLocation: (id: string) => void;
   onConfirmEndTurn: () => Promise<void>;
@@ -92,6 +99,7 @@ const sessionActions = new Set([
   "archive",
   "new_game",
   "main_menu",
+  "settings",
 ]);
 
 
@@ -182,6 +190,12 @@ const dockActions: DockAction[] = [
     description: "Return to the game start screen",
   },
   {
+    id: "settings",
+    label: "Settings",
+    symbol: "⚙",
+    description: "Accessibility and application preferences",
+  },
+  {
     id: "cards",
     label: "Cards",
     symbol: "▤",
@@ -199,6 +213,8 @@ export function ImmersiveGameTable({
   actionLoading,
   notice,
   industryData,
+  preferences,
+  onChangePreferences,
   onOpenMainMenu,
   onSelectLocation,
   onConfirmEndTurn,
@@ -233,7 +249,9 @@ export function ImmersiveGameTable({
   const [objectivesOpen, setObjectivesOpen] =
     useState(false);
 
-    
+  const [objectivesPanelOpen, setObjectivesPanelOpen] =
+    useState(false);
+ 
   const [finalResultsOpen, setFinalResultsOpen] =
     useState(false);
 
@@ -244,6 +262,9 @@ export function ImmersiveGameTable({
     useState(false);
 
   const [newGameOpen, setNewGameOpen] =
+    useState(false);
+  
+  const [preferencesOpen, setPreferencesOpen] =
     useState(false);
 
   const resultsShownForGame = useRef(false);
@@ -325,6 +346,7 @@ export function ImmersiveGameTable({
     setGameHistoryOpen(false);
     setSaveLoadOpen(false);
     setNewGameOpen(false);
+    setObjectivesPanelOpen(false);
   }, [game?.current_player_index]);
   
 /* STEP 94 — PRESENT RESULTS WHEN GAME ENDS */
@@ -339,18 +361,31 @@ export function ImmersiveGameTable({
       setFinalResultsOpen(true);
     }
   }, [game?.game_over]);
-
+  
   function openEndTurnDialog() {
     if (!game || game.game_over || actionLoading) {
       return;
     }
 
-    // End-turn confirmation is exclusive.
+    // STEP 101 — OPTIONAL END TURN CONFIRMATION
+    if (!preferences.confirmEndTurn) {
+      // Submit directly through the existing backend handler.
+      // Never advance the player locally.
+      void onConfirmEndTurn().catch(error => {
+        console.error(
+          "End Turn failed:",
+          error
+        );
+      });
+      return;
+    }
+
+    // Existing Step 93 exclusive confirmation behavior.
     setHarborOpen(false);
     setFestivalOpen(false);
     setExplorationOpen(false);
     setNewWorldAtlasOpen(false);
-    setObjectivesOpen(false);
+    setObjectivesPanelOpen(false);
     setHandOpen(false);
 
     closeConstructionMode();
@@ -358,211 +393,6 @@ export function ImmersiveGameTable({
     closeNavalMode();
 
     setEndTurnDialogOpen(true);
-  }
-
-  function selectDockAction(id: string) {
-    
-    if (id === "main_menu") {
-      if (actionLoading) return;
-
-      onOpenMainMenu();
-      return;
-    }
-
-    
-    if (id === "new_game") {
-      if (actionLoading) return;
-
-      setHarborOpen(false);
-      setFestivalOpen(false);
-      setExplorationOpen(false);
-      setNewWorldAtlasOpen(false);
-      setObjectivesOpen(false);
-      setEndTurnDialogOpen(false);
-      setFinalResultsOpen(false);
-      setGameHistoryOpen(false);
-      setSaveLoadOpen(false);
-      setHandOpen(false);
-
-      closeConstructionMode();
-      closeProductionMode();
-      closeNavalMode();
-
-      setNewGameOpen(true);
-      setActiveAction("new_game");
-      return;
-    }
-
-    if (id === "history") {
-      setHarborOpen(false);
-      setFestivalOpen(false);
-      setExplorationOpen(false);
-      setNewWorldAtlasOpen(false);
-      setObjectivesOpen(false);
-      setEndTurnDialogOpen(false);
-      setFinalResultsOpen(false);
-      setHandOpen(false);
-
-      closeConstructionMode();
-      closeProductionMode();
-      closeNavalMode();
-
-      setGameHistoryOpen(true);
-      setActiveAction("history");
-      return;
-    }
-
-    if (id === "results") {
-      setHarborOpen(false);
-      setFestivalOpen(false);
-      setExplorationOpen(false);
-      setNewWorldAtlasOpen(false);
-      setObjectivesOpen(false);
-      setEndTurnDialogOpen(false);
-      setHandOpen(false);
-
-      closeConstructionMode();
-      closeProductionMode();
-      closeNavalMode();
-
-      setFinalResultsOpen(true);
-      setActiveAction("results");
-      return;
-    }
-
-    if (id === "produce") {
-      if (productionMode) {
-        closeProductionMode();
-      } else {
-        openProductionMode();
-      }
-      return;
-    }
-
-    if (id === "naval") {
-      if (navalMode) {
-        closeNavalMode();
-      } else {
-        openNavalMode();
-      }
-      return;
-    }
-
-    if (id === "build") {
-      if (constructionMode) {
-        closeConstructionMode();
-      } else {
-        openConstructionMode();
-      }
-      return;
-    }
-
-    setActiveAction(id);
-    
-    if (id === "festival") {
-      if (
-        !game ||
-        actionLoading ||
-        game.main_action_used ||
-        game.game_over
-      ) {
-        return;
-      }
-
-      setHarborOpen(false);
-      setHandOpen(false);
-      closeConstructionMode();
-      closeProductionMode();
-
-      setActiveAction("festival");
-      setFestivalOpen(true);
-      return;
-    }
-    
-    if (id === "objectives") {
-      setHarborOpen(false);
-      setFestivalOpen(false);
-      setExplorationOpen(false);
-      setNewWorldAtlasOpen(false);
-      closeNavalMode();
-      closeProductionMode();
-      closeConstructionMode();
-      setHandOpen(false);
-
-      setObjectivesOpen(true);
-      setActiveAction("objectives");
-      return;
-    }
-    
-    if (id === "world") {
-      setHarborOpen(false);
-      setFestivalOpen(false);
-      setExplorationOpen(false);
-      setNewWorldAtlasOpen(true);
-      setActiveAction("world");
-      return;
-    }
-    
-    if (id === "archive") {
-      if (actionLoading) return;
-
-      setHarborOpen(false);
-      setFestivalOpen(false);
-      setExplorationOpen(false);
-      setNewWorldAtlasOpen(false);
-      setObjectivesOpen(false);
-      setEndTurnDialogOpen(false);
-      setFinalResultsOpen(false);
-      setGameHistoryOpen(false);
-      setHandOpen(false);
-
-      closeConstructionMode();
-      closeProductionMode();
-      closeNavalMode();
-
-      setSaveLoadOpen(true);
-      setActiveAction("archive");
-      return;
-    }
-
-    if (id === "explore") {
-      if (
-        !game ||
-        actionLoading ||
-        game.main_action_used ||
-        game.game_over
-      ) {
-        return;
-      }
-      setNewWorldAtlasOpen(false);
-      closeConstructionMode();
-      closeProductionMode();
-      closeNavalMode();
-
-      setHarborOpen(false);
-      setHandOpen(false);
-      setFestivalOpen(false);
-
-      setActiveAction("explore");
-      setExplorationOpen(true);
-      return;
-    }
-
-    if (id === "trade") {
-      setHarborOpen(true);
-      return;
-    }
-    if (id === "cards") {
-      closeConstructionMode();
-      closeProductionMode();
-      setHarborOpen(false);
-      setHandOpen(true);
-      return;
-    }
-
-    // Transitional route. Future steps will replace
-    // these with direct board interactions.
-    onOpenWorkshop();
   }
 
 const selectedConstruction =
@@ -801,6 +631,131 @@ async function confirmConstruction() {
       constructionCandidates.includes(spaceId) ? spaceId : null
     );
     setBuildError(null);
+  }
+  
+  /* STEPS 78–101 — ACTION DOCK DISPATCHER */
+  function selectDockAction(id: string) {
+    if (!game || actionLoading) return;
+
+    const isSessionAction = sessionActions.has(id);
+
+    if (
+      !isSessionAction &&
+      (game.main_action_used || game.game_over)
+    ) {
+      return;
+    }
+
+    // STEP 101 — SETTINGS
+    if (id === "settings") {
+      setPreferencesOpen(true);
+      return;
+    }
+
+    // STEP 100 — MAIN MENU
+    if (id === "main_menu") {
+      onOpenMainMenu();
+      return;
+    }
+
+    // STEP 97 — NEW GAME
+    if (id === "new_game") {
+      setNewGameOpen(true);
+      setActiveAction("new_game");
+      return;
+    }
+
+    // STEP 96 — SAVE / LOAD
+    if (id === "archive") {
+      setSaveLoadOpen(true);
+      setActiveAction("archive");
+      return;
+    }
+
+    // STEP 95 — ACTION HISTORY
+    if (id === "history") {
+      setGameHistoryOpen(true);
+      setActiveAction("history");
+      return;
+    }
+
+    // STEP 94 — RESULTS
+    if (id === "results") {
+      setFinalResultsOpen(true);
+      setActiveAction("results");
+      return;
+    }
+
+    // STEP 92 — OBJECTIVES
+    if (id === "objectives") {
+      setObjectivesPanelOpen(true);
+      setActiveAction("objectives");
+      return;
+    }
+
+    // STEP 89 — NEW WORLD ATLAS
+    if (id === "world") {
+      setNewWorldAtlasOpen(true);
+      setActiveAction("world");
+      return;
+    }
+
+    // STEP 88 — EXPLORATION
+    if (id === "explore") {
+      setExplorationOpen(true);
+      setActiveAction("explore");
+      return;
+    }
+
+    // STEP 86 — FESTIVAL
+    if (id === "festival") {
+      setFestivalOpen(true);
+      setActiveAction("festival");
+      return;
+    }
+
+    // STEP 84 — TRADE HARBOR
+    if (id === "trade") {
+      setHarborOpen(true);
+      setActiveAction("trade");
+      return;
+    }
+
+    // POPULATION CARDS
+    if (id === "cards") {
+      setHandOpen(value => !value);
+      setActiveAction("cards");
+      return;
+    }
+
+    // STEP 87 — NAVAL CONSTRUCTION
+    if (id === "naval") {
+      if (navalMode) {
+        closeNavalMode();
+      } else {
+        openNavalMode();
+      }
+      return;
+    }
+
+    // STEP 80 — PRODUCTION
+    if (id === "produce") {
+      if (productionMode) {
+        closeProductionMode();
+      } else {
+        openProductionMode();
+      }
+      return;
+    }
+
+    // STEP 78 — CONSTRUCTION
+    if (id === "build") {
+      if (constructionMode) {
+        closeConstructionMode();
+      } else {
+        openConstructionMode();
+      }
+    }
   }
 
 
@@ -1172,13 +1127,6 @@ async function confirmConstruction() {
             </button>
           </div>
         )}
-          
-        {/* STEP 93 — TURN STATUS */}
-        <TurnStatus
-          game={game}
-          actionLoading={actionLoading}
-          onEndTurn={openEndTurnDialog}
-        />
 
           <button
             type="button"
@@ -1198,6 +1146,14 @@ async function confirmConstruction() {
 
           {inspectorOpen && (
             <div className="immersive-rail-content">
+              
+            {/* STEP 93 — TURN STATUS */}
+            <TurnStatus
+              game={game}
+              actionLoading={actionLoading}
+              onEndTurn={openEndTurnDialog}
+            />
+
               <span className="immersive-overline">
                 CONTEXT INSPECTOR
               </span>
@@ -1461,11 +1417,11 @@ async function confirmConstruction() {
       )}
 
       {/* STEP 92 — OBJECTIVES AND VICTORY PROGRESS */}
-      {objectivesOpen && (
+      {objectivesPanelOpen && (
         <ObjectivesPanel
           game={game}
           onClose={() => {
-            setObjectivesOpen(false);
+            setObjectivesPanelOpen(false);
             setActiveAction(null);
           }}
         />
@@ -1532,7 +1488,15 @@ async function confirmConstruction() {
           }}
         />
       )}
-
+      
+      {/* STEP 101 — APPLICATION SETTINGS */}
+      {preferencesOpen && (
+        <PreferencesDialog
+          preferences={preferences}
+          onChange={onChangePreferences}
+          onClose={() => setPreferencesOpen(false)}
+        />
+      )}
 
       {/* STEP 84 — MARITIME TRADING DIRECTORY */}
       {harborOpen && (
