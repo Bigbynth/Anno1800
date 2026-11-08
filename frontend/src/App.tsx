@@ -1100,6 +1100,7 @@ function App() {
           selectedLocation={selectedLocation}
           actionLoading={actionLoading}
           notice={notice ?? ""}
+          shortcutsEnabled={!showStartScreen}
           onSelectLocation={setSelectedLocation}
           onConfirmEndTurn={handleImmersiveEndTurn}
           onFestival={handleImmersiveFestival}

@@ -20,6 +20,12 @@ import type {
 
 import { PreferencesDialog } from "./PreferencesDialog";
 
+import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog";
+
+import {
+  getKeyboardShortcut,
+} from "../keyboard-shortcuts";
+
 import type { NavalCatalogueSnapshot } from "../types";
 
 import { ConstructionPalette } from "./ConstructionPalette";
@@ -61,6 +67,7 @@ type Props = {
   actionLoading: boolean;
   notice: string;
   preferences: AppPreferences;
+  shortcutsEnabled: boolean;
   onChangePreferences: (value: AppPreferences) => void; 
   onOpenMainMenu: () => void;
   onSelectLocation: (id: string) => void;
@@ -100,6 +107,7 @@ const sessionActions = new Set([
   "new_game",
   "main_menu",
   "settings",
+  "keyboard_help",
 ]);
 
 
@@ -196,6 +204,12 @@ const dockActions: DockAction[] = [
     description: "Accessibility and application preferences",
   },
   {
+    id: "keyboard_help",
+    label: "Shortcuts",
+    symbol: "?",
+    description: "View keyboard navigation shortcuts",
+  },
+  {
     id: "cards",
     label: "Cards",
     symbol: "▤",
@@ -214,6 +228,7 @@ export function ImmersiveGameTable({
   notice,
   industryData,
   preferences,
+  shortcutsEnabled,
   onChangePreferences,
   onOpenMainMenu,
   onSelectLocation,
@@ -265,6 +280,9 @@ export function ImmersiveGameTable({
     useState(false);
   
   const [preferencesOpen, setPreferencesOpen] =
+    useState(false);
+
+  const [keyboardHelpOpen, setKeyboardHelpOpen] =
     useState(false);
 
   const resultsShownForGame = useRef(false);
@@ -347,6 +365,7 @@ export function ImmersiveGameTable({
     setSaveLoadOpen(false);
     setNewGameOpen(false);
     setObjectivesPanelOpen(false);
+    setKeyboardHelpOpen(false);
   }, [game?.current_player_index]);
   
 /* STEP 94 — PRESENT RESULTS WHEN GAME ENDS */
@@ -635,6 +654,13 @@ async function confirmConstruction() {
   
   /* STEPS 78–101 — ACTION DOCK DISPATCHER */
   function selectDockAction(id: string) {
+    if (id === "keyboard_help") {
+      if (actionLoading) return;
+
+      setKeyboardHelpOpen(true);
+      return;
+    }
+
     if (!game || actionLoading) return;
 
     const isSessionAction = sessionActions.has(id);
@@ -758,6 +784,101 @@ async function confirmConstruction() {
     }
   }
 
+  /* STEP 102 — BOARD KEYBOARD SHORTCUTS */
+  useEffect(() => {
+    if (!shortcutsEnabled || !game) {
+      return;
+    }
+
+    function handleKeyboard(event: KeyboardEvent) {
+      if (actionLoading) return;
+
+      // The help dialog handles its own Escape key.
+      if (keyboardHelpOpen) return;
+
+      // Never override navigation inside another modal.
+      if (
+        festivalOpen ||
+        explorationOpen ||
+        newWorldAtlasOpen ||
+        objectivesPanelOpen ||
+        endTurnDialogOpen ||
+        finalResultsOpen ||
+        gameHistoryOpen ||
+        saveLoadOpen ||
+        newGameOpen ||
+        preferencesOpen
+      ) {
+        return;
+      }
+
+      // Avoid interrupting a placement or action workflow.
+      if (
+        constructionMode ||
+        productionMode ||
+        navalMode ||
+        isBuilding ||
+        isProducing
+      ) {
+        return;
+      }
+
+      // Protect other modal dialogs that might be
+      // rendered by child components.
+      if (
+        document.querySelector(
+          '[role="dialog"][aria-modal="true"]'
+        )
+      ) {
+        return;
+      }
+
+      const shortcut = getKeyboardShortcut(event);
+
+      if (!shortcut) return;
+
+      event.preventDefault();
+
+      if (shortcut === "help") {
+        setKeyboardHelpOpen(true);
+        return;
+      }
+
+      // Reuse the existing Action Dock dispatcher.
+      // No separate business logic.
+      selectDockAction(shortcut);
+    }
+
+    window.addEventListener("keydown", handleKeyboard);
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleKeyboard
+      );
+    };
+  }, [
+    shortcutsEnabled,
+    game,
+    actionLoading,
+    keyboardHelpOpen,
+    festivalOpen,
+    explorationOpen,
+    newWorldAtlasOpen,
+    objectivesPanelOpen,
+    endTurnDialogOpen,
+    finalResultsOpen,
+    gameHistoryOpen,
+    saveLoadOpen,
+    newGameOpen,
+    preferencesOpen,
+    constructionMode,
+    productionMode,
+    navalMode,
+    isBuilding,
+    isProducing,
+    selectDockAction,
+  ]);
 
   if (!game) {
     return (
@@ -1495,6 +1616,14 @@ async function confirmConstruction() {
           preferences={preferences}
           onChange={onChangePreferences}
           onClose={() => setPreferencesOpen(false)}
+        />
+      )}
+
+      {/* STEP 102 — KEYBOARD SHORTCUT REFERENCE */}
+      {keyboardHelpOpen && (
+        <KeyboardShortcutsDialog
+          context="board"
+          onClose={() => setKeyboardHelpOpen(false)}
         />
       )}
 

@@ -4412,3 +4412,180 @@ html[data-anno-compact="true"]
     padding: 11px;
   }
 }
+
+/* STEP 102 — KEYBOARD SHORTCUTS & ACCESSIBILITY */
+
+.keyboard-help-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 20, 29, .88);
+  backdrop-filter: blur(4px);
+}
+
+.keyboard-help-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+  width: min(610px, 100%);
+  max-height: 90dvh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 22px;
+  border: 2px solid #c59b56;
+  border-radius: 12px;
+  background: linear-gradient(
+    145deg,
+    #294650,
+    #172d3b
+  );
+  color: #e8dcc1;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, .6);
+}
+
+.keyboard-help-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.keyboard-help-header h2 {
+  margin: 7px 0;
+  color: #f0dfbd;
+  font: 27px Georgia, serif;
+}
+
+.keyboard-help-header p {
+  margin: 0;
+  color: #cbd5cc;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.keyboard-help-header button {
+  border: 0;
+  background: transparent;
+  color: #e8dcc1;
+  font-size: 27px;
+  cursor: pointer;
+}
+
+.keyboard-help-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.keyboard-help-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid #647f80;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.keyboard-help-item > span {
+  color: #e8dcc1;
+  font-size: 13px;
+}
+
+.keyboard-help-item kbd {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border: 1px solid #bd9e69;
+  border-radius: 6px;
+  background: #493d2d;
+  color: #f0dfbd;
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.keyboard-help-note {
+  margin: 0;
+  padding: 11px;
+  border: 1px solid #887d61;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #e3d6bb;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.keyboard-help-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 13px;
+  border-top: 1px solid #71817d;
+}
+
+.keyboard-help-footer button {
+  padding: 11px 18px;
+  border: 1px solid #e5c282;
+  border-radius: 7px;
+  background: #81623b;
+  color: #fff0cf;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Visible focus for keyboard navigation */
+
+.immersive-shell :is(
+  button,
+  input,
+  select,
+  textarea
+):focus-visible,
+.start-screen :is(
+  button,
+  input,
+  select,
+  textarea
+):focus-visible,
+.keyboard-help-dialog :is(
+  button,
+  input,
+  select,
+  textarea
+):focus-visible {
+  outline: 3px solid #ffdc8a;
+  outline-offset: 3px;
+}
+
+/* Keep native disabled behavior visually apparent */
+
+.immersive-action-dock button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .keyboard-help-dialog {
+    padding: 15px;
+  }
+
+  .keyboard-help-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .keyboard-help-item kbd {
+    align-self: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .keyboard-help-dialog,
+  .keyboard-help-backdrop {
+    scroll-behavior: auto;
+  }
+}

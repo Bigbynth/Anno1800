@@ -1,6 +1,14 @@
 
 import { useEffect, useState } from "react";
 
+import {
+  isEditableTarget,
+} from "../keyboard-shortcuts";
+
+import {
+  KeyboardShortcutsDialog,
+} from "./KeyboardShortcutsDialog";
+
 import type {
   AppPreferences,
 } from "../app-preferences";
@@ -55,6 +63,8 @@ export function StartScreen({
   const [settingsOpen, setSettingsOpen] =
   useState(false);
 
+    const [keyboardHelpOpen, setKeyboardHelpOpen] =
+    useState(false);
 
   const [slots, setSlots] = useState<SaveSlotInfo[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -69,6 +79,98 @@ export function StartScreen({
     if (!loadOpen) return;
 
     let cancelled = false;
+
+
+    
+/* STEP 102 — MAIN MENU KEYBOARD SHORTCUTS */
+useEffect(() => {
+  function handleMenuKeyboard(event: KeyboardEvent) {
+    if (
+      busy ||
+      event.repeat ||
+      event.isComposing ||
+      event.defaultPrevented ||
+      event.ctrlKey ||
+      event.altKey ||
+      event.metaKey ||
+      isEditableTarget(event.target)
+    ) {
+      return;
+    }
+
+    // Do not interrupt an open modal.
+    if (
+      newGameOpen ||
+      loadOpen ||
+      settingsOpen ||
+      keyboardHelpOpen
+    ) {
+      return;
+    }
+
+    if (!event.shiftKey) return;
+
+    // Open help with "?".
+    if (
+      event.key === "?" ||
+      event.code === "Slash"
+    ) {
+      event.preventDefault();
+      setKeyboardHelpOpen(true);
+      return;
+    }
+
+    switch (event.key.toLowerCase()) {
+      case "c":
+        if (!game) return;
+        event.preventDefault();
+        onContinue();
+        return;
+
+      case "n":
+        event.preventDefault();
+        setError(null);
+        setNewGameOpen(true);
+        return;
+
+      case "l":
+        event.preventDefault();
+        setError(null);
+        setSelectedSlot(null);
+        setLoadOpen(true);
+        return;
+
+      case "s":
+        event.preventDefault();
+        setSettingsOpen(true);
+        return;
+
+      default:
+        return;
+    }
+  }
+
+  window.addEventListener(
+    "keydown",
+    handleMenuKeyboard
+  );
+
+  return () => {
+    window.removeEventListener(
+      "keydown",
+      handleMenuKeyboard
+    );
+  };
+}, [
+  busy,
+  newGameOpen,
+  loadOpen,
+  settingsOpen,
+  keyboardHelpOpen,
+  game,
+  onContinue,
+]);
+
 
     async function readSlots() {
       setLoadingSlots(true);
@@ -233,6 +335,26 @@ export function StartScreen({
                 </small>
             </span>
             </button>
+
+                        
+            {/* STEP 102 — KEYBOARD HELP */}
+            <button
+            type="button"
+            disabled={busy}
+            onClick={() => setKeyboardHelpOpen(true)}
+            >
+            <span className="start-screen-menu-symbol">
+                ?
+            </span>
+
+            <span>
+                <strong>Keyboard Shortcuts</strong>
+                <small>
+                Learn the available keyboard navigation
+                </small>
+            </span>
+            </button>
+
 
                     </section>
 
@@ -406,6 +528,14 @@ export function StartScreen({
             preferences={preferences}
             onChange={onChangePreferences}
             onClose={() => setSettingsOpen(false)}
+        />
+        )}
+    
+        {/* STEP 102 — KEYBOARD HELP */}
+        {keyboardHelpOpen && (
+        <KeyboardShortcutsDialog
+            context="menu"
+            onClose={() => setKeyboardHelpOpen(false)}
         />
         )}
 
