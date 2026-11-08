@@ -72,6 +72,12 @@ type Props = {
   notice: string;
   preferences: AppPreferences;
   shortcutsEnabled: boolean;
+  
+  tutorialRequested: boolean;
+  onTutorialRequestConsumed: () => void;
+  onTutorialCompleted: () => void;
+  onTutorialSkipped: () => void;
+
   onChangePreferences: (value: AppPreferences) => void; 
   onOpenMainMenu: () => void;
   onSelectLocation: (id: string) => void;
@@ -247,6 +253,10 @@ export function ImmersiveGameTable({
   industryData,
   preferences,
   shortcutsEnabled,
+  tutorialRequested,
+  onTutorialRequestConsumed,
+  onTutorialCompleted,
+  onTutorialSkipped,
   onChangePreferences,
   onOpenMainMenu,
   onSelectLocation,
@@ -394,6 +404,47 @@ export function ImmersiveGameTable({
     setTutorialOpen(false);
   }, [game?.current_player_index]);
   
+  
+  /* STEP 105 — OPEN TUTORIAL REQUESTED BY MAIN MENU */
+  useEffect(() => {
+    if (!tutorialRequested || !game) return;
+
+    // Close existing application overlays.
+    setPreferencesOpen(false);
+    setKeyboardHelpOpen(false);
+    setGameHelpOpen(false);
+    setObjectivesPanelOpen(false);
+    setFinalResultsOpen(false);
+    setGameHistoryOpen(false);
+    setSaveLoadOpen(false);
+    setNewGameOpen(false);
+    setEndTurnDialogOpen(false);
+    setFestivalOpen(false);
+    setExplorationOpen(false);
+    setNewWorldAtlasOpen(false);
+    setHarborOpen(false);
+
+    // Reset UI-only placement modes.
+    // This does not execute or reverse game actions.
+    setConstructionMode(false);
+    setProductionMode(false);
+    setNavalMode(false);
+
+    // Make sure the tutorial can point to Turn Status.
+    setInspectorOpen(true);
+
+    // Start at Lesson 1.
+    setTutorialOpen(true);
+    setActiveAction("tutorial");
+
+    // Clear the temporary launch request in App.tsx.
+    onTutorialRequestConsumed();
+  }, [
+    tutorialRequested,
+    game,
+    onTutorialRequestConsumed,
+  ]);
+
 /* STEP 94 — PRESENT RESULTS WHEN GAME ENDS */
   useEffect(() => {
     if (!game?.game_over) {
@@ -1733,16 +1784,18 @@ async function confirmConstruction() {
         />
       )}
 
-      {/* STEP 104 — FIRST TURN TUTORIAL */}
+      {/* STEPS 104–105 — GUIDED FIRST TURN */}
       {tutorialOpen && (
         <GameTutorial
           onClose={() => {
             setTutorialOpen(false);
             setActiveAction(null);
+            onTutorialSkipped();
           }}
           onComplete={() => {
             setTutorialOpen(false);
             setActiveAction(null);
+            onTutorialCompleted();
           }}
         />
       )}

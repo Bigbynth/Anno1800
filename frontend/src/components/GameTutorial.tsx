@@ -40,7 +40,7 @@ export function GameTutorial({
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null;
-
+    nextButtonRef.current?.focus();
     return () => {
       document.querySelectorAll(
         ".tutorial-highlight"
@@ -76,6 +76,11 @@ export function GameTutorial({
     };
   }, [currentStep.target]);
 
+    /* STEP 105 — KEEP TUTORIAL KEYBOARD FOCUS */
+    useEffect(() => {
+    nextButtonRef.current?.focus();
+    }, [stepIndex]);
+
   function nextStep() {
     if (stepIndex >= totalSteps - 1) {
       onComplete();
@@ -94,21 +99,39 @@ export function GameTutorial({
   function restartTutorial() {
     setStepIndex(0);
   }
+  
+    /* STEP 105 — CLOSE TUTORIAL FROM KEYBOARD */
+    useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+        if (event.key !== "Escape") return;
 
-  function handleKeyDown(
-    event: React.KeyboardEvent<HTMLElement>
-  ) {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      event.stopPropagation();
-      onClose();
+        // Do not interfere with another open modal.
+        if (
+        document.querySelector(
+            '[role="dialog"][aria-modal="true"]'
+        )
+        ) {
+        return;
+        }
+
+        event.preventDefault();
+        onClose();
     }
-  }
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+        window.removeEventListener(
+        "keydown",
+        handleEscape
+        );
+    };
+    }, [onClose]);
+
 
   return (
     <div
       className="game-tutorial-layer"
-      onKeyDown={handleKeyDown}
     >
       <section
         className="game-tutorial-panel"
@@ -160,6 +183,15 @@ export function GameTutorial({
               style={{ width: `${progress}%` }}
             />
           </div>
+        </div>
+        <div
+        className="game-tutorial-announcement"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        >
+        Lesson {stepIndex + 1} of {totalSteps}:
+        {" "}{currentStep.title}
         </div>
 
         <article className="game-tutorial-lesson">

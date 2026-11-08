@@ -2,6 +2,15 @@
 import { useEffect, useMemo, useState } from "react";
 
 import {
+  loadTutorialStatus,
+  saveTutorialStatus,
+} from "./tutorial-progress";
+
+import type {
+  TutorialStatus,
+} from "./tutorial-progress";
+
+import {
   loadAppPreferences,
   saveAppPreferences,
   applyAppPreferences,
@@ -104,6 +113,12 @@ function App() {
   const [preferences, setPreferences] =
     useState<AppPreferences>(loadAppPreferences);
 
+  /* STEP 105 — FIRST-LAUNCH ONBOARDING */
+  const [tutorialStatus, setTutorialStatus] =
+    useState<TutorialStatus>(loadTutorialStatus);
+
+  const [tutorialRequested, setTutorialRequested] =
+    useState(false);
 
   const [paymentSources, setPaymentSources] = useState<Record<string, string>>(
     {},
@@ -194,6 +209,11 @@ function App() {
     applyAppPreferences(preferences);
     saveAppPreferences(preferences);
   }, [preferences]);
+  
+  /* STEP 105 — PERSIST ONBOARDING STATUS */
+  useEffect(() => {
+    saveTutorialStatus(tutorialStatus);
+  }, [tutorialStatus]);
 
   useEffect(() => {
     let active = true;
@@ -531,6 +551,7 @@ function App() {
     }
 
     setActionLoading(true);
+    setTutorialRequested(false);
 
     try {
       const result = await loadGameSlot(slot);
@@ -603,7 +624,7 @@ function App() {
 
       // Force all transient immersive UI state to reset.
       setSessionRevision(value => value + 1);
-
+      setTutorialRequested(false);
       // Refresh catalogues for the new game.
       // A catalogue refresh failure must not be mistaken
       // for a failed game creation.
@@ -638,6 +659,51 @@ function App() {
 
     setShowStartScreen(false);
   }
+
+    
+  /* STEP 105 — START TUTORIAL FROM MAIN MENU */
+  function handleStartTutorial() {
+    if (!game) return;
+
+    // Enter the immersive board.
+    setShowStartScreen(false);
+
+    // Ask the board to open the tutorial.
+    setTutorialRequested(true);
+  }
+
+
+  /* The board acknowledges the launch request. */
+  function handleTutorialRequestConsumed() {
+    setTutorialRequested(false);
+  }
+
+
+  /* The player finished all six lessons. */
+  function handleTutorialCompleted() {
+    setTutorialStatus("completed");
+  }
+
+
+  /* The player skipped or closed the tutorial. */
+  function handleTutorialSkipped() {
+    setTutorialStatus(previous =>
+      previous === "completed"
+        ? "completed"
+        : "dismissed"
+    );
+  }
+
+
+  /* Dismiss the first-launch invitation. */
+  function handleDismissTutorialOffer() {
+    setTutorialStatus(previous =>
+      previous === "completed"
+        ? "completed"
+        : "dismissed"
+    );
+  }
+
 
  
   useEffect(() => {
@@ -1086,6 +1152,10 @@ function App() {
       <>
         <ImmersiveGameTable
           game={game}
+          tutorialRequested={tutorialRequested}
+          onTutorialRequestConsumed={handleTutorialRequestConsumed}
+          onTutorialCompleted={handleTutorialCompleted}
+          onTutorialSkipped={handleTutorialSkipped}
           preferences={preferences}
           onChangePreferences={setPreferences}
           onOpenMainMenu={() => setShowStartScreen(true)}
@@ -1115,6 +1185,9 @@ function App() {
         {showStartScreen && (
           <StartScreen
             game={game}
+            tutorialStatus={tutorialStatus}
+            onStartTutorial={handleStartTutorial}
+            onDismissTutorialOffer={handleDismissTutorialOffer}
             preferences={preferences}
             onChangePreferences={setPreferences}
             onContinue={() => setShowStartScreen(false)}

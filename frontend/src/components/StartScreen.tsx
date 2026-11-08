@@ -1,6 +1,10 @@
 
 import { useEffect, useState } from "react";
 
+import type {
+  TutorialStatus,
+} from "../tutorial-progress";
+
 import {
   isEditableTarget,
 } from "../keyboard-shortcuts";
@@ -33,6 +37,10 @@ type Props = {
   game: GameSnapshot | null;
   preferences: AppPreferences;
   onChangePreferences: (value: AppPreferences) => void;
+    
+    tutorialStatus: TutorialStatus;
+    onStartTutorial: () => void;
+    onDismissTutorialOffer: () => void;
 
   onContinue: () => void;
   onCreateNewGame: (
@@ -51,6 +59,9 @@ const SAVE_SLOTS: SaveSlotId[] = [
 export function StartScreen({
   game,
   preferences,
+    tutorialStatus,
+    onStartTutorial,
+    onDismissTutorialOffer,
   onChangePreferences,
   onContinue,
   onCreateNewGame,
@@ -261,6 +272,54 @@ useEffect(() => {
 
           <p>THE BOARD GAME · DIGITAL EDITION</p>
         </header>
+        
+        {/* STEP 105 — OPTIONAL FIRST-LAUNCH INVITATION */}
+        {tutorialStatus === "new" && game && (
+        <section
+            className="start-screen-tutorial-invitation"
+            aria-labelledby="tutorial-invitation-title"
+        >
+            <div className="start-screen-tutorial-copy">
+            <span className="start-screen-eyebrow">
+                THE INDUSTRIAL ACADEMY
+            </span>
+
+            <h2 id="tutorial-invitation-title">
+                New to the Industrial Age?
+            </h2>
+
+            <p>
+                Take a guided tour of your island, industries,
+                population cards, naval systems and turn
+                management before diving into your match.
+            </p>
+
+            <small>
+                Six lessons · Optional · No automatic game actions
+            </small>
+            </div>
+
+            <div className="start-screen-tutorial-buttons">
+            <button
+                type="button"
+                className="start-screen-tutorial-begin"
+                disabled={busy}
+                onClick={onStartTutorial}
+            >
+                Start Guided Tutorial
+            </button>
+
+            <button
+                type="button"
+                className="start-screen-tutorial-later"
+                disabled={busy}
+                onClick={onDismissTutorialOffer}
+            >
+                Not Now
+            </button>
+            </div>
+        </section>
+        )}
 
         <section
           className="start-screen-menu"
@@ -354,6 +413,26 @@ useEffect(() => {
                 </small>
             </span>
             </button>
+            
+{/* STEP 105 — PERMANENT TUTORIAL ACCESS */}
+<button
+  type="button"
+  disabled={!game || busy}
+  onClick={onStartTutorial}
+>
+  <span className="start-screen-menu-symbol">
+    ◎
+  </span>
+
+  <span>
+    <strong>Learn to Play</strong>
+    <small>
+      {tutorialStatus === "completed"
+        ? "Replay the six-lesson guided tour"
+        : "Explore the game through six guided lessons"}
+    </small>
+  </span>
+</button>
 
 
                     </section>
