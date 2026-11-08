@@ -25,7 +25,11 @@ import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog";
 import { ContextHelp } from "./ContextHelp";
 import { GameHelpDialog } from "./GameHelpDialog";
 import { GameTutorial } from "./GameTutorial";
+import {
+  getActionRecommendations,
+} from "../action-advisor";
 
+import { ActionAdvisor } from "./ActionAdvisor";
 import type {
   TutorialInteraction,
   TutorialInteractionEvent,
@@ -125,6 +129,7 @@ const sessionActions = new Set([
   "keyboard_help",
   "game_help",
   "tutorial",
+  "advisor",
 ]);
 
 
@@ -239,6 +244,12 @@ const dockActions: DockAction[] = [
     description: "Learn the game through a guided first turn",
   },
   {
+    id: "advisor",
+    label: "Advisor",
+    symbol: "✧",
+    description: "Explain available actions and suggest next steps",
+  },
+  {
     id: "cards",
     label: "Cards",
     symbol: "▤",
@@ -324,7 +335,10 @@ export function ImmersiveGameTable({
   const [tutorialOpen, setTutorialOpen] =
     useState(false);
 
-  
+  /* STEP 107 — COMPANY ADVISOR */
+  const [advisorOpen, setAdvisorOpen] =
+    useState(false);
+
   /* STEP 106 — TUTORIAL INTERACTION SIGNALS */
 
   const [tutorialEvent, setTutorialEvent] =
@@ -344,7 +358,6 @@ export function ImmersiveGameTable({
       sequence: tutorialSequenceRef.current,
     });
   }
-
 
   const resultsShownForGame = useRef(false);
 
@@ -401,6 +414,31 @@ export function ImmersiveGameTable({
     space => space.occupied
   ).length;
 
+  
+  /* STEP 107 — COUNT VISIBLE EMPTY PLACEMENT SPACES */
+
+  const emptyLandOrCoastCount = islandSpaces.filter(
+    space =>
+      !space.occupied &&
+      (space.type === "land" || space.type === "coast")
+  ).length;
+
+  
+/* STEP 107 — BUILD CONTEXTUAL RECOMMENDATIONS */
+
+const advisorRecommendations = game
+  ? getActionRecommendations({
+      game,
+      industryData,
+      navalData,
+      handCardCount: handCards.length,
+      emptyLandOrCoastCount,
+      actionLoading,
+    })
+  : [];
+
+
+
   useEffect(() => {
     if (!game) return;
 
@@ -430,6 +468,7 @@ export function ImmersiveGameTable({
     setGameHelpOpen(false);
     setTutorialOpen(false);
     setTutorialEvent(null);
+    setAdvisorOpen(false);
   }, [game?.current_player_index]);
   
   
@@ -460,7 +499,7 @@ export function ImmersiveGameTable({
 
     // Make sure the tutorial can point to Turn Status.
     setInspectorOpen(true);
-
+    setAdvisorOpen(false);
     // Start at Lesson 1.
     setTutorialEvent(null);
     setTutorialOpen(true);
@@ -780,7 +819,14 @@ async function confirmConstruction() {
     }
 
     if (!game || actionLoading) return;
-    
+
+    /* STEP 107 — ACTION ADVISOR */
+    if (id === "advisor") {
+      setAdvisorOpen(value => !value);
+      setActiveAction("advisor");
+      return;
+    }
+
     // STEP 104 — INTERACTIVE TUTORIAL
     if (id === "tutorial") {
       if (actionLoading) return;
@@ -799,6 +845,7 @@ async function confirmConstruction() {
       setExplorationOpen(false);
       setNewWorldAtlasOpen(false);
       setHarborOpen(false);
+      setAdvisorOpen(false);
 // Ensure the Context Inspector is visible for the tour.
       setInspectorOpen(true);
       setTutorialEvent(null);
@@ -943,6 +990,7 @@ async function confirmConstruction() {
       // Never override navigation inside another modal.
       if (
         festivalOpen ||
+        advisorOpen ||
         explorationOpen ||
         tutorialOpen ||
         newWorldAtlasOpen ||
@@ -1843,6 +1891,18 @@ async function confirmConstruction() {
           }}
         />
       )}
+
+      <ActionAdvisor
+        recommendations={advisorRecommendations}
+        disabled={actionLoading}
+        onSelectAction={selectDockAction}
+        onClose={() => {
+          setAdvisorOpen(false);
+          setActiveAction(current =>
+            current === "advisor" ? null : current
+          );
+        }}
+      />
 
       {/* STEP 84 — MARITIME TRADING DIRECTORY */}
       {harborOpen && (
