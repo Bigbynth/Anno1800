@@ -135,6 +135,11 @@ export interface NavalCatalogueSnapshot {
     trade: number;
     exploration: number;
   };
+  /* STEP 118 — TOTAL OWNED NAVAL TOKENS */
+  naval_token_totals?: {
+    trade: number;
+    exploration: number;
+  }
   spaces: IslandSpaceSnapshot[];
 }
 

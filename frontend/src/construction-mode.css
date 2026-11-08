@@ -7069,3 +7069,161 @@ button.tutorial-highlight {
     font-size: 17px;
   }
 }
+
+/* STEP 118 — FESTIVAL & NAVAL LIFECYCLE */
+
+.festival-lifecycle-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  margin: 15px 0;
+  padding: 15px;
+  border: 1px solid #c59b56;
+  border-radius: 10px;
+  background: #203c47;
+  color: #e8dcc1;
+}
+
+.festival-lifecycle-header h3 {
+  margin: 7px 0;
+  color: #f0dfbd;
+  font: 21px Georgia, serif;
+}
+
+.festival-lifecycle-header p {
+  margin: 0;
+  color: #d4ded5;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.festival-lifecycle-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.festival-lifecycle-stats > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px;
+  border: 1px solid #647f80;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.festival-lifecycle-stats strong {
+  color: #f0dfbd;
+  font-size: 23px;
+  font-variant-numeric: tabular-nums;
+}
+
+.festival-lifecycle-stats span {
+  color: #d2ddd4;
+  font-size: 11px;
+  text-align: center;
+}
+
+.festival-lifecycle-section {
+  padding: 12px;
+  border: 1px solid #718b87;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.festival-lifecycle-section > strong {
+  color: #f0dfbd;
+  font-size: 13px;
+}
+
+.festival-lifecycle-section p {
+  margin: 8px 0 0;
+  color: #d9e1d9;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.festival-lifecycle-token {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.festival-lifecycle-token-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.festival-lifecycle-token-heading strong {
+  color: #e8dcc1;
+  font-size: 12px;
+}
+
+.festival-lifecycle-token-heading span {
+  color: #f0dfbd;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.festival-lifecycle-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #52666b;
+}
+
+.festival-lifecycle-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #a0cdb8;
+  transition: width .2s ease;
+}
+
+.festival-lifecycle-token small {
+  color: #cbd7ce;
+  font-size: 11px;
+}
+
+.festival-lifecycle-warning {
+  padding: 12px;
+  border: 1px solid #b77c73;
+  border-radius: 8px;
+  background: #49332e;
+}
+
+.festival-lifecycle-warning strong {
+  color: #f2c5b9;
+}
+
+.festival-lifecycle-warning p {
+  margin: 7px 0 0;
+  color: #e6d0c9;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.festival-lifecycle-note {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid #98825c;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #e8dcc1;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+@media (max-width: 650px) {
+  .festival-lifecycle-panel {
+    padding: 11px;
+  }
+
+  .festival-lifecycle-stats strong {
+    font-size: 19px;
+  }
+}

@@ -1271,7 +1271,21 @@ def get_naval_catalogue() -> dict:
                     NavalTokenType.EXPLORATION
                 ),
             },
-            "spaces": [
+            # STEP 118 — TOTAL NAVAL TOKEN CAPACITY
+            "naval_token_totals": {
+                "trade": sum(
+                    1
+                    for token in player.naval_tokens
+                    if token.token_type == NavalTokenType.TRADE
+                ),
+                "exploration": sum(
+                    1
+                    for token in player.naval_tokens
+                    if token.token_type == NavalTokenType.EXPLORATION
+                ),
+            },
+
+                        "spaces": [
                 {
                     "id": space.id,
                     "type": space.space_type.value,

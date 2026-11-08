@@ -105,6 +105,9 @@ import type { IndustryCatalogueSnapshot } from "../types";
 import { PopulationHand } from "./PopulationHand";
 import { PopulationCardDesk } from "./PopulationCardDesk";
 import { FestivalDialog } from "./FestivalDialog";
+import {
+  analyzeFestivalLifecycle,
+} from "../festival-lifecycle";
 import { ExplorationDialog } from "./ExplorationDialog";
 import { NewWorldAtlas } from "./NewWorldAtlas";
 import { ObjectivesPanel } from "./ObjectivesPanel";
@@ -441,7 +444,15 @@ export function ImmersiveGameTable({
   );
 
   const activePlayer = game ? game.players[game.current_player_index] : null;
+  /* STEP 118 — FESTIVAL LIFECYCLE */
 
+  const festivalLifecycle = game
+    ? analyzeFestivalLifecycle(
+        game,
+        navalData,
+        actionLoading || isBuilding || isProducing
+      )
+    : null;
   
 /* STEP 111 — MAP REAL INDUSTRIES TO READINESS DATA */
 
@@ -1972,11 +1983,16 @@ export function ImmersiveGameTable({
           </p>
         </div>
       )}
-      {/* STEP 86 — FESTIVAL CONFIRMATION */}
-      {festivalOpen && (
+      {/* STEP 118 — FESTIVAL & NAVAL LIFECYCLE */}
+      {festivalOpen && festivalLifecycle && (
         <FestivalDialog
-          playerName={activePlayer?.name ?? "Current Player"}
-          disabled={actionLoading || game.main_action_used || game.game_over}
+          playerName={
+            activePlayer?.name ?? "Current Player"
+          }
+          lifecycle={festivalLifecycle}
+          disabled={
+            !festivalLifecycle.canHoldFestival
+          }
           onConfirm={onFestival}
           onClose={() => {
             setFestivalOpen(false);
@@ -1984,7 +2000,7 @@ export function ImmersiveGameTable({
           }}
         />
       )}
-      {/* GAME FEEDBACK */}
+            {/* GAME FEEDBACK */}
       {notice && (
         <div className="immersive-notice" role="status">
           {notice}

@@ -1,8 +1,20 @@
 
 import { useState } from "react";
 
+import type {
+  FestivalLifecycleResult,
+} from "../festival-lifecycle";
+
+import {
+  FestivalLifecyclePanel,
+} from "./FestivalLifecyclePanel";
+
 type Props = {
   playerName: string;
+
+  // STEP 118 — FESTIVAL READINESS
+  lifecycle: FestivalLifecycleResult;
+
   disabled: boolean;
   onConfirm: () => Promise<void>;
   onClose: () => void;
@@ -10,6 +22,7 @@ type Props = {
 
 export function FestivalDialog({
   playerName,
+  lifecycle,
   disabled,
   onConfirm,
   onClose,
@@ -94,6 +107,11 @@ export function FestivalDialog({
           This action uses the current turn's main
           action, subject to backend validation.
         </p>
+
+        {/* STEP 118 — FESTIVAL LIFECYCLE PREVIEW */}
+        <FestivalLifecyclePanel
+          lifecycle={lifecycle}
+        />
 
         {error && (
           <p className="festival-dialog-error" role="alert">
