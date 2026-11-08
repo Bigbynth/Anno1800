@@ -69,6 +69,9 @@ export function getActionRecommendations(
       industry => industry.can_produce
     );
 
+  const notReadyProducerCount =
+    producers.length - readyProducers.length;
+
   const mainActionBlocked =
     game.main_action_used ||
     game.game_over ||
@@ -150,9 +153,12 @@ export function getActionRecommendations(
       : readyProducers.length === 0
         ? "No owned producer currently reports that it can produce."
         : `${readyProducers.length} owned producer(s) report production availability.`,
-    suggestion: readyProducers.length > 0
-      ? "Open Produce, select an eligible industry, and check its output."
-      : "Inspect owned industries or consider future construction.",
+    suggestion:
+  readyProducers.length > 0
+    ? `${readyProducers.length} producer(s) report readiness. Open Produce to inspect them before choosing an action.`
+    : producers.length > 0
+      ? `${notReadyProducerCount} owned producer(s) are currently unavailable. Open Produce to inspect their status.`
+      : "No owned producers are listed. Review Construction for possible development.",
     priority:
       canInspectProduction &&
       readyProducers.length > 0

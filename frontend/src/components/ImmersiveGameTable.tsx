@@ -23,6 +23,14 @@ import {
   ConstructionPlacementInspector,
 } from "./ConstructionPlacementInspector";
 
+import {
+  analyzeProductionReadiness,
+} from "../production-readiness";
+
+import {
+  ProductionReadinessPanel,
+} from "./ProductionReadinessPanel";
+
 import type { AppPreferences } from "../app-preferences";
 
 import { PreferencesDialog } from "./PreferencesDialog";
@@ -397,6 +405,8 @@ export function ImmersiveGameTable({
     navalBusy: false,
   });
 
+  
+
   const [productionError, setProductionError] = useState<string | null>(null);
 
   const [navalMode, setNavalMode] = useState(false);
@@ -416,6 +426,35 @@ export function ImmersiveGameTable({
   );
 
   const activePlayer = game ? game.players[game.current_player_index] : null;
+
+  
+/* STEP 111 — MAP REAL INDUSTRIES TO READINESS DATA */
+
+  const productionReadinessProducers =
+    (activePlayer?.industries ?? []).map(
+      (industry) => ({
+        index: industry.index,
+        name: industry.name,
+        good: industry.good,
+        canProduce: industry.can_produce,
+      })
+    );
+  
+/* STEP 111 — ANALYZE PRODUCTION AVAILABILITY */
+
+  const productionReadiness =
+    analyzeProductionReadiness({
+      producers: productionReadinessProducers,
+
+      selectedProducerIndex:
+        selectedProducerIndex ?? null,
+
+      actionEnabled:
+        availability.produce.enabled,
+
+      actionExplanation:
+        availability.produce.explanation,
+    });
 
   const occupiedSpaces = islandSpaces.filter((space) => space.occupied).length;
 
@@ -697,6 +736,14 @@ export function ImmersiveGameTable({
   const canProduce =
     availability.produce.enabled;
 
+  /* STEP 111.3.6 — PRODUCTION CONFIRMATION READINESS */
+  const canConfirmProduction =
+    canProduce &&
+    productionReadiness.selected?.status === "ready" &&
+    !isProducing &&
+    !actionLoading &&
+    selectedProducerIndex !== null;
+    
   function openProductionMode() {
     if (!canProduce) return;
     closeConstructionMode();
@@ -717,9 +764,8 @@ export function ImmersiveGameTable({
 
   async function confirmProduction() {
     if (
-      !canProduce ||
-      !selectedProducer?.can_produce ||
-      selectedProducerIndex === null
+      !canConfirmProduction ||
+      !selectedProducer?.can_produce
     ) {
       return;
     }
@@ -1353,15 +1399,13 @@ export function ImmersiveGameTable({
                       )}
 
                       <button
-                        type="button"
-                        className="construction-preview-confirm"
-                        disabled={!canConfirmBuild}
-                        onClick={() => void confirmConstruction()}
-                      >
-                        {isBuilding
-                          ? "Constructing..."
-                          : "Confirm Construction"}
-                      </button>
+                      type="button"
+                      className="construction-preview-confirm"
+                      disabled={!canConfirmProduction}
+                      onClick={() => void confirmProduction()}
+                    >
+                      {isProducing ? "Producing..." : "Confirm Production"}
+                    </button>
                     </>
                   ) : (
                     <p>Choose a highlighted candidate space on the island.</p>
@@ -1394,6 +1438,11 @@ export function ImmersiveGameTable({
                   ×
                 </button>
               </header>
+              {/* STEP 111 — PRODUCTION READINESS */}
+              <ProductionReadinessPanel
+                readiness={productionReadiness}
+                onSelectProducer={setSelectedProducerIndex}
+              />
               {selectedSpace?.occupied && (
                 <p className="immersive-production-hint">
                   Inspected space: <strong>{selectedSpace.id}</strong>

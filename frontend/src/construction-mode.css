@@ -6081,3 +6081,178 @@ button.tutorial-highlight {
     font-size: 19px;
   }
 }
+
+/* STEP 111 — PRODUCTION READINESS INSPECTOR */
+
+.production-readiness-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 15px;
+  border: 1px solid #c59b56;
+  border-radius: 10px;
+  background: #203c47;
+  color: #e8dcc1;
+}
+
+.production-readiness-header h3 {
+  margin: 7px 0;
+  color: #f0dfbd;
+  font: 22px Georgia, serif;
+}
+
+.production-readiness-header p {
+  margin: 0;
+  color: #cbd7ce;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.production-readiness-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.production-readiness-summary > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 5px;
+  border: 1px solid #647f80;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.production-readiness-summary strong {
+  color: #f0dfbd;
+  font-size: 23px;
+}
+
+.production-readiness-summary span {
+  color: #d5ded5;
+  font-size: 10px;
+}
+
+.production-readiness-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.production-readiness-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #647f80;
+  border-radius: 8px;
+  background: #294650;
+  color: #e8dcc1;
+  text-align: left;
+  cursor: pointer;
+}
+
+.production-readiness-item.is-ready {
+  border-left: 3px solid #9bc8aa;
+}
+
+.production-readiness-item.is-not-ready {
+  border-left: 3px solid #a78b80;
+}
+
+.production-readiness-item.is-selected {
+  background: #493d2d;
+  border-color: #e5c282;
+}
+
+.production-readiness-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.production-readiness-item-main strong {
+  color: #f0dfbd;
+  font-size: 13px;
+}
+
+.production-readiness-item-main small {
+  color: #cbd7ce;
+  font-size: 11px;
+}
+
+.production-readiness-badge {
+  flex-shrink: 0;
+  color: #e5c282;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.production-readiness-detail,
+.production-readiness-warning,
+.production-readiness-empty {
+  padding: 13px;
+  border: 1px solid #708581;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.production-readiness-detail h4 {
+  margin: 0 0 9px;
+  color: #f0dfbd;
+  font: 18px Georgia, serif;
+}
+
+.production-readiness-detail p,
+.production-readiness-warning p {
+  margin: 6px 0;
+  color: #d5ded5;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.production-readiness-warning {
+  border-color: #b77c73;
+  background: #493d2d;
+}
+
+.production-readiness-warning strong {
+  color: #f0dfbd;
+}
+
+.production-readiness-empty {
+  font-size: 12px;
+}
+
+.production-readiness-disclaimer {
+  margin: 0;
+  padding: 11px;
+  border: 1px solid #9c8b68;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #e8dcc1;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.production-readiness-item:focus-visible {
+  outline: 3px solid #ffdc8a;
+  outline-offset: 3px;
+}
+
+@media (max-width: 650px) {
+  .production-readiness-panel {
+    padding: 11px;
+  }
+
+  .production-readiness-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
