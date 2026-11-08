@@ -5825,3 +5825,35 @@ button.tutorial-highlight {
     transition: none;
   }
 }
+
+/* STEP 109 — UNIFIED ACTION AVAILABILITY */
+
+.immersive-dock-unavailable {
+  display: block;
+  margin-top: 4px;
+  color: #d6b5a4;
+  font-size: 10px;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.immersive-dock-button:disabled {
+  opacity: .52;
+  cursor: not-allowed;
+}
+
+.immersive-dock-button:disabled
+.immersive-dock-symbol {
+  filter: grayscale(.65);
+}
+
+.immersive-dock-button:not(:disabled):focus-visible {
+  outline: 3px solid #ffdc8a;
+  outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+  .immersive-dock-unavailable {
+    font-size: 9px;
+  }
+}

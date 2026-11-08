@@ -7,6 +7,11 @@ import type {
   NavalCatalogueSnapshot,
 } from "./types";
 
+import type {
+  ActionAvailability,
+  ActionId,
+} from "./action-availability";
+
 export type AdvisorActionId =
   | "build"
   | "produce"
@@ -33,6 +38,7 @@ export interface AdvisorRecommendation {
 
 export interface AdvisorInput {
   game: GameSnapshot;
+  availability: Record<ActionId, ActionAvailability>;
   industryData: IndustryCatalogueSnapshot | null;
   navalData: NavalCatalogueSnapshot | null;
   handCardCount: number;
@@ -50,12 +56,13 @@ export function getActionRecommendations(
     handCardCount,
     emptyLandOrCoastCount,
     actionLoading,
+    availability,
   } = input;
 
   const player =
     game.players[game.current_player_index];
 
-  const producers = player?.industries ?? [];
+  const producers = player?.industries ?? []; 
 
   const readyProducers =
     producers.filter(
@@ -123,7 +130,7 @@ export function getActionRecommendations(
       emptyLandOrCoastCount > 0
         ? 80
         : 30,
-    actionId: canInspectBuild ? "build" : null,
+    actionId: "build",
   });
 
   /* INDUSTRIAL PRODUCTION */
@@ -151,11 +158,7 @@ export function getActionRecommendations(
       readyProducers.length > 0
         ? 90
         : 20,
-    actionId:
-      canInspectProduction &&
-      readyProducers.length > 0
-        ? "produce"
-        : null,
+    actionId: "produce",
   });
 
   /* NAVAL CONSTRUCTION */
@@ -179,7 +182,7 @@ export function getActionRecommendations(
       ? "Open Naval to review ships, shipyards, costs and placement candidates."
       : "Review naval capacity and the current turn status.",
     priority: canInspectNaval ? 60 : 15,
-    actionId: canInspectNaval ? "naval" : null,
+    actionId: "naval",
   });
 
   /* NEW WORLD EXPLORATION */
@@ -222,9 +225,7 @@ export function getActionRecommendations(
       ? "Open Explore to review and request an expedition."
       : "Inspect naval capacity and discovered islands.",
     priority: canSuggestExploration ? 70 : 10,
-    actionId: canSuggestExploration
-      ? "explore"
-      : null,
+    actionId: "explore",
   });
 
   /* POPULATION CARDS */
@@ -287,7 +288,71 @@ export function getActionRecommendations(
     actionId: null,
   });
 
-  return recommendations.sort(
-    (a, b) => b.priority - a.priority
-  );
+  
+/* STEP 109 — MATCH SHARED FRONTEND AVAILABILITY */
+
+const reconciled = recommendations.map(item => {
+  // Turn management does not open through
+  // the regular Action Dock dispatcher.
+  if (item.id === "end_turn") {
+    const turn = availability.end_turn;
+
+    return {
+      ...item,
+      status: turn.enabled
+        ? item.status
+        : "unavailable" as const,
+      reason: turn.enabled
+        ? item.reason
+        : turn.explanation,
+    };
+  }
+
+  if (!item.actionId) {
+    return item;
+  }
+
+  const actionId = item.actionId as ActionId;
+  const control = availability[actionId];
+
+  if (!control) {
+    return {
+      ...item,
+      status: "unavailable" as const,
+      reason: "No matching interface action is registered.",
+      actionId: null,
+    };
+  }
+
+  if (!control.enabled) {
+    return {
+      ...item,
+      status: "unavailable" as const,
+      reason: control.explanation,
+      actionId: null,
+    };
+  }
+
+  // Inspecting a panel and performing an actual
+  // gameplay action are different capabilities.
+  if (
+    item.status === "unavailable" &&
+    control.category === "gameplay"
+  ) {
+    return {
+      ...item,
+      status: "available" as const,
+      reason:
+        "The action panel can open. Specific requirements " +
+        "must still be checked before submitting.",
+    };
+  }
+
+  return item;
+});
+
+return reconciled.sort(
+  (a, b) => b.priority - a.priority
+);
+
 }

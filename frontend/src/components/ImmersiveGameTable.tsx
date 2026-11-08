@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from "react";
 import { IslandCanvas } from "./IslandCanvas";
 import { ResourceToken } from "./ResourceToken";
@@ -14,9 +13,7 @@ import { NewGameDialog } from "./NewGameDialog";
 import type { SaveSlotId, GameSetupSettings } from "../api";
 import { NavalConstructionPanel } from "./NavalConstructionPanel";
 
-import type {
-  AppPreferences,
-} from "../app-preferences";
+import type { AppPreferences } from "../app-preferences";
 
 import { PreferencesDialog } from "./PreferencesDialog";
 
@@ -25,28 +22,27 @@ import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog";
 import { ContextHelp } from "./ContextHelp";
 import { GameHelpDialog } from "./GameHelpDialog";
 import { GameTutorial } from "./GameTutorial";
-import {
-  getActionRecommendations,
-} from "../action-advisor";
+import { getActionRecommendations } from "../action-advisor";
 
 import { ActionAdvisor } from "./ActionAdvisor";
 
 import {
-  getConstructionReadiness,
-} from "../construction-readiness";
+  isActionId,
+  resolveAllActionAvailability,
+} from "../action-availability";
 
-import {
-  ConstructionReadinessPanel,
-} from "./ConstructionReadinessPanel";
+import type { ActionId } from "../action-availability";
+
+import { getConstructionReadiness } from "../construction-readiness";
+
+import { ConstructionReadinessPanel } from "./ConstructionReadinessPanel";
 
 import type {
   TutorialInteraction,
   TutorialInteractionEvent,
 } from "../game-tutorial";
 
-import {
-  getKeyboardShortcut,
-} from "../keyboard-shortcuts";
+import { getKeyboardShortcut } from "../keyboard-shortcuts";
 
 import type { NavalCatalogueSnapshot } from "../types";
 
@@ -69,14 +65,11 @@ import { ObjectivesPanel } from "./ObjectivesPanel";
 import type { ComponentProps } from "react";
 import type { GameSnapshot } from "../types";
 
-type IslandSpaces =
-  ComponentProps<typeof IslandCanvas>["spaces"];
+type IslandSpaces = ComponentProps<typeof IslandCanvas>["spaces"];
 
-type HandCards =
-  ComponentProps<typeof PopulationHand>["cards"];
+type HandCards = ComponentProps<typeof PopulationHand>["cards"];
 
-type FulfillHandler =
-  ComponentProps<typeof PopulationHand>["onFulfill"];
+type FulfillHandler = ComponentProps<typeof PopulationHand>["onFulfill"];
 
 type Props = {
   game: GameSnapshot | null;
@@ -84,19 +77,19 @@ type Props = {
   islandSpaces: IslandSpaces;
   handCards: HandCards;
   industryData: IndustryCatalogueSnapshot | null;
-  navalData: NavalCatalogueSnapshot | null
+  navalData: NavalCatalogueSnapshot | null;
   selectedLocation: string | null;
   actionLoading: boolean;
   notice: string;
   preferences: AppPreferences;
   shortcutsEnabled: boolean;
-  
+
   tutorialRequested: boolean;
   onTutorialRequestConsumed: () => void;
   onTutorialCompleted: () => void;
   onTutorialSkipped: () => void;
 
-  onChangePreferences: (value: AppPreferences) => void; 
+  onChangePreferences: (value: AppPreferences) => void;
   onOpenMainMenu: () => void;
   onSelectLocation: (id: string) => void;
   onConfirmEndTurn: () => Promise<void>;
@@ -108,7 +101,7 @@ type Props = {
   onBuildIndustry: (
     industryId: string,
     spaceId: string,
-    payments: ConstructionPayment[]
+    payments: ConstructionPayment[],
   ) => Promise<void>;
 
   onBuildNaval: (
@@ -116,16 +109,15 @@ type Props = {
     constructionId: string,
     spaceId: string,
     payments: ConstructionPayment[],
-    shipyardIndex?: number
+    shipyardIndex?: number,
   ) => Promise<void>;
   onSaveGame: (slot: SaveSlotId) => Promise<void>;
   onLoadGame: (slot: SaveSlotId) => Promise<void>;
   onCreateNewGame: (
-      names: string[],
-      settings: GameSetupSettings
-    ) => Promise<void>;
+    names: string[],
+    settings: GameSetupSettings,
+  ) => Promise<void>;
 };
-
 
 const sessionActions = new Set([
   "objectives",
@@ -140,7 +132,6 @@ const sessionActions = new Set([
   "tutorial",
   "advisor",
 ]);
-
 
 type DockAction = {
   id: string;
@@ -215,7 +206,7 @@ const dockActions: DockAction[] = [
     label: "Archive",
     symbol: "▣",
     description: "Save or load the current game",
-  }, 
+  },
   {
     id: "new_game",
     label: "New Game",
@@ -297,56 +288,40 @@ export function ImmersiveGameTable({
   onLoadGame,
   onCreateNewGame,
 }: Props) {
-  const [inspectorOpen, setInspectorOpen] =
-    useState(true);
+  const [inspectorOpen, setInspectorOpen] = useState(true);
 
-  const [handOpen, setHandOpen] =
-    useState(false);
+  const [handOpen, setHandOpen] = useState(false);
 
-  const [harborOpen, setHarborOpen] =
-    useState(false);
-  
+  const [harborOpen, setHarborOpen] = useState(false);
+
   const [festivalOpen, setFestivalOpen] = useState(false);
-  
-  const [explorationOpen, setExplorationOpen] =
-    useState(false);
 
-  const [newWorldAtlasOpen, setNewWorldAtlasOpen] =
-    useState(false);
+  const [explorationOpen, setExplorationOpen] = useState(false);
 
-  const [objectivesOpen, setObjectivesOpen] =
-    useState(false);
+  const [newWorldAtlasOpen, setNewWorldAtlasOpen] = useState(false);
 
-  const [objectivesPanelOpen, setObjectivesPanelOpen] =
-    useState(false);
- 
-  const [finalResultsOpen, setFinalResultsOpen] =
-    useState(false);
+  const [objectivesOpen, setObjectivesOpen] = useState(false);
 
-  const [gameHistoryOpen, setGameHistoryOpen] =
-    useState(false);
+  const [objectivesPanelOpen, setObjectivesPanelOpen] = useState(false);
 
-  const [saveLoadOpen, setSaveLoadOpen] =
-    useState(false);
+  const [finalResultsOpen, setFinalResultsOpen] = useState(false);
 
-  const [newGameOpen, setNewGameOpen] =
-    useState(false);
-  
-  const [preferencesOpen, setPreferencesOpen] =
-    useState(false);
+  const [gameHistoryOpen, setGameHistoryOpen] = useState(false);
 
-  const [keyboardHelpOpen, setKeyboardHelpOpen] =
-    useState(false);
+  const [saveLoadOpen, setSaveLoadOpen] = useState(false);
 
-  const [gameHelpOpen, setGameHelpOpen] =
-    useState(false);
-    
-  const [tutorialOpen, setTutorialOpen] =
-    useState(false);
+  const [newGameOpen, setNewGameOpen] = useState(false);
+
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
+
+  const [keyboardHelpOpen, setKeyboardHelpOpen] = useState(false);
+
+  const [gameHelpOpen, setGameHelpOpen] = useState(false);
+
+  const [tutorialOpen, setTutorialOpen] = useState(false);
 
   /* STEP 107 — COMPANY ADVISOR */
-  const [advisorOpen, setAdvisorOpen] =
-    useState(false);
+  const [advisorOpen, setAdvisorOpen] = useState(false);
 
   /* STEP 106 — TUTORIAL INTERACTION SIGNALS */
 
@@ -355,9 +330,7 @@ export function ImmersiveGameTable({
 
   const tutorialSequenceRef = useRef(0);
 
-  function emitTutorialInteraction(
-    id: TutorialInteraction
-  ) {
+  function emitTutorialInteraction(id: TutorialInteraction) {
     if (!tutorialOpen) return;
 
     tutorialSequenceRef.current += 1;
@@ -370,83 +343,92 @@ export function ImmersiveGameTable({
 
   const resultsShownForGame = useRef(false);
 
+  const [endTurnDialogOpen, setEndTurnDialogOpen] = useState(false);
 
-  const [endTurnDialogOpen, setEndTurnDialogOpen] =
-    useState(false);
-
-  const [activeAction, setActiveAction] =
-    useState<string | null>(null);
+  const [activeAction, setActiveAction] = useState<string | null>(null);
 
   // Step 78: hooks must run on every render, including before game loads.
   const [constructionMode, setConstructionMode] = useState(false);
-  const [selectedConstructionId, setSelectedConstructionId] =
-    useState<string | null>(null);
-  const [constructionTargetId, setConstructionTargetId] =
-    useState<string | null>(null);
-  const [paymentSources, setPaymentSources] =
-    useState<Record<string, string>>({});
+  const [selectedConstructionId, setSelectedConstructionId] = useState<
+    string | null
+  >(null);
+  const [constructionTargetId, setConstructionTargetId] = useState<
+    string | null
+  >(null);
+  const [paymentSources, setPaymentSources] = useState<Record<string, string>>(
+    {},
+  );
   const [isBuilding, setIsBuilding] = useState(false);
   const [buildError, setBuildError] = useState<string | null>(null);
 
   // Step 80 — frontend-only production selection.
   const [productionMode, setProductionMode] = useState(false);
-  const [selectedProducerIndex, setSelectedProducerIndex] = useState<number | null>(null);
+  const [selectedProducerIndex, setSelectedProducerIndex] = useState<
+    number | null
+  >(null);
   const [isProducing, setIsProducing] = useState(false);
+
+  /* STEP 109 — UNIFIED FRONTEND AVAILABILITY */
+
+  const availability = resolveAllActionAvailability({
+    hasGame: game !== null,
+    gameOver: game?.game_over ?? false,
+    mainActionUsed: game?.main_action_used ?? false,
+    actionLoading,
+
+    industryCatalogueLoaded: industryData !== null,
+    navalCatalogueLoaded: navalData !== null,
+
+    constructionBusy: isBuilding,
+    productionBusy: isProducing,
+
+    // Step 109 only uses an explicit naval busy flag
+    // if the component already tracks one.
+    navalBusy: false,
+  });
+
   const [productionError, setProductionError] = useState<string | null>(null);
 
-  
   const [navalMode, setNavalMode] = useState(false);
 
-  const [navalType, setNavalType] =
-    useState<"shipyard" | "ship">("shipyard");
+  const [navalType, setNavalType] = useState<"shipyard" | "ship">("shipyard");
 
-  const [navalTargetId, setNavalTargetId] =
-    useState<string | null>(null);
+  const [navalTargetId, setNavalTargetId] = useState<string | null>(null);
 
-  
   const [lastProduction, setLastProduction] = useState<{
     industryIndex: number;
     industryName: string;
     good: string;
   } | null>(null);
 
-
   const selectedSpace = islandSpaces.find(
-    space => space.id === selectedLocation
+    (space) => space.id === selectedLocation,
   );
 
-  const activePlayer = game
-    ? game.players[game.current_player_index]
-    : null;
+  const activePlayer = game ? game.players[game.current_player_index] : null;
 
-  const occupiedSpaces = islandSpaces.filter(
-    space => space.occupied
-  ).length;
+  const occupiedSpaces = islandSpaces.filter((space) => space.occupied).length;
 
-  
   /* STEP 107 — COUNT VISIBLE EMPTY PLACEMENT SPACES */
 
   const emptyLandOrCoastCount = islandSpaces.filter(
-    space =>
-      !space.occupied &&
-      (space.type === "land" || space.type === "coast")
+    (space) =>
+      !space.occupied && (space.type === "land" || space.type === "coast"),
   ).length;
 
-  
-/* STEP 107 — BUILD CONTEXTUAL RECOMMENDATIONS */
+  /* STEP 107 — BUILD CONTEXTUAL RECOMMENDATIONS */
 
-const advisorRecommendations = game
-  ? getActionRecommendations({
-      game,
-      industryData,
-      navalData,
-      handCardCount: handCards.length,
-      emptyLandOrCoastCount,
-      actionLoading,
-    })
-  : [];
-
-
+  const advisorRecommendations = game
+    ? getActionRecommendations({
+        game,
+        availability,
+        industryData,
+        navalData,
+        handCardCount: handCards.length,
+        emptyLandOrCoastCount,
+        actionLoading,
+      })
+    : [];
 
   useEffect(() => {
     if (!game) return;
@@ -479,8 +461,7 @@ const advisorRecommendations = game
     setTutorialEvent(null);
     setAdvisorOpen(false);
   }, [game?.current_player_index]);
-  
-  
+
   /* STEP 105 — OPEN TUTORIAL REQUESTED BY MAIN MENU */
   useEffect(() => {
     if (!tutorialRequested || !game) return;
@@ -516,13 +497,9 @@ const advisorRecommendations = game
 
     // Clear the temporary launch request in App.tsx.
     onTutorialRequestConsumed();
-  }, [
-    tutorialRequested,
-    game,
-    onTutorialRequestConsumed,
-  ]);
+  }, [tutorialRequested, game, onTutorialRequestConsumed]);
 
-/* STEP 94 — PRESENT RESULTS WHEN GAME ENDS */
+  /* STEP 94 — PRESENT RESULTS WHEN GAME ENDS */
   useEffect(() => {
     if (!game?.game_over) {
       resultsShownForGame.current = false;
@@ -534,7 +511,7 @@ const advisorRecommendations = game
       setFinalResultsOpen(true);
     }
   }, [game?.game_over]);
-  
+
   function openEndTurnDialog() {
     if (!game || game.game_over || actionLoading) {
       return;
@@ -544,11 +521,8 @@ const advisorRecommendations = game
     if (!preferences.confirmEndTurn) {
       // Submit directly through the existing backend handler.
       // Never advance the player locally.
-      void onConfirmEndTurn().catch(error => {
-        console.error(
-          "End Turn failed:",
-          error
-        );
+      void onConfirmEndTurn().catch((error) => {
+        console.error("End Turn failed:", error);
       });
       return;
     }
@@ -568,60 +542,55 @@ const advisorRecommendations = game
     setEndTurnDialogOpen(true);
   }
 
-const selectedConstruction =
-  industryData?.industries.find(
-    item => item.id === selectedConstructionId
-  ) ?? null;
+  const selectedConstruction =
+    industryData?.industries.find(
+      (item) => item.id === selectedConstructionId,
+    ) ?? null;
 
-const canEnterConstruction =
-  Boolean(game) &&
-  Boolean(industryData) &&
-  !actionLoading &&
-  !game?.main_action_used &&
-  !game?.game_over;
+  const canEnterConstruction = availability.build.enabled;
 
-const constructionCandidates =
-  constructionMode && selectedConstruction
-    ? islandSpaces
-        .filter(space =>
-          !space.occupied &&
-          (space.type === "land" || space.type === "coast")
-        )
-        .map(space => space.id)
-    : [];
+  const constructionCandidates =
+    constructionMode && selectedConstruction
+      ? islandSpaces
+          .filter(
+            (space) =>
+              !space.occupied &&
+              (space.type === "land" || space.type === "coast"),
+          )
+          .map((space) => space.id)
+      : [];
 
-const navalCandidates = navalMode && navalData
-  ? navalData.spaces
-      .filter(space =>
-        !space.occupied &&
-        space.type === (
-          navalType === "shipyard" ? "coast" : "sea"
-        )
-      )
-      .map(space => space.id)
-  : [];
+  const navalCandidates =
+    navalMode && navalData
+      ? navalData.spaces
+          .filter(
+            (space) =>
+              !space.occupied &&
+              space.type === (navalType === "shipyard" ? "coast" : "sea"),
+          )
+          .map((space) => space.id)
+      : [];
 
-const constructionTarget =
-  islandSpaces.find(space => space.id === constructionTargetId)
-  ?? null;
+  const constructionTarget =
+    islandSpaces.find((space) => space.id === constructionTargetId) ?? null;
 
-const requirements = Object.entries(
-  selectedConstruction?.build_cost ?? {}
-).flatMap(([good, amount]) =>
-  Array.from({ length: amount }, (_, index) => ({
-    key: `${good}:${index}`,
-    good,
-  }))
-);
+  const requirements = Object.entries(
+    selectedConstruction?.build_cost ?? {},
+  ).flatMap(([good, amount]) =>
+    Array.from({ length: amount }, (_, index) => ({
+      key: `${good}:${index}`,
+      good,
+    })),
+  );
 
-const paymentComplete = requirements.every(
-  requirement => Boolean(paymentSources[requirement.key])
-);
+  const paymentComplete = requirements.every((requirement) =>
+    Boolean(paymentSources[requirement.key]),
+  );
 
-const duplicateProduction = hasDuplicateProductionSources(
-  paymentSources,
-  requirements
-);
+  const duplicateProduction = hasDuplicateProductionSources(
+    paymentSources,
+    requirements,
+  );
 
   /* STEP 108 — LIVE CONSTRUCTION READINESS */
 
@@ -643,49 +612,55 @@ const duplicateProduction = hasDuplicateProductionSources(
     mainActionUsed: game?.main_action_used ?? false,
   });
 
-const canConfirmBuild =
-  canEnterConstruction &&
-  !isBuilding &&
-  Boolean(selectedConstruction) &&
-  Boolean(constructionTarget) &&
-  Boolean(constructionTarget && constructionCandidates.includes(constructionTarget.id)) &&
-  paymentComplete &&
-  !duplicateProduction
-  && constructionReadiness.canSubmit;
+  const canConfirmBuild =
+    canEnterConstruction &&
+    !isBuilding &&
+    Boolean(selectedConstruction) &&
+    Boolean(constructionTarget) &&
+    Boolean(
+      constructionTarget &&
+      constructionCandidates.includes(constructionTarget.id),
+    ) &&
+    paymentComplete &&
+    !duplicateProduction &&
+    constructionReadiness.canSubmit;
 
-async function confirmConstruction() {
-  if (!canConfirmBuild || !selectedConstruction || !constructionTarget) return;
+  async function confirmConstruction() {
+    if (!canConfirmBuild || !selectedConstruction || !constructionTarget)
+      return;
 
-  setIsBuilding(true);
-  setBuildError(null);
+    setIsBuilding(true);
+    setBuildError(null);
 
-  try {
-    const payments = toConstructionPayments(requirements, paymentSources);
-    await onBuildIndustry(
-      selectedConstruction.id,
-      constructionTarget.id,
-      payments
-    );
-    // App owns the authoritative backend snapshot; only clear the UI on success.
-    closeConstructionMode();
-  } catch (error) {
-    setBuildError(
-      error instanceof Error ? error.message : "Construction failed"
-    );
-  } finally {
-    setIsBuilding(false);
+    try {
+      const payments = toConstructionPayments(requirements, paymentSources);
+      await onBuildIndustry(
+        selectedConstruction.id,
+        constructionTarget.id,
+        payments,
+      );
+      // App owns the authoritative backend snapshot; only clear the UI on success.
+      closeConstructionMode();
+    } catch (error) {
+      setBuildError(
+        error instanceof Error ? error.message : "Construction failed",
+      );
+    } finally {
+      setIsBuilding(false);
+    }
   }
-}
 
   // Step 80: no authoritative space -> industry-index mapping is available
   // in the current frontend snapshot. The player explicitly chooses the
   // producer from the active player's industry list.
   const ownedIndustries = activePlayer?.industries ?? [];
-  const selectedProducer = ownedIndustries.find(
-    industry => industry.index === selectedProducerIndex
-  ) ?? null;
-  const canProduce = Boolean(game) && !actionLoading && !isProducing &&
-    !game?.main_action_used && !game?.game_over;
+  const selectedProducer =
+    ownedIndustries.find(
+      (industry) => industry.index === selectedProducerIndex,
+    ) ?? null;
+
+  const canProduce =
+    availability.produce.enabled;
 
   function openProductionMode() {
     if (!canProduce) return;
@@ -731,9 +706,7 @@ async function confirmConstruction() {
       closeProductionMode();
     } catch (error) {
       setProductionError(
-        error instanceof Error
-          ? error.message
-          : "Production failed."
+        error instanceof Error ? error.message : "Production failed.",
       );
     } finally {
       setIsProducing(false);
@@ -771,13 +744,7 @@ async function confirmConstruction() {
   }
 
   function openNavalMode() {
-    if (
-      !game ||
-      !navalData ||
-      actionLoading ||
-      game.main_action_used ||
-      game.game_over
-    ) {
+    if (!availability.naval.enabled) {
       return;
     }
 
@@ -795,7 +762,9 @@ async function confirmConstruction() {
 
   function selectConstructionIndustry(industryId: string) {
     if (!canEnterConstruction) return;
-    const industry = industryData?.industries.find(item => item.id === industryId);
+    const industry = industryData?.industries.find(
+      (item) => item.id === industryId,
+    );
     if (!industry || industry.remaining <= 0 || industry.already_owned) return;
     setSelectedConstructionId(industryId);
     setConstructionTargetId(null);
@@ -807,32 +776,47 @@ async function confirmConstruction() {
     onSelectLocation(spaceId);
     emitTutorialInteraction("space_selected");
     if (navalMode) {
-      setNavalTargetId(
-        navalCandidates.includes(spaceId)
-          ? spaceId
-          : null
-      );
+      setNavalTargetId(navalCandidates.includes(spaceId) ? spaceId : null);
       return;
     }
 
     // Clicking a built space opens the production panel, but does not
     // select an industry by guessing from the building name.
-    const target = islandSpaces.find(space => space.id === spaceId);
-    if (!constructionMode && !productionMode && target?.occupied && canProduce) {
+    const target = islandSpaces.find((space) => space.id === spaceId);
+    if (
+      !constructionMode &&
+      !productionMode &&
+      target?.occupied &&
+      canProduce
+    ) {
       openProductionMode();
     }
 
     if (!constructionMode || !selectedConstruction) return;
 
     setConstructionTargetId(
-      constructionCandidates.includes(spaceId) ? spaceId : null
+      constructionCandidates.includes(spaceId) ? spaceId : null,
     );
     setBuildError(null);
   }
-  
+
   /* STEPS 78–101 — ACTION DOCK DISPATCHER */
   function selectDockAction(id: string) {
-    
+    /* STEP 109 — SHARED AVAILABILITY GUARD */
+
+    if (!isActionId(id)) {
+      console.warn("Unknown Action Dock ID:", id);
+      return;
+    }
+
+    if (!availability[id].enabled) {
+      console.info(
+        `Action "${id}" unavailable:`,
+        availability[id].explanation
+      );
+      return;
+    }
+
     if (id === "game_help") {
       if (actionLoading) return;
 
@@ -852,7 +836,7 @@ async function confirmConstruction() {
 
     /* STEP 107 — ACTION ADVISOR */
     if (id === "advisor") {
-      setAdvisorOpen(value => !value);
+      setAdvisorOpen((value) => !value);
       setActiveAction("advisor");
       return;
     }
@@ -876,7 +860,7 @@ async function confirmConstruction() {
       setNewWorldAtlasOpen(false);
       setHarborOpen(false);
       setAdvisorOpen(false);
-// Ensure the Context Inspector is visible for the tour.
+      // Ensure the Context Inspector is visible for the tour.
       setInspectorOpen(true);
       setTutorialEvent(null);
       setTutorialOpen(true);
@@ -886,10 +870,7 @@ async function confirmConstruction() {
 
     const isSessionAction = sessionActions.has(id);
 
-    if (
-      !isSessionAction &&
-      (game.main_action_used || game.game_over)
-    ) {
+    if (!isSessionAction && (game.main_action_used || game.game_over)) {
       return;
     }
 
@@ -970,7 +951,7 @@ async function confirmConstruction() {
 
     // POPULATION CARDS
     if (id === "cards") {
-      setHandOpen(value => !value);
+      setHandOpen((value) => !value);
       setActiveAction("cards");
       return;
     }
@@ -1049,11 +1030,7 @@ async function confirmConstruction() {
 
       // Protect other modal dialogs that might be
       // rendered by child components.
-      if (
-        document.querySelector(
-          '[role="dialog"][aria-modal="true"]'
-        )
-      ) {
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
         return;
       }
 
@@ -1076,10 +1053,7 @@ async function confirmConstruction() {
     window.addEventListener("keydown", handleKeyboard);
 
     return () => {
-      window.removeEventListener(
-        "keydown",
-        handleKeyboard
-      );
+      window.removeEventListener("keydown", handleKeyboard);
     };
   }, [
     shortcutsEnabled,
@@ -1124,19 +1098,13 @@ async function confirmConstruction() {
         </div>
 
         <div className="immersive-turn-info">
-          <span className="immersive-top-label">
-            ACTIVE PLAYER
-          </span>
+          <span className="immersive-top-label">ACTIVE PLAYER</span>
 
-          <strong>
-            {activePlayer?.name ?? "Unknown"}
-          </strong>
+          <strong>{activePlayer?.name ?? "Unknown"}</strong>
         </div>
 
         <div className="immersive-round">
-          <span className="immersive-top-label">
-            ROUND
-          </span>
+          <span className="immersive-top-label">ROUND</span>
 
           <strong>{game.round}</strong>
         </div>
@@ -1177,9 +1145,7 @@ async function confirmConstruction() {
           <button
             type="button"
             className="immersive-rail-toggle"
-            onClick={() =>
-              setObjectivesOpen(value => !value)
-            }
+            onClick={() => setObjectivesOpen((value) => !value)}
             aria-expanded={objectivesOpen}
             aria-label={
               objectivesOpen
@@ -1192,9 +1158,7 @@ async function confirmConstruction() {
 
           {objectivesOpen && (
             <div className="immersive-rail-content">
-              <span className="immersive-overline">
-                YOUR EMPIRE
-              </span>
+              <span className="immersive-overline">YOUR EMPIRE</span>
 
               <h3>{activePlayer?.name}</h3>
 
@@ -1204,17 +1168,17 @@ async function confirmConstruction() {
                   {occupiedSpaces}/{islandSpaces.length}
                 </strong>
               </div>
-              
+
               <div className="immersive-stat">
                 <small>Available production (not stock)</small>
 
                 <div className="immersive-resource-summary">
                   {activePlayer?.industries.some(
-                    industry => industry.can_produce
+                    (industry) => industry.can_produce,
                   ) ? (
                     activePlayer.industries
-                      .filter(industry => industry.can_produce)
-                      .map(industry => (
+                      .filter((industry) => industry.can_produce)
+                      .map((industry) => (
                         <ResourceToken
                           key={industry.index}
                           good={industry.good}
@@ -1228,7 +1192,6 @@ async function confirmConstruction() {
                 </div>
               </div>
 
-
               <div className="immersive-stat">
                 <small>Cards in hand</small>
                 <strong>{handCards.length}</strong>
@@ -1236,15 +1199,12 @@ async function confirmConstruction() {
 
               <div className="immersive-stat">
                 <small>Available spaces</small>
-                <strong>
-                  {islandSpaces.length - occupiedSpaces}
-                </strong>
+                <strong>{islandSpaces.length - occupiedSpaces}</strong>
               </div>
 
               <p className="immersive-rail-note">
-                Select an island space to inspect it.
-                Objectives will be connected to the
-                engine's objective state in a later step.
+                Select an island space to inspect it. Objectives will be
+                connected to the engine's objective state in a later step.
               </p>
             </div>
           )}
@@ -1258,14 +1218,11 @@ async function confirmConstruction() {
         >
           <div className="immersive-stage-heading">
             <div>
-              <span className="immersive-overline">
-                YOUR ISLAND
-              </span>
+              <span className="immersive-overline">YOUR ISLAND</span>
 
               <h2>Industrial Island</h2>
-              
-            <ContextHelp topic="board" compact />
 
+              <ContextHelp topic="board" compact />
             </div>
 
             <span className="immersive-stage-hint">
@@ -1273,21 +1230,17 @@ async function confirmConstruction() {
             </span>
           </div>
 
-          
-
-            <div className="immersive-island-surface">
+          <div className="immersive-island-surface">
             <IslandCanvas
               spaces={islandSpaces}
               selectedSpaceId={selectedLocation}
               onSelectSpace={selectBoardSpace}
               constructionMode={constructionMode || navalMode}
               candidateSpaceIds={
-                navalMode
-                  ? navalCandidates
-                  : constructionCandidates
+                navalMode ? navalCandidates : constructionCandidates
               }
             />
-            </div>
+          </div>
 
           {/* Step 79: board selection, payment, backend construction. */}
           {constructionMode && (
@@ -1303,18 +1256,20 @@ async function confirmConstruction() {
               {selectedConstruction && (
                 <div className="construction-placement-preview">
                   <span className="construction-palette-eyebrow">
-                    CONSTRUCTION PREVIEW           
-                  <ContextHelp topic="construction" compact />
+                    CONSTRUCTION PREVIEW
+                    <ContextHelp topic="construction" compact />
                   </span>
                   <h3>{selectedConstruction.name}</h3>
                   {constructionTarget ? (
                     <>
                       <p>
-                        Selected location: <strong>{constructionTarget.id}</strong>
+                        Selected location:{" "}
+                        <strong>{constructionTarget.id}</strong>
                       </p>
                       <p>Region: {constructionTarget.type}</p>
                       <p className="construction-preview-warning">
-                        Candidate only. The engine must validate placement before building.
+                        Candidate only. The engine must validate placement
+                        before building.
                       </p>
                       {/* STEP 82 — RESOURCE SOURCE OVERVIEW */}
                       <ResourceDependencyPanel
@@ -1328,10 +1283,10 @@ async function confirmConstruction() {
                       />
 
                       <div className="construction-payment-section">
-                      <div className="context-help-inline-heading">
-                        <strong>Resource Payments</strong>
-                        <ContextHelp topic="payments" compact />
-                      </div>
+                        <div className="context-help-inline-heading">
+                          <strong>Resource Payments</strong>
+                          <ContextHelp topic="payments" compact />
+                        </div>
                         <ResourcePaymentPicker
                           game={game}
                           requirements={requirements}
@@ -1356,7 +1311,9 @@ async function confirmConstruction() {
                         disabled={!canConfirmBuild}
                         onClick={() => void confirmConstruction()}
                       >
-                        {isBuilding ? "Constructing..." : "Confirm Construction"}
+                        {isBuilding
+                          ? "Constructing..."
+                          : "Confirm Construction"}
                       </button>
                     </>
                   ) : (
@@ -1369,20 +1326,33 @@ async function confirmConstruction() {
 
           {/* STEP 80 — ENGINE-BACKED PRODUCTION PANEL */}
           {productionMode && (
-            <section className="immersive-production-overlay" aria-label="Production controls">
+            <section
+              className="immersive-production-overlay"
+              aria-label="Production controls"
+            >
               <header className="immersive-production-header">
                 <div>
-                  <span className="construction-palette-eyebrow">INDUSTRIAL OUTPUT</span>
-                  <h3>Produce Goods</h3>      
+                  <span className="construction-palette-eyebrow">
+                    INDUSTRIAL OUTPUT
+                  </span>
+                  <h3>Produce Goods</h3>
                   <ContextHelp topic="production" compact />
                 </div>
-                <button type="button" onClick={closeProductionMode}
-                  className="construction-palette-close" aria-label="Close production mode">×</button>
+                <button
+                  type="button"
+                  onClick={closeProductionMode}
+                  className="construction-palette-close"
+                  aria-label="Close production mode"
+                >
+                  ×
+                </button>
               </header>
               {selectedSpace?.occupied && (
                 <p className="immersive-production-hint">
                   Inspected space: <strong>{selectedSpace.id}</strong>
-                  {selectedSpace.construction ? ` · ${selectedSpace.construction}` : ""}
+                  {selectedSpace.construction
+                    ? ` · ${selectedSpace.construction}`
+                    : ""}
                 </p>
               )}
               <p className="immersive-production-hint">
@@ -1390,42 +1360,52 @@ async function confirmConstruction() {
                 industry index, so selection must be explicit.
               </p>
               <div className="immersive-production-list">
-                {ownedIndustries.length === 0 && <p>No industries owned yet.</p>}
-                {ownedIndustries.map(industry => (
-                  <button key={industry.index} type="button"
+                {ownedIndustries.length === 0 && (
+                  <p>No industries owned yet.</p>
+                )}
+                {ownedIndustries.map((industry) => (
+                  <button
+                    key={industry.index}
+                    type="button"
                     className={`immersive-producer ${selectedProducerIndex === industry.index ? "is-selected" : ""}`}
                     onClick={() => {
                       setSelectedProducerIndex(industry.index);
                       setProductionError(null);
                     }}
                     aria-pressed={selectedProducerIndex === industry.index}
-                    disabled={!canProduce || !industry.can_produce}>
-                    <span className="immersive-producer-name">{industry.name}</span>
+                    disabled={!canProduce || !industry.can_produce}
+                  >
+                    <span className="immersive-producer-name">
+                      {industry.name}
+                    </span>
                     <ResourceToken
                       good={industry.good}
                       size="small"
-                      status={
-                        industry.can_produce
-                          ? "ready"
-                          : "unavailable"
-                      }
+                      status={industry.can_produce ? "ready" : "unavailable"}
                     />
-                    <small>{industry.can_produce ? "Ready" : "Unavailable"}</small>
+                    <small>
+                      {industry.can_produce ? "Ready" : "Unavailable"}
+                    </small>
                   </button>
                 ))}
               </div>
               {selectedProducer && (
                 <p className="immersive-production-hint">
-                  Selected: <strong>{selectedProducer.name}</strong> → <ResourceToken
-                                                                                good={selectedProducer.good}
-                                                                                size="small"
-                                                                              />
+                  Selected: <strong>{selectedProducer.name}</strong> →{" "}
+                  <ResourceToken good={selectedProducer.good} size="small" />
                 </p>
               )}
-              {productionError && <p role="alert" className="construction-preview-error">{productionError}</p>}
-              <button type="button" className="construction-preview-confirm"
+              {productionError && (
+                <p role="alert" className="construction-preview-error">
+                  {productionError}
+                </p>
+              )}
+              <button
+                type="button"
+                className="construction-preview-confirm"
                 disabled={!canProduce || !selectedProducer?.can_produce}
-                onClick={() => void confirmProduction()}>
+                onClick={() => void confirmProduction()}
+              >
                 {isProducing ? "Producing..." : "Confirm Production"}
               </button>
             </section>
@@ -1434,16 +1414,16 @@ async function confirmConstruction() {
           {/* STEP 87 — NAVAL CONSTRUCTION */}
           {navalMode && navalData && (
             <div className="immersive-naval-overlay">
-            <div className="context-help-inline-heading">
-              <strong>Naval Construction</strong>
-              <ContextHelp topic="naval" compact />
-            </div>
+              <div className="context-help-inline-heading">
+                <strong>Naval Construction</strong>
+                <ContextHelp topic="naval" compact />
+              </div>
               <NavalConstructionPanel
                 game={game}
                 navalData={navalData}
                 selectedSpaceId={navalTargetId}
                 actionLoading={actionLoading}
-                onTypeChange={next => {
+                onTypeChange={(next) => {
                   setNavalType(next);
                   setNavalTargetId(null);
                 }}
@@ -1454,9 +1434,7 @@ async function confirmConstruction() {
           )}
 
           <div className="immersive-island-footer">
-            <span>
-              {islandSpaces.length} board spaces
-            </span>
+            <span>{islandSpaces.length} board spaces</span>
 
             <span>
               {selectedLocation
@@ -1468,37 +1446,29 @@ async function confirmConstruction() {
 
         {/* CONTEXT INSPECTOR */}
         <aside
-          
           className={[
             "immersive-inspector",
             inspectorOpen ? "" : "is-collapsed",
           ].join(" ")}
           aria-label="Context inspector"
-        > 
-        {/* STEP 94 — GAME OVER BANNER */}
-        {game.game_over && (
-          <div className="immersive-game-over-banner">
-            <strong>Game Complete</strong>
+        >
+          {/* STEP 94 — GAME OVER BANNER */}
+          {game.game_over && (
+            <div className="immersive-game-over-banner">
+              <strong>Game Complete</strong>
 
-            <span>
-              Final phase: {pretty(game.phase)}
-            </span>
+              <span>Final phase: {pretty(game.phase)}</span>
 
-            <button
-              type="button"
-              onClick={() => setFinalResultsOpen(true)}
-            >
-              View Results
-            </button>
-          </div>
-        )}
+              <button type="button" onClick={() => setFinalResultsOpen(true)}>
+                View Results
+              </button>
+            </div>
+          )}
 
           <button
             type="button"
             className="immersive-rail-toggle"
-            onClick={() =>
-              setInspectorOpen(value => !value)
-            }
+            onClick={() => setInspectorOpen((value) => !value)}
             aria-expanded={inspectorOpen}
             aria-label={
               inspectorOpen
@@ -1511,24 +1481,21 @@ async function confirmConstruction() {
 
           {inspectorOpen && (
             <div className="immersive-rail-content">
-              
-            <div className="context-help-inline-heading">
-              <strong>Turn Management</strong>
-              <ContextHelp topic="turns" compact />
-            </div>
+              <div className="context-help-inline-heading">
+                <strong>Turn Management</strong>
+                <ContextHelp topic="turns" compact />
+              </div>
 
-            {/* STEP 93 — TURN STATUS */}
-            
-            <div data-tutorial="turn">
-              <TurnStatus
-                game={game}
-                actionLoading={actionLoading}
-                onEndTurn={openEndTurnDialog}
-              />
-            </div>
-              <span className="immersive-overline">
-                CONTEXT INSPECTOR
-              </span>
+              {/* STEP 93 — TURN STATUS */}
+
+              <div data-tutorial="turn">
+                <TurnStatus
+                  game={game}
+                  actionLoading={actionLoading}
+                  onEndTurn={openEndTurnDialog}
+                />
+              </div>
+              <span className="immersive-overline">CONTEXT INSPECTOR</span>
 
               {selectedSpace ? (
                 <>
@@ -1536,37 +1503,32 @@ async function confirmConstruction() {
                     {selectedSpace.occupied ? "🏭" : "◇"}
                   </div>
 
-                  <h3>
-                    Space {selectedSpace.id}
-                  </h3>
+                  <h3>Space {selectedSpace.id}</h3>
 
                   <div className="immersive-inspector-detail">
                     <small>Region</small>
-                    <strong>
-                      {selectedSpace.type}
-                    </strong>
+                    <strong>{selectedSpace.type}</strong>
                   </div>
 
                   <div className="immersive-inspector-detail">
                     <small>Status</small>
                     <strong>
-                      {selectedSpace.occupied
-                        ? "Occupied"
-                        : "Unoccupied"}
+                      {selectedSpace.occupied ? "Occupied" : "Unoccupied"}
                     </strong>
                   </div>
 
                   <p className="immersive-rail-note">
-                    Construction and other legal
-                    interactions will be connected
-                    directly to the selected board
-                    space in the next steps.
+                    Construction and other legal interactions will be connected
+                    directly to the selected board space in the next steps.
                   </p>
 
                   {selectedSpace.occupied && (
-                    <button type="button" className="immersive-inspector-action"
+                    <button
+                      type="button"
+                      className="immersive-inspector-action"
                       disabled={!canProduce}
-                      onClick={openProductionMode}>
+                      onClick={openProductionMode}
+                    >
                       Produce Goods
                     </button>
                   )}
@@ -1584,8 +1546,7 @@ async function confirmConstruction() {
                   <span aria-hidden="true">⌖</span>
 
                   <p>
-                    Select a building or empty island
-                    space to view its details.
+                    Select a building or empty island space to view its details.
                   </p>
                 </div>
               )}
@@ -1595,11 +1556,8 @@ async function confirmConstruction() {
       </div>
 
       {/* ACTION DOCK */}
-      <nav
-        className="immersive-action-dock"
-        aria-label="Game actions"
-      >
-        {dockActions.map(action => (
+      <nav className="immersive-action-dock" aria-label="Game actions">
+        {dockActions.map((action) => (
           <button
             data-tutorial={
               action.id === "build" ||
@@ -1612,42 +1570,72 @@ async function confirmConstruction() {
             type="button"
             className={[
               "immersive-dock-button",
-              activeAction === action.id
-                ? "is-active"
-                : "",
+              activeAction === action.id ? "is-active" : "",
             ].join(" ")}
-            onClick={() =>
-              selectDockAction(action.id)
+            onClick={() => selectDockAction(action.id)}
+            
+            title={
+              isActionId(action.id)
+                ? availability[action.id].enabled
+                  ? action.description
+                  : availability[action.id].explanation
+                : "Unknown action"
             }
-            title={action.description}
-            aria-pressed={action.id === "build" ? constructionMode : action.id === "produce" ? productionMode : undefined}     
+
+            aria-pressed={
+              action.id === "build"
+                ? constructionMode
+                : action.id === "produce"
+                  ? productionMode
+                  : undefined
+            }
             disabled={
-              actionLoading ||
+              !(
+                (action.id === "build" && constructionMode) ||
+                (action.id === "produce" && productionMode) ||
+                (action.id === "naval" && navalMode)
+              ) &&
               (
-                !sessionActions.has(action.id) &&
-                (game.main_action_used || game.game_over)
+                !isActionId(action.id) ||
+                !availability[action.id as ActionId].enabled
               )
             }
-          >
-            <span
-              className="immersive-dock-symbol"
-              aria-hidden="true"
-            >
+              >
+            <span className="immersive-dock-symbol" aria-hidden="true">
               {action.symbol}
             </span>
 
-            <strong>{action.id === "build" && constructionMode
-              ? "Cancel Build"
-              : action.id === "produce" && productionMode
-                ? "Cancel Produce"
-                : action.label}</strong>
+            <strong>
+              {action.id === "build" && constructionMode
+                ? "Cancel Build"
+                : action.id === "produce" && productionMode
+                  ? "Cancel Produce"
+                  : action.label}
+            </strong>
+            
+            {isActionId(action.id) &&
+              !availability[action.id].enabled && (
+                <span className="immersive-dock-unavailable">
+                  {availability[action.id].reason ===
+                  "main_action_used"
+                    ? "Action used"
+                    : availability[action.id].reason ===
+                      "catalogue_unavailable"
+                      ? "Catalogue unavailable"
+                      : availability[action.id].reason ===
+                        "game_over"
+                        ? "Game over"
+                        : "Unavailable"}
+                </span>
+              )}
+
           </button>
         ))}
 
         <button
           type="button"
           className="immersive-end-turn"
-          disabled={actionLoading || game.game_over}
+          disabled={!availability.end_turn.enabled}
           onClick={openEndTurnDialog}
         >
           End Turn
@@ -1655,29 +1643,23 @@ async function confirmConstruction() {
       </nav>
 
       {/* EXPANDABLE POPULATION HAND */}
-      
-        <section
-          className="immersive-hand"
-          data-tutorial="population"
-        >
 
+      <section className="immersive-hand" data-tutorial="population">
         <button
           type="button"
           className="immersive-hand-toggle"
           onClick={() => {
-              if (!handOpen) {
-                emitTutorialInteraction("population_opened");
-              }
+            if (!handOpen) {
+              emitTutorialInteraction("population_opened");
+            }
 
-              setHandOpen(value => !value);
-            }}
+            setHandOpen((value) => !value);
+          }}
           aria-expanded={handOpen}
         >
           <span>▤</span>
 
-          <strong>
-            Population Cards ({handCards.length})
-          </strong>
+          <strong>Population Cards ({handCards.length})</strong>
 
           <span>{handOpen ? "▼" : "▲"}</span>
         </button>
@@ -1686,9 +1668,7 @@ async function confirmConstruction() {
             <PopulationCardDesk
               key={game.current_player_index}
               game={game}
-              tradeCapacity={
-                navalData?.naval_capacity.trade ?? null
-              }
+              tradeCapacity={navalData?.naval_capacity.trade ?? null}
               cards={handCards}
               actionLoading={actionLoading}
               onFulfill={onFulfillPopulationCard}
@@ -1696,13 +1676,10 @@ async function confirmConstruction() {
           </div>
         )}
       </section>
-      
+
       {/* STEP 81 — PRODUCTION RESULT */}
       {lastProduction && (
-        <div
-          className="immersive-production-result"
-          role="status"
-        >
+        <div className="immersive-production-result" role="status">
           <button
             type="button"
             className="immersive-production-result-close"
@@ -1715,8 +1692,7 @@ async function confirmConstruction() {
           <strong>Production completed</strong>
 
           <span>
-            {lastProduction.industryName}
-            {" "} (#{lastProduction.industryIndex})
+            {lastProduction.industryName} (#{lastProduction.industryIndex})
           </span>
 
           <div>
@@ -1724,9 +1700,8 @@ async function confirmConstruction() {
           </div>
 
           <p>
-            The engine accepted this action.
-            This token represents the output type,
-            not an inventory quantity.
+            The engine accepted this action. This token represents the output
+            type, not an inventory quantity.
           </p>
         </div>
       )}
@@ -1734,11 +1709,7 @@ async function confirmConstruction() {
       {festivalOpen && (
         <FestivalDialog
           playerName={activePlayer?.name ?? "Current Player"}
-          disabled={
-            actionLoading ||
-            game.main_action_used ||
-            game.game_over
-          }
+          disabled={actionLoading || game.main_action_used || game.game_over}
           onConfirm={onFestival}
           onClose={() => {
             setFestivalOpen(false);
@@ -1748,26 +1719,17 @@ async function confirmConstruction() {
       )}
       {/* GAME FEEDBACK */}
       {notice && (
-        <div
-          className="immersive-notice"
-          role="status"
-        >
+        <div className="immersive-notice" role="status">
           {notice}
         </div>
       )}
-      
+
       {/* STEP 88 — NEW WORLD EXPLORATION */}
       {explorationOpen && (
         <ExplorationDialog
           playerName={activePlayer?.name ?? "Current Player"}
-          explorationCapacity={
-            navalData?.naval_capacity.exploration ?? null
-          }
-          disabled={
-            actionLoading ||
-            game.main_action_used ||
-            game.game_over
-          }
+          explorationCapacity={navalData?.naval_capacity.exploration ?? null}
+          disabled={actionLoading || game.main_action_used || game.game_over}
           onExplore={onExploreNewWorld}
           onClose={() => {
             setExplorationOpen(false);
@@ -1775,18 +1737,14 @@ async function confirmConstruction() {
           }}
         />
       )}
-      
+
       {/* STEP 89 — DISCOVERED NEW WORLD ISLANDS */}
       {newWorldAtlasOpen && (
         <NewWorldAtlas
           islands={activePlayer?.new_world_islands ?? []}
           playerName={activePlayer?.name ?? "Current Player"}
-          tradeCapacity={
-            navalData?.naval_capacity.trade ?? null
-          }
-          explorationCapacity={
-            navalData?.naval_capacity.exploration ?? null
-          }
+          tradeCapacity={navalData?.naval_capacity.trade ?? null}
+          explorationCapacity={navalData?.naval_capacity.exploration ?? null}
           canExplore={
             !actionLoading &&
             !game.main_action_used &&
@@ -1816,7 +1774,7 @@ async function confirmConstruction() {
           }}
         />
       )}
-      
+
       {/* STEP 93 — END TURN CONFIRMATION */}
       {endTurnDialogOpen && (
         <EndTurnDialog
@@ -1830,7 +1788,7 @@ async function confirmConstruction() {
           }}
         />
       )}
-      
+
       {/* STEP 94 — FINAL RESULTS */}
       {finalResultsOpen && (
         <FinalResultsDialog
@@ -1864,13 +1822,10 @@ async function confirmConstruction() {
         />
       )}
 
-      
       {/* STEP 97 — NEW GAME SETUP */}
       {newGameOpen && (
         <NewGameDialog
-          currentPlayerNames={
-            game.players.map(player => player.name)
-          }
+          currentPlayerNames={game.players.map((player) => player.name)}
           onCreate={onCreateNewGame}
           onClose={() => {
             setNewGameOpen(false);
@@ -1878,7 +1833,7 @@ async function confirmConstruction() {
           }}
         />
       )}
-      
+
       {/* STEP 101 — APPLICATION SETTINGS */}
       {preferencesOpen && (
         <PreferencesDialog
@@ -1930,16 +1885,14 @@ async function confirmConstruction() {
       <ActionAdvisor
         recommendations={advisorRecommendations}
         constructionReadiness={
-          selectedConstruction
-            ? constructionReadiness
-            : null
+          selectedConstruction ? constructionReadiness : null
         }
         disabled={actionLoading}
         onSelectAction={selectDockAction}
         onClose={() => {
           setAdvisorOpen(false);
-          setActiveAction(current =>
-            current === "advisor" ? null : current
+          setActiveAction((current) =>
+            current === "advisor" ? null : current,
           );
         }}
       />
@@ -1960,7 +1913,6 @@ async function confirmConstruction() {
           }}
         />
       )}
-
     </main>
   );
 }
