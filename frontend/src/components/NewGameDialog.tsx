@@ -3,11 +3,15 @@ import { useState } from "react";
 
 import {
   DEFAULT_GAME_SETUP,
+  previewNewGame,
 } from "../api";
 
 import type {
   GameSetupSettings,
+  GameSetupPreview as PreviewData,
 } from "../api";
+
+import { GameSetupPreview } from "./GameSetupPreview";
 
 type Props = {
   currentPlayerNames: string[];
@@ -69,6 +73,15 @@ export function NewGameDialog({
   const [confirming, setConfirming] =
     useState(false);
 
+  const [preview, setPreview] =
+    useState<PreviewData | null>(null);
+
+  const [previewFingerprint, setPreviewFingerprint] =
+    useState<string | null>(null);
+
+  const [previewLoading, setPreviewLoading] =
+    useState(false);
+
   const [busy, setBusy] = useState(false);
 
   const [error, setError] =
@@ -88,6 +101,15 @@ export function NewGameDialog({
       name => name.length > 0 && name.length <= 40
     ) &&
     !duplicateNames;
+
+  const configurationFingerprint = JSON.stringify({
+    player_names: trimmed,
+    settings,
+  });
+
+  const previewIsCurrent =
+    preview?.valid === true &&
+    previewFingerprint === configurationFingerprint;
 
   function updateName(index: number, value: string) {
     setNames(previous =>
@@ -145,8 +167,49 @@ export function NewGameDialog({
     setError(null);
   }
 
+  async function validateAndPreview() {
+    if (!valid || busy || previewLoading) return;
+
+    setPreviewLoading(true);
+    setError(null);
+    setConfirming(false);
+
+    // The fingerprint identifies the exact submitted setup.
+    const submittedFingerprint = configurationFingerprint;
+
+    setPreview(null);
+    setPreviewFingerprint(null);
+
+    try {
+      const result = await previewNewGame(
+        trimmed,
+        settings
+      );
+
+      setPreview(result);
+      setPreviewFingerprint(submittedFingerprint);
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Unable to validate the game setup."
+      );
+    } finally {
+      setPreviewLoading(false);
+    }
+  }
+
+  
   async function confirmNewGame() {
-    if (!valid || busy) return;
+    if (
+      !valid ||
+      !previewIsCurrent ||
+      busy ||
+      previewLoading
+    ) {
+      return;
+    }
+
 
     if (!confirming) {
       setConfirming(true);
@@ -203,7 +266,7 @@ export function NewGameDialog({
           <button
             type="button"
             aria-label="Close New Game dialog"
-            disabled={busy}
+            disabled={busy || previewLoading}
             onClick={onClose}
           >
             ×
@@ -241,7 +304,7 @@ export function NewGameDialog({
                 <button
                   type="button"
                   aria-label={`Remove Company ${index + 1}`}
-                  disabled={busy || names.length <= 2}
+                  disabled={busy || previewLoading || names.length <= 2}
                   onClick={() => removePlayer(index)}
                 >
                   ×
@@ -255,7 +318,7 @@ export function NewGameDialog({
 
             <button
               type="button"
-              disabled={busy || names.length >= 4}
+              disabled={busy || previewLoading || names.length >= 4}
               onClick={addPlayer}
             >
               + Add Company
@@ -320,6 +383,40 @@ export function NewGameDialog({
           </p>
         )}
 
+        
+        {/* STEP 99 — VALIDATE GAME SETUP */}
+        <div className="new-game-preview-controls">
+          <button
+            type="button"
+            disabled={!valid || busy || previewLoading}
+            onClick={() => void validateAndPreview()}
+          >
+            {previewLoading
+              ? "Validating Configuration..."
+              : previewIsCurrent
+                ? "Refresh Preview"
+                : "Validate & Preview"}
+          </button>
+
+          {previewIsCurrent && (
+            <span className="new-game-preview-ready">
+              Setup successfully validated
+            </span>
+          )}
+        </div>
+
+        {previewIsCurrent && preview && (
+          <GameSetupPreview preview={preview} />
+        )}
+
+        {preview && !previewIsCurrent && (
+          <p className="new-game-validation">
+            Configuration changed. Validate the setup again
+            before starting the game.
+          </p>
+        )}
+
+
         {confirming && (
           <div className="new-game-confirmation">
             <strong>Replace the current match?</strong>
@@ -356,7 +453,12 @@ export function NewGameDialog({
           <button
             type="button"
             className="new-game-confirm"
-            disabled={!valid || busy}
+            disabled={
+              !valid ||
+              !previewIsCurrent ||
+              busy ||
+              previewLoading
+            }
             onClick={() => void confirmNewGame()}
           >
             {busy

@@ -3648,3 +3648,171 @@
     padding: 11px;
   }
 }
+
+/* STEP 99 — GAME SETUP PREVIEW */
+
+.new-game-preview-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.new-game-preview-controls button {
+  padding: 11px 16px;
+  border: 1px solid #e5c282;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #f0dfbd;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.new-game-preview-ready {
+  color: #b8dfc0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.game-setup-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #c59b56;
+  border-radius: 10px;
+  background: #203c47;
+  color: #e8dcc1;
+}
+
+.game-setup-preview-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.game-setup-preview-heading > div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.game-setup-preview-heading span {
+  color: #c59b56;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.game-setup-preview-heading h3 {
+  margin: 0;
+  font: 22px Georgia, serif;
+  color: #f0dfbd;
+}
+
+.game-setup-preview-valid {
+  padding: 7px 10px;
+  border: 1px solid #7fa78a;
+  border-radius: 6px;
+  background: #294b40;
+  color: #ccebd0;
+  font-size: 11px;
+}
+
+.game-setup-preview-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.game-setup-preview-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px;
+  border: 1px solid #637f80;
+  border-radius: 7px;
+  background: #294650;
+}
+
+.game-setup-preview-stats small {
+  color: #ccd7d0;
+  font-size: 10px;
+}
+
+.game-setup-preview-stats strong {
+  color: #e5c282;
+  font-size: 23px;
+  font-variant-numeric: tabular-nums;
+}
+
+.game-setup-preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.game-setup-preview-section h4 {
+  margin: 0;
+  color: #f0dfbd;
+  font: 17px Georgia, serif;
+}
+
+.game-setup-preview-player,
+.game-setup-preview-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid #597477;
+  border-radius: 7px;
+  background: #294650;
+  font-size: 12px;
+}
+
+.game-setup-preview-player small {
+  color: #cbd5cd;
+  white-space: nowrap;
+}
+
+.game-setup-preview-option strong {
+  font-size: 11px;
+  text-align: right;
+}
+
+.game-setup-preview-option .is-custom {
+  color: #b8dfc0;
+}
+
+.game-setup-preview-option .is-default {
+  color: #e5c282;
+}
+
+.game-setup-preview-note {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid #9d8861;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #e8dcc1;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .game-setup-preview {
+    padding: 11px;
+  }
+
+  .game-setup-preview-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .game-setup-preview-player,
+  .game-setup-preview-option {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -314,3 +314,37 @@ export function createNewGame(
     settings,
   });
 }
+
+
+/* STEP 99 — GAME SETUP PREVIEW */
+
+export interface GameSetupPreview {
+  valid: boolean;
+  player_count: number;
+  players: {
+    name: string;
+    starting_hand_count: number;
+  }[];
+  initial_round: number;
+  active_objective_count: number | null;
+  settings: GameSetupSettings;
+  warnings: string[];
+}
+
+export function previewNewGame(
+  playerNames: string[],
+  settings: GameSetupSettings
+): Promise<GameSetupPreview> {
+  return fetch("/api/games/preview", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      player_names: playerNames,
+      settings,
+    }),
+  }).then(response =>
+    readSaveResponse<GameSetupPreview>(response)
+  );
+}

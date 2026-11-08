@@ -171,6 +171,44 @@ class NewGameRequest(BaseModel):
         default_factory=GameSetupSettings
     )
 
+
+def validate_new_game_request(
+    request: NewGameRequest,
+) -> list[str]:
+    """Validate and normalize a new-game request."""
+
+    names = [
+        name.strip()
+        for name in request.player_names
+    ]
+
+    if not 2 <= len(names) <= 4:
+        raise HTTPException(
+            status_code=400,
+            detail="A game must have 2 to 4 companies.",
+        )
+
+    if any(not name for name in names):
+        raise HTTPException(
+            status_code=400,
+            detail="Company names cannot be empty.",
+        )
+
+    if any(len(name) > 40 for name in names):
+        raise HTTPException(
+            status_code=400,
+            detail="Company names must be at most 40 characters.",
+        )
+
+    if len({name.casefold() for name in names}) != len(names):
+        raise HTTPException(
+            status_code=400,
+            detail="Company names must be unique.",
+        )
+
+    return names
+
+
 class FulfillPopulationCardRequest(BaseModel):
     card_id: str = Field(min_length=1)
     payments: list[PopulationCardPaymentStep] = Field(
@@ -338,17 +376,93 @@ def load_saved_game(slot: str) -> dict:
         }
 
 
+@app.post("/api/games/preview")
+def preview_new_game(
+    request: NewGameRequest,
+) -> dict:
+    """Validate setup without replacing the active game."""
+
+    names = validate_new_game_request(request)
+
+    with _game_lock:
+        # Preserve Python's process-level RNG state so
+        # the preview does not advance random draws
+        # used by the active game.
+        previous_random_state = random.getstate()
+
+        try:
+            # Construct an independent temporary game.
+            preview_game = create_new_game(
+                names,
+                settings=request.settings,
+            )
+
+            snapshot = serialize_game(preview_game)
+
+        except Exception as exc:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "The engine could not initialize "
+                    "this configuration: "
+                    f"{exc}"
+                ),
+            ) from exc
+
+        finally:
+            random.setstate(previous_random_state)
+
+        # Report only observable facts from the
+        # temporary game's serialized starting state.
+        players = snapshot["players"]
+        objectives = snapshot.get("objectives")
+
+        settings = request.settings
+
+        return {
+            "valid": True,
+            "player_count": len(players),
+            "players": [
+                {
+                    "name": player["name"],
+                    "starting_hand_count": len(
+                        player.get("hand", [])
+                    ),
+                }
+                for player in players
+            ],
+            "initial_round": snapshot["round"],
+            "active_objective_count": (
+                len(objectives)
+                if objectives is not None
+                else None
+            ),
+            "settings": {
+                "use_custom_population":
+                    settings.use_custom_population,
+                "use_custom_new_world":
+                    settings.use_custom_new_world,
+                "use_custom_expeditions":
+                    settings.use_custom_expeditions,
+                "use_custom_objectives":
+                    settings.use_custom_objectives,
+            },
+            "warnings": [
+                "Preview counts describe a temporary "
+                "starting game. Randomized content may "
+                "differ when the actual match is created.",
+            ],
+        }
+
+
+
 @app.post("/api/games/new")
 def start_new_game(request: NewGameRequest) -> dict:
     global _demo_game
     global _action_history
     global _next_action_event_id
 
-    names = [
-        name.strip()
-        for name in request.player_names
-    ]
-
+    names = validate_new_game_request(request)
     if not 2 <= len(names) <= 4:
         raise HTTPException(
             status_code=400,
