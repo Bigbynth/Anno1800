@@ -150,7 +150,6 @@ export function ActionAdvisor({
                 disabled={disabled}
                 onClick={() => {
                   onSelectAction(item.actionId!);
-                  onClose();
                 }}
               >
                 {item.status === "informational"

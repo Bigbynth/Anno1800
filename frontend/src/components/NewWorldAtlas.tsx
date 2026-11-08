@@ -33,7 +33,6 @@ export function NewWorldAtlas({
 
   const handleExplore = () => {
     if (!canExplore) return;
-    onClose();
     onExplore();
   };
 

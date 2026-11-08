@@ -416,19 +416,10 @@ function App() {
         setActivePlayer(result.game.current_player_index);
         setApiError(null);
         setNotice(result.message);
-        await refreshNavalCapacity();
 
-        // Refresh naval capacity after successful exploration.
-        // A refresh failure must not mark exploration as failed.
-        try {
-          const updatedNaval = await fetchNavalCatalogue();
-          setNavalData(updatedNaval);
-        } catch (refreshError) {
-          console.warn(
-            "Exploration succeeded, but naval data refresh failed:",
-            refreshError
-          );
-        }
+        // Refresh once after successful exploration.
+        // refreshNavalCapacity handles refresh errors internally.
+        await refreshNavalCapacity();
 
     } catch (error) {
       const message =

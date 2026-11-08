@@ -150,20 +150,6 @@ type Props = {
   ) => Promise<void>;
 };
 
-const sessionActions = new Set([
-  "objectives",
-  "results",
-  "history",
-  "archive",
-  "new_game",
-  "main_menu",
-  "settings",
-  "keyboard_help",
-  "game_help",
-  "tutorial",
-  "advisor",
-]);
-
 type DockAction = {
   id: string;
   label: string;
@@ -826,11 +812,12 @@ export function ImmersiveGameTable({
 
   /* STEP 111.3.6 — PRODUCTION CONFIRMATION READINESS */
   const canConfirmProduction =
-    canProduce &&
+    availability.produce.enabled &&
     productionReadiness.selected?.status === "ready" &&
+    selectedProducer?.can_produce === true &&
+    selectedProducerIndex !== null &&
     !isProducing &&
-    !actionLoading &&
-    selectedProducerIndex !== null;
+    !actionLoading;
     
   function openProductionMode() {
     if (!canProduce) return;
@@ -973,13 +960,36 @@ export function ImmersiveGameTable({
 
   /* STEPS 78–101 — ACTION DOCK DISPATCHER */
   function selectDockAction(id: string) {
-    /* STEP 109 — SHARED AVAILABILITY GUARD */
+    /* STEP 114 — UNIFIED ENTRY AND CANCELLATION */
 
     if (!isActionId(id)) {
       console.warn("Unknown Action Dock ID:", id);
       return;
     }
 
+    // Never interrupt an in-flight backend operation.
+    if (actionLoading || isBuilding || isProducing) {
+      return;
+    }
+
+    // Closing an existing mode is different
+    // from entering a new gameplay action.
+    if (id === "build" && constructionMode) {
+      closeConstructionMode();
+      return;
+    }
+
+    if (id === "produce" && productionMode) {
+      closeProductionMode();
+      return;
+    }
+
+    if (id === "naval" && navalMode) {
+      closeNavalMode();
+      return;
+    }
+
+    // All NEW action openings are checked centrally.
     if (!availability[id].enabled) {
       console.info(
         `Action "${id}" unavailable:`,
@@ -1007,8 +1017,14 @@ export function ImmersiveGameTable({
 
     /* STEP 107 — ACTION ADVISOR */
     if (id === "advisor") {
-      setAdvisorOpen((value) => !value);
-      setActiveAction("advisor");
+      if (advisorOpen) {
+        setAdvisorOpen(false);
+        setActiveAction(null);
+      } else {
+        setAdvisorOpen(true);
+        setActiveAction("advisor");
+      }
+
       return;
     }
 
@@ -1036,12 +1052,6 @@ export function ImmersiveGameTable({
       setTutorialEvent(null);
       setTutorialOpen(true);
       setActiveAction("tutorial");
-      return;
-    }
-
-    const isSessionAction = sessionActions.has(id);
-
-    if (!isSessionAction && (game.main_action_used || game.game_over)) {
       return;
     }
 
@@ -1792,6 +1802,10 @@ export function ImmersiveGameTable({
                   : undefined
             }
             disabled={
+            actionLoading ||
+            isBuilding ||
+            isProducing ||
+            (
               !(
                 (action.id === "build" && constructionMode) ||
                 (action.id === "produce" && productionMode) ||
@@ -1801,7 +1815,8 @@ export function ImmersiveGameTable({
                 !isActionId(action.id) ||
                 !availability[action.id as ActionId].enabled
               )
-            }
+            )
+          }
               >
             <span className="immersive-dock-symbol" aria-hidden="true">
               {action.symbol}
@@ -1969,7 +1984,13 @@ export function ImmersiveGameTable({
           playerName={activePlayer?.name ?? "Current Player"}
           explorationCapacity={navalData?.naval_capacity.exploration ?? null}
           disabled={actionLoading || game.main_action_used || game.game_over}
-          onExplore={onExploreNewWorld}
+          onExplore={async () => {
+                if (!explorationReadiness.canAttempt) {
+                  return;
+                }
+
+                await onExploreNewWorld();
+              }}
           onClose={() => {
             setExplorationOpen(false);
             setActiveAction(null);
@@ -2121,20 +2142,38 @@ export function ImmersiveGameTable({
         />
       )}
 
-      <ActionAdvisor
-        recommendations={advisorRecommendations}
-        constructionReadiness={
-          selectedConstruction ? constructionReadiness : null
-        }
-        disabled={actionLoading}
-        onSelectAction={selectDockAction}
-        onClose={() => {
-          setAdvisorOpen(false);
-          setActiveAction((current) =>
-            current === "advisor" ? null : current,
-          );
-        }}
-      />
+      {/* STEP 114 — ADVISOR VISIBILITY */}
+      {advisorOpen && (
+        <ActionAdvisor
+          recommendations={advisorRecommendations}
+          constructionReadiness={
+            selectedConstruction
+              ? constructionReadiness
+              : null
+          }
+          disabled={actionLoading}
+          onSelectAction={(actionId) => {
+            // Let the shared dispatcher enforce availability.
+            selectDockAction(actionId);
+
+            // Close the Advisor when leaving it for
+            // an enabled destination.
+            if (
+              isActionId(actionId) &&
+              availability[actionId].enabled &&
+              actionId !== "advisor"
+            ) {
+              setAdvisorOpen(false);
+            }
+          }}
+          onClose={() => {
+            setAdvisorOpen(false);
+            setActiveAction((current) =>
+              current === "advisor" ? null : current
+            );
+          }}
+        />
+      )}
 
       {/* STEP 84 — MARITIME TRADING DIRECTORY */}
       {harborOpen && (

@@ -5,6 +5,10 @@ import type {
   NavalCatalogueSnapshot,
 } from "../types";
 
+import {
+  validateConstructionPayments,
+} from "../payment-validation";
+
 import type { ConstructionPayment } from "../api";
 
 import {
@@ -80,6 +84,18 @@ export function NavalConstructionPanel({
       requirements
     );
 
+  /* STEP 114.9.3 — NAVAL PAYMENT PREFLIGHT */
+
+  const navalPaymentValidation =
+    validateConstructionPayments({
+      requirements,
+      paymentSources,
+      players: game.players,
+      currentPlayerIndex: game.current_player_index,
+      tradeCapacity:
+        navalData.naval_capacity.trade,
+    });
+
   const selectedShipyard =
     navalData.owned_shipyards.find(
       item => String(item.index) === shipyardIndex
@@ -104,11 +120,13 @@ export function NavalConstructionPanel({
 
   const canBuild =
     Boolean(construction) &&
+    (construction?.remaining ?? 0) > 0 &&
     Boolean(selectedSpaceId) &&
     spaceValid &&
     shipyardValid &&
     assigned &&
     !duplicateProduction &&
+    navalPaymentValidation.canSubmit &&
     !actionLoading &&
     !submitting &&
     !game.game_over &&
@@ -244,7 +262,17 @@ export function NavalConstructionPanel({
       {construction && (
         <div className="naval-construction-details">
           <h3>{construction.name}</h3>
-
+          {/* STEP 114.9.4 — NAVAL SUPPLY CHECK */}
+          {construction.remaining <= 0 && (
+            <p
+              className="naval-construction-error"
+              role="status"
+            >
+              This naval construction is no longer
+              available. No pieces remain in the
+              current catalogue.
+            </p>
+          )}
           <p>
             Select an unoccupied{" "}
             <strong>
@@ -310,6 +338,35 @@ export function NavalConstructionPanel({
               The same local producer cannot be
               assigned to multiple payments.
             </p>
+          )}
+
+          {/* STEP 114.9.3 — PAYMENT ISSUES */}
+          {navalPaymentValidation.errors.length > 0 && (
+            <div
+              className="naval-construction-error"
+              role="status"
+            >
+              <strong>Payment issues</strong>
+
+              {navalPaymentValidation.errors.map(
+                (message, index) => (
+                  <p key={index}>{message}</p>
+                )
+              )}
+            </div>
+          )}
+
+          {/* STEP 114.9.3 — SHIPPING ADVISORIES */}
+          {navalPaymentValidation.warnings.length > 0 && (
+            <div className="naval-construction-note">
+              <strong>Shipping advisory</strong>
+
+              {navalPaymentValidation.warnings.map(
+                (message, index) => (
+                  <p key={index}>{message}</p>
+                )
+              )}
+            </div>
           )}
 
           {error && (
