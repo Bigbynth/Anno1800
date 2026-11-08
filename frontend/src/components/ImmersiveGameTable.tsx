@@ -22,6 +22,9 @@ import { PreferencesDialog } from "./PreferencesDialog";
 
 import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog";
 
+import { ContextHelp } from "./ContextHelp";
+import { GameHelpDialog } from "./GameHelpDialog";
+
 import {
   getKeyboardShortcut,
 } from "../keyboard-shortcuts";
@@ -108,6 +111,7 @@ const sessionActions = new Set([
   "main_menu",
   "settings",
   "keyboard_help",
+  "game_help",
 ]);
 
 
@@ -210,6 +214,12 @@ const dockActions: DockAction[] = [
     description: "View keyboard navigation shortcuts",
   },
   {
+    id: "game_help",
+    label: "Game Guide",
+    symbol: "?",
+    description: "Read the in-game rules and interface guide",
+  },
+  {
     id: "cards",
     label: "Cards",
     symbol: "▤",
@@ -283,6 +293,9 @@ export function ImmersiveGameTable({
     useState(false);
 
   const [keyboardHelpOpen, setKeyboardHelpOpen] =
+    useState(false);
+
+  const [gameHelpOpen, setGameHelpOpen] =
     useState(false);
 
   const resultsShownForGame = useRef(false);
@@ -366,6 +379,7 @@ export function ImmersiveGameTable({
     setNewGameOpen(false);
     setObjectivesPanelOpen(false);
     setKeyboardHelpOpen(false);
+    setGameHelpOpen(false);
   }, [game?.current_player_index]);
   
 /* STEP 94 — PRESENT RESULTS WHEN GAME ENDS */
@@ -654,6 +668,15 @@ async function confirmConstruction() {
   
   /* STEPS 78–101 — ACTION DOCK DISPATCHER */
   function selectDockAction(id: string) {
+    
+    if (id === "game_help") {
+      if (actionLoading) return;
+
+      setGameHelpOpen(true);
+      setActiveAction("game_help");
+      return;
+    }
+
     if (id === "keyboard_help") {
       if (actionLoading) return;
 
@@ -807,7 +830,8 @@ async function confirmConstruction() {
         gameHistoryOpen ||
         saveLoadOpen ||
         newGameOpen ||
-        preferencesOpen
+        preferencesOpen ||
+        gameHelpOpen
       ) {
         return;
       }
@@ -1037,6 +1061,9 @@ async function confirmConstruction() {
               </span>
 
               <h2>Industrial Island</h2>
+              
+            <ContextHelp topic="board" compact />
+
             </div>
 
             <span className="immersive-stage-hint">
@@ -1074,7 +1101,8 @@ async function confirmConstruction() {
               {selectedConstruction && (
                 <div className="construction-placement-preview">
                   <span className="construction-palette-eyebrow">
-                    CONSTRUCTION PREVIEW
+                    CONSTRUCTION PREVIEW           
+                  <ContextHelp topic="construction" compact />
                   </span>
                   <h3>{selectedConstruction.name}</h3>
                   {constructionTarget ? (
@@ -1093,6 +1121,10 @@ async function confirmConstruction() {
                         paymentSources={paymentSources}
                       />
                       <div className="construction-payment-section">
+                      <div className="context-help-inline-heading">
+                        <strong>Resource Payments</strong>
+                        <ContextHelp topic="payments" compact />
+                      </div>
                         <ResourcePaymentPicker
                           game={game}
                           requirements={requirements}
@@ -1134,7 +1166,8 @@ async function confirmConstruction() {
               <header className="immersive-production-header">
                 <div>
                   <span className="construction-palette-eyebrow">INDUSTRIAL OUTPUT</span>
-                  <h3>Produce Goods</h3>
+                  <h3>Produce Goods</h3>      
+                  <ContextHelp topic="production" compact />
                 </div>
                 <button type="button" onClick={closeProductionMode}
                   className="construction-palette-close" aria-label="Close production mode">×</button>
@@ -1194,6 +1227,10 @@ async function confirmConstruction() {
           {/* STEP 87 — NAVAL CONSTRUCTION */}
           {navalMode && navalData && (
             <div className="immersive-naval-overlay">
+            <div className="context-help-inline-heading">
+              <strong>Naval Construction</strong>
+              <ContextHelp topic="naval" compact />
+            </div>
               <NavalConstructionPanel
                 game={game}
                 navalData={navalData}
@@ -1268,6 +1305,11 @@ async function confirmConstruction() {
           {inspectorOpen && (
             <div className="immersive-rail-content">
               
+            <div className="context-help-inline-heading">
+              <strong>Turn Management</strong>
+              <ContextHelp topic="turns" compact />
+            </div>
+
             {/* STEP 93 — TURN STATUS */}
             <TurnStatus
               game={game}
@@ -1624,6 +1666,16 @@ async function confirmConstruction() {
         <KeyboardShortcutsDialog
           context="board"
           onClose={() => setKeyboardHelpOpen(false)}
+        />
+      )}
+
+      {/* STEP 103 — FULL GAME HANDBOOK */}
+      {gameHelpOpen && (
+        <GameHelpDialog
+          onClose={() => {
+            setGameHelpOpen(false);
+            setActiveAction(null);
+          }}
         />
       )}
 
