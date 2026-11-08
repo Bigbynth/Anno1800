@@ -12,7 +12,14 @@ import { SaveLoadDialog } from "./SaveLoadDialog";
 import { NewGameDialog } from "./NewGameDialog";
 import type { SaveSlotId, GameSetupSettings } from "../api";
 import { NavalConstructionPanel } from "./NavalConstructionPanel";
+import {
+  analyzeNavalReadiness,
+  analyzeExplorationReadiness
+} from "../naval-readiness";
 
+import {
+  NavalReadinessPanel,
+} from "./NavalReadinessPanel";
 import {
   analyzeConstructionPlacement,
   getPlacementResult,
@@ -638,15 +645,70 @@ export function ImmersiveGameTable({
     );
 
 
+  /* STEP 113 — NAVAL READINESS ANALYSIS */
+
+  const navalReadiness = analyzeNavalReadiness({
+    constructionType: navalType,
+    selectedSpaceId: navalTargetId,
+
+    spaces: navalData?.spaces ?? [],
+    shipyards: navalData?.shipyards ?? [],
+    ships: navalData?.ships ?? [],
+    ownedShipyards:
+      navalData?.owned_shipyards ?? [],
+
+    ownedShipCount:
+      navalData?.owned_ships.length ?? 0,
+
+    tradeCapacity:
+      navalData?.naval_capacity.trade ?? 0,
+
+    explorationCapacity:
+      navalData?.naval_capacity.exploration ?? 0,
+
+    discoveredIslandCount:
+      activePlayer?.new_world_islands.length ?? 0,
+
+    actionEnabled:
+      availability.naval.enabled,
+
+    actionExplanation:
+      availability.naval.explanation,
+
+    gameOver: game?.game_over ?? false,
+    mainActionUsed:
+      game?.main_action_used ?? false,
+  });
+
+  
+/* STEP 113 — EXPLORATION READINESS */
+
+  const explorationReadiness =
+    analyzeExplorationReadiness({
+      explorationCapacity:
+        navalData?.naval_capacity.exploration ?? 0,
+
+      discoveredIslandCount:
+        activePlayer?.new_world_islands.length ?? 0,
+
+      gameOver:
+        game?.game_over ?? false,
+
+      mainActionUsed:
+        game?.main_action_used ?? false,
+
+      actionEnabled:
+        availability.explore.enabled,
+
+      actionExplanation:
+        availability.explore.explanation,
+    });
+
+
+  /* Preserve the existing Naval candidate contract. */
   const navalCandidates =
     navalMode && navalData
-      ? navalData.spaces
-          .filter(
-            (space) =>
-              !space.occupied &&
-              space.type === (navalType === "shipyard" ? "coast" : "sea"),
-          )
-          .map((space) => space.id)
+      ? navalReadiness.candidateSpaceIds
       : [];
 
   const constructionTarget =
@@ -1037,8 +1099,16 @@ export function ImmersiveGameTable({
       return;
     }
 
-    // STEP 88 — EXPLORATION
+    // STEP 113 — EXPLORATION ENTRY GUARD
     if (id === "explore") {
+      if (!explorationReadiness.canAttempt) {
+        console.info(
+          "Exploration unavailable:",
+          explorationReadiness.reasons.join(" ")
+        );
+        return;
+      }
+
       setExplorationOpen(true);
       setActiveAction("explore");
       return;
@@ -1546,6 +1616,10 @@ export function ImmersiveGameTable({
                 <strong>Naval Construction</strong>
                 <ContextHelp topic="naval" compact />
               </div>
+              {/* STEP 113 — NAVAL READINESS */}
+              <NavalReadinessPanel
+                readiness={navalReadiness}
+              />
               <NavalConstructionPanel
                 game={game}
                 navalData={navalData}
@@ -1851,7 +1925,44 @@ export function ImmersiveGameTable({
           {notice}
         </div>
       )}
+      {/* STEP 113 — EXPLORATION DIAGNOSTICS */}
+      {explorationOpen && (
+        <section
+          className="naval-exploration-status"
+          aria-label="Exploration readiness"
+          role="status"
+        >
+          <strong>Exploration Readiness</strong>
 
+          <p>
+            Available exploration capacity:
+            {" "}
+            {explorationReadiness.capacity}
+          </p>
+
+          <p>
+            Discovered islands:
+            {" "}
+            {explorationReadiness.discoveredIslandCount}
+            /
+            {explorationReadiness.maximumIslands}
+          </p>
+
+          <p>
+            {explorationReadiness.canAttempt
+              ? "Current frontend checks permit an exploration attempt."
+              : "Exploration is not currently available."}
+          </p>
+
+          {explorationReadiness.reasons.map(
+            (reason, index) => (
+              <p key={index} className="naval-exploration-reason">
+                {reason}
+              </p>
+            )
+          )}
+        </section>
+      )}
       {/* STEP 88 — NEW WORLD EXPLORATION */}
       {explorationOpen && (
         <ExplorationDialog
@@ -1874,17 +1985,17 @@ export function ImmersiveGameTable({
           tradeCapacity={navalData?.naval_capacity.trade ?? null}
           explorationCapacity={navalData?.naval_capacity.exploration ?? null}
           canExplore={
-            !actionLoading &&
-            !game.main_action_used &&
-            !game.game_over &&
-            (activePlayer?.new_world_islands.length ?? 0) < 4 &&
-            (navalData?.naval_capacity.exploration ?? 0) > 0
+            explorationReadiness.canAttempt
           }
           onClose={() => {
             setNewWorldAtlasOpen(false);
             setActiveAction(null);
           }}
           onExplore={() => {
+            if (!explorationReadiness.canAttempt) {
+              return;
+            }
+
             setNewWorldAtlasOpen(false);
             setActiveAction("explore");
             setExplorationOpen(true);

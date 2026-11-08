@@ -6459,3 +6459,188 @@ button.tutorial-highlight {
     font-size: 18px;
   }
 }
+
+/* STEP 113 — NAVAL OPERATIONS INSPECTOR */
+
+.naval-readiness-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 15px;
+  border: 1px solid #c59b56;
+  border-radius: 10px;
+  background: #203c47;
+  color: #e8dcc1;
+}
+
+.naval-readiness-header h3 {
+  margin: 7px 0;
+  color: #f0dfbd;
+  font: 21px Georgia, serif;
+}
+
+.naval-readiness-header p {
+  margin: 0;
+  color: #d4ded5;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.naval-readiness-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.naval-readiness-stats > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px;
+  border: 1px solid #647f80;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.naval-readiness-stats strong {
+  color: #f0dfbd;
+  font-size: 23px;
+  font-variant-numeric: tabular-nums;
+}
+
+.naval-readiness-stats span {
+  color: #d4ded5;
+  font-size: 10px;
+  text-align: center;
+}
+
+.naval-readiness-section {
+  padding: 12px;
+  border: 1px solid #718b87;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.naval-readiness-section > strong {
+  color: #f0dfbd;
+  font-size: 13px;
+}
+
+.naval-readiness-section p {
+  margin: 8px 0 0;
+  color: #d9e1d9;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.naval-readiness-positive {
+  display: inline-block;
+  margin-top: 9px;
+  color: #a9dfb5;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.naval-readiness-negative {
+  display: inline-block;
+  margin-top: 9px;
+  color: #efb1a6;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.naval-readiness-shipyards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.naval-readiness-shipyards > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid #647f80;
+  border-radius: 6px;
+}
+
+.naval-readiness-shipyards span {
+  color: #f0dfbd;
+  font-size: 12px;
+}
+
+.naval-readiness-shipyards small {
+  color: #d4ded5;
+  font-size: 11px;
+}
+
+.naval-readiness-warning {
+  padding: 12px;
+  border: 1px solid #b18c63;
+  border-radius: 8px;
+  background: #493d2d;
+}
+
+.naval-readiness-warning strong {
+  color: #e5c282;
+  font-size: 12px;
+}
+
+.naval-readiness-warning p {
+  margin: 7px 0 0;
+  color: #e1ded4;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.naval-readiness-disclaimer {
+  margin: 0;
+  padding: 11px;
+  border: 1px solid #8c927a;
+  border-radius: 7px;
+  color: #d9e1d9;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.naval-exploration-status {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 14px;
+  margin: 10px;
+  border: 1px solid #c59b56;
+  border-radius: 9px;
+  background: #203c47;
+  color: #e8dcc1;
+}
+
+.naval-exploration-status strong {
+  color: #f0dfbd;
+  font: 18px Georgia, serif;
+}
+
+.naval-exploration-status p {
+  margin: 0;
+  color: #d9e1d9;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.naval-exploration-reason {
+  padding: 8px;
+  border-left: 3px solid #b77c73;
+  background: #493d2d;
+}
+
+@media (max-width: 650px) {
+  .naval-readiness-panel {
+    padding: 11px;
+  }
+
+  .naval-readiness-stats strong {
+    font-size: 19px;
+  }
+}
