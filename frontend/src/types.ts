@@ -42,6 +42,10 @@ export interface GamePlayerSnapshot {
   gold: number;
   victory_points: number;
   hand: string[];
+
+  // STEP 117 — GOODS ALREADY TRADED THIS TURN
+  traded_goods_this_turn: string[];
+
   population: Record<string, number>;
   industries: IndustrySnapshot[];
   new_world_islands: NewWorldIslandSnapshot[];

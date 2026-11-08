@@ -6,7 +6,13 @@ import type {
   GameSnapshot,
   PopulationCard,
 } from "../types";
+import {
+  analyzeTradeLifecycle,
+} from "../trade-lifecycle";
 
+import {
+  TradeLifecyclePanel,
+} from "./TradeLifecyclePanel";
 import type { PopulationCardPayment } from "../api";
 
 import {
@@ -83,6 +89,18 @@ export function PopulationHand({
       })
     : null;
 
+  /* STEP 117 — POPULATION CARD SHIPPING */
+
+  const populationTradeLifecycle = game
+    ? analyzeTradeLifecycle({
+        game,
+        requirements,
+        paymentSources,
+        tradeCapacity,
+        allowNewWorld: true,
+      })
+    : null;
+
   const canFulfill =
     Boolean(game) &&
     Boolean(game?.players[game.current_player_index]) &&
@@ -93,7 +111,8 @@ export function PopulationHand({
     !submitting &&
     paymentsComplete &&
     !duplicateProduction &&
-    fulfillmentReadiness?.canSubmit === true;
+    fulfillmentReadiness?.canSubmit === true &&
+    populationTradeLifecycle?.canSubmit === true;
 
   function selectCard(index: number) {
     if (submitting || actionLoading) return;
@@ -272,7 +291,12 @@ export function PopulationHand({
               }
             />
           )}
-
+          {/* STEP 117 — NEW WORLD & SHIPPING READINESS */}
+          {populationTradeLifecycle && (
+            <TradeLifecyclePanel
+              lifecycle={populationTradeLifecycle}
+            />
+          )}
           {/* STEP 115 — POPULATION FULFILLMENT READINESS */}
           {fulfillmentReadiness && (
             <section

@@ -6921,3 +6921,151 @@ button.tutorial-highlight {
     flex-direction: column;
   }
 }
+
+/* STEP 117 — TRADE & NEW WORLD LIFECYCLE */
+
+.trade-lifecycle-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid #c59b56;
+  border-radius: 10px;
+  background: #203c47;
+  color: #e8dcc1;
+}
+
+.trade-lifecycle-panel header h3 {
+  margin: 7px 0;
+  color: #f0dfbd;
+  font: 21px Georgia, serif;
+}
+
+.trade-lifecycle-panel header p,
+.trade-lifecycle-panel footer {
+  color: #d7e0d7;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.trade-lifecycle-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.trade-lifecycle-stats > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 5px;
+  border: 1px solid #647f80;
+  border-radius: 8px;
+  background: #294650;
+}
+
+.trade-lifecycle-stats strong {
+  color: #f0dfbd;
+  font-size: 20px;
+}
+
+.trade-lifecycle-stats span {
+  color: #d2ddd4;
+  font-size: 10px;
+  text-align: center;
+}
+
+.trade-lifecycle-history,
+.trade-lifecycle-row {
+  padding: 11px;
+  border: 1px solid #647f80;
+  border-radius: 7px;
+  background: #294650;
+}
+
+.trade-lifecycle-history > strong,
+.trade-lifecycle-row strong {
+  color: #f0dfbd;
+  font-size: 12px;
+}
+
+.trade-lifecycle-history p,
+.trade-lifecycle-row p {
+  margin: 7px 0 0;
+  color: #d7e0d7;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.trade-lifecycle-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.trade-lifecycle-row.is-valid {
+  border-left: 3px solid #9bc8aa;
+}
+
+.trade-lifecycle-row.is-invalid {
+  border-left: 3px solid #b77c73;
+}
+
+.trade-lifecycle-row > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.trade-lifecycle-row span {
+  color: #e5c282;
+  font-size: 11px;
+}
+
+.trade-lifecycle-errors,
+.trade-lifecycle-warning {
+  padding: 11px;
+  border: 1px solid #b77c73;
+  border-radius: 7px;
+  background: #49332e;
+  color: #f2c5b9;
+  font-size: 12px;
+}
+
+.trade-lifecycle-errors p {
+  margin: 7px 0 0;
+  line-height: 1.5;
+}
+
+.trade-lifecycle-warning {
+  border-color: #b89a65;
+  background: #493d2d;
+  color: #ead8ad;
+}
+
+.trade-lifecycle-panel footer {
+  padding: 10px;
+  border-top: 1px solid #647f80;
+}
+
+.trade-directory-used {
+  color: #efb1a6;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.trade-directory-cost {
+  color: #d6bd80;
+  font-size: 11px;
+}
+
+@media (max-width: 650px) {
+  .trade-lifecycle-panel {
+    padding: 11px;
+  }
+
+  .trade-lifecycle-stats strong {
+    font-size: 17px;
+  }
+}

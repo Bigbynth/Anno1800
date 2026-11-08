@@ -53,6 +53,13 @@ import {
 import {
   TradePaymentInspector,
 } from "./TradePaymentInspector";
+import {
+  analyzeTradeLifecycle,
+} from "../trade-lifecycle";
+
+import {
+  TradeLifecyclePanel,
+} from "./TradeLifecyclePanel";
 import type { AppPreferences } from "../app-preferences";
 
 import { PreferencesDialog } from "./PreferencesDialog";
@@ -750,6 +757,21 @@ export function ImmersiveGameTable({
       null,
   });
 
+  /* STEP 117 — CONSTRUCTION TRADE LIFECYCLE */
+
+  const constructionTradeLifecycle = game
+    ? analyzeTradeLifecycle({
+        game,
+        requirements,
+        paymentSources,
+        tradeCapacity:
+          navalData?.naval_capacity.trade ??
+          tradeCapacity ??
+          null,
+        allowNewWorld: false,
+      })
+    : null;
+
   /* STEP 108 — LIVE CONSTRUCTION READINESS */
 
   const constructionReadiness = getConstructionReadiness({
@@ -787,7 +809,8 @@ export function ImmersiveGameTable({
     paymentComplete &&
     !duplicateProduction &&
     constructionReadiness.canSubmit &&
-    paymentValidation.canSubmit;
+    paymentValidation.canSubmit &&
+    constructionTradeLifecycle?.canSubmit === true;
 
   async function confirmConstruction() {
     if (!canConfirmBuild || !selectedConstruction || !constructionTarget)
@@ -1497,6 +1520,13 @@ export function ImmersiveGameTable({
                       <TradePaymentInspector
                         validation={paymentValidation}
                       />
+
+                      {/* STEP 117 — TRADE LIFECYCLE */}
+                      {constructionTradeLifecycle && (
+                        <TradeLifecyclePanel
+                          lifecycle={constructionTradeLifecycle}
+                        />
+                      )}
 
                       {/* STEP 108 — CONSTRUCTION READINESS */}
                       <ConstructionReadinessPanel

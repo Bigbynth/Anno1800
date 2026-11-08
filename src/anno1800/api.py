@@ -659,6 +659,11 @@ def serialize_game(game: Game) -> dict:
                 "gold": player.gold,
                 "victory_points": player.total_victory_points(),
                 "hand": [card.id for card in player.hand],
+                # STEP 117 — TRADE HISTORY FOR THE ACTIVE TURN
+                "traded_goods_this_turn": sorted(
+                    good.value
+                    for good in player.traded_goods_this_turn
+                ),
                 "new_world_islands": [
                     {
                         "id": island.id,

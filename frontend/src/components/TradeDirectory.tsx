@@ -5,7 +5,9 @@ import { NavalCapacityDisplay } from "./NavalCapacityDisplay";
 import type { GameSnapshot } from "../types";
 import { pretty } from "../types";
 import { ResourceToken } from "./ResourceToken";
-
+import {
+  TRADE_TOKEN_COST,
+} from "../trade-lifecycle";
 type Props = {
   game: GameSnapshot;
   tradeCapacity?: number | null;
@@ -22,6 +24,13 @@ export function TradeDirectory({
   const [search, setSearch] = useState("");
 
   const currentPlayerIndex = game.current_player_index;
+
+  /* STEP 117 — TRADE HISTORY */
+
+  const tradedGoods = new Set(
+    game.players[currentPlayerIndex]
+      ?.traded_goods_this_turn ?? []
+  );
 
   const partners = game.players
     .map((player, index) => ({ player, index }))
@@ -152,6 +161,12 @@ export function TradeDirectory({
                       industry => industry.good === good
                     );
 
+                    const supplier = producers[0];
+
+                    const tradeTokenCost = supplier
+                      ? TRADE_TOKEN_COST[supplier.worker_type]
+                      : undefined;
+
                     return (
                       <div
                         className="trade-directory-good"
@@ -161,12 +176,21 @@ export function TradeDirectory({
                           good={good}
                           size="small"
                         />
-
+                        {tradedGoods.has(good) && (
+                          <span className="trade-directory-used">
+                            Traded this turn
+                          </span>
+                        )}
                         <span>
                           {producers.map(
                             industry => industry.name
                           ).join(", ")}
                         </span>
+                        {tradeTokenCost !== undefined && (
+                          <small className="trade-directory-cost">
+                            {tradeTokenCost} Trade token(s)
+                          </small>
+                        )}
                       </div>
                     );
                   })}

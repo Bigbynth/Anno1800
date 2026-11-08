@@ -4,7 +4,13 @@ import type {
   GameSnapshot,
   NavalCatalogueSnapshot,
 } from "../types";
+import {
+  analyzeTradeLifecycle,
+} from "../trade-lifecycle";
 
+import {
+  TradeLifecyclePanel,
+} from "./TradeLifecyclePanel";
 import {
   validateConstructionPayments,
 } from "../payment-validation";
@@ -96,6 +102,17 @@ export function NavalConstructionPanel({
         navalData.naval_capacity.trade,
     });
 
+  /* STEP 117 — NAVAL TRADE COST VALIDATION */
+
+  const navalTradeLifecycle = analyzeTradeLifecycle({
+    game,
+    requirements,
+    paymentSources,
+    tradeCapacity:
+      navalData.naval_capacity.trade,
+    allowNewWorld: false,
+  });
+
   const selectedShipyard =
     navalData.owned_shipyards.find(
       item => String(item.index) === shipyardIndex
@@ -127,6 +144,7 @@ export function NavalConstructionPanel({
     assigned &&
     !duplicateProduction &&
     navalPaymentValidation.canSubmit &&
+    navalTradeLifecycle.canSubmit &&
     !actionLoading &&
     !submitting &&
     !game.game_over &&
@@ -331,6 +349,11 @@ export function NavalConstructionPanel({
               setError(null);
             }}
             disabled={actionLoading || submitting}
+          />
+
+          {/* STEP 117 — NAVAL TRADE LIFECYCLE */}
+          <TradeLifecyclePanel
+            lifecycle={navalTradeLifecycle}
           />
 
           {duplicateProduction && (
