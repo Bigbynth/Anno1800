@@ -5,6 +5,10 @@ type Props = {
   playerName: string;
   round: number;
   mainActionUsed: boolean;
+
+  // STEP 120 — ENDGAME TRANSITION
+  willFinishGame: boolean;
+
   disabled: boolean;
   onConfirm: () => Promise<void>;
   onClose: () => void;
@@ -14,6 +18,7 @@ export function EndTurnDialog({
   playerName,
   round,
   mainActionUsed,
+  willFinishGame,
   disabled,
   onConfirm,
   onClose,
@@ -23,8 +28,11 @@ export function EndTurnDialog({
 
   const busy = submitting || disabled;
 
+  const cannotConfirm =
+    busy || !mainActionUsed;
+
   async function confirmEndTurn() {
-    if (busy) return;
+    if (cannotConfirm) return;
 
     setSubmitting(true);
     setError(null);
@@ -92,9 +100,19 @@ export function EndTurnDialog({
 
         {!mainActionUsed && (
           <p className="end-turn-dialog-warning">
-            Your main action is still available.
-            Ending your turn will give up the
-            opportunity to take it this turn.
+            You must complete a main action before
+            ending your turn.
+          </p>
+        )}
+
+        {willFinishGame && (
+          <p
+            className="end-turn-dialog-warning"
+            role="status"
+          >
+            This is the final turn of the final round.
+            Confirming will end the match and
+            calculate the official results.
           </p>
         )}
 
@@ -124,9 +142,13 @@ export function EndTurnDialog({
             type="button"
             className="end-turn-dialog-confirm"
             onClick={() => void confirmEndTurn()}
-            disabled={busy}
+            disabled={cannotConfirm}
           >
-            {submitting ? "Ending Turn..." : "Confirm End Turn"}
+            {submitting
+              ? "Processing..."
+              : willFinishGame
+                ? "Finish Game"
+                : "Confirm End Turn"}
           </button>
         </footer>
       </section>

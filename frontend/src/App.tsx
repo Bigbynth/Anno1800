@@ -497,11 +497,19 @@ function App() {
     if (!game) {
       throw new Error("Game is not loaded.");
     }
+    /* STEP 120 — SERVER-ALIGNED END TURN GUARD */
 
-    if (actionLoading || game.game_over) {
-      throw new Error("End Turn is not available right now.");
+    if (
+      actionLoading ||
+      game.game_over ||
+      !game.main_action_used
+    ) {
+      throw new Error(
+        "End Turn requires a completed main action " +
+        "and an active game."
+      );
     }
-
+    
     setActionLoading(true);
 
     try {

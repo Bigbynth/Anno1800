@@ -180,6 +180,8 @@ export function resolveActionAvailability(
   }
 
   /* End Turn has separate rules. */
+  /* STEP 120 — END TURN AVAILABILITY */
+
   if (id === "end_turn") {
     if (context.gameOver) {
       return denied(
@@ -187,6 +189,15 @@ export function resolveActionAvailability(
         "turn",
         "game_over",
         "The match has ended."
+      );
+    }
+
+    if (!context.mainActionUsed) {
+      return denied(
+        id,
+        "turn",
+        "main_action_used",
+        "You must complete a main action before ending your turn."
       );
     }
 

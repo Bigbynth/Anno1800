@@ -5,6 +5,9 @@ import { ResourceDependencyPanel } from "./ResourceDependencyPanel";
 import { TradeDirectory } from "./TradeDirectory";
 import { pretty } from "../types";
 import { TurnStatus } from "./TurnStatus";
+import {
+  analyzeTurnLifecycle,
+} from "../turn-lifecycle";
 import { EndTurnDialog } from "./EndTurnDialog";
 import { FinalResultsDialog } from "./FinalResultsDialog";
 import { GameHistoryPanel } from "./GameHistoryPanel";
@@ -423,7 +426,11 @@ export function ImmersiveGameTable({
     navalBusy: false,
   });
 
-  
+  /* STEP 120 — TURN & ENDGAME READINESS */
+
+  const turnLifecycle = game
+    ? analyzeTurnLifecycle(game, actionLoading)
+    : null;
 
   const [productionError, setProductionError] = useState<string | null>(null);
 
@@ -595,7 +602,11 @@ export function ImmersiveGameTable({
   }, [game?.game_over]);
 
   function openEndTurnDialog() {
-    if (!game || game.game_over || actionLoading) {
+    if (
+      !game ||
+      !turnLifecycle?.canEndTurn ||
+      !availability.end_turn.enabled
+    ) {
       return;
     }
 
@@ -1916,7 +1927,9 @@ export function ImmersiveGameTable({
           disabled={!availability.end_turn.enabled}
           onClick={openEndTurnDialog}
         >
-          End Turn
+          {turnLifecycle?.willFinishGame
+            ? "Finish Game"
+            : "End Turn"}
         </button>
       </nav>
 
@@ -2101,13 +2114,14 @@ export function ImmersiveGameTable({
         />
       )}
 
-      {/* STEP 93 — END TURN CONFIRMATION */}
-      {endTurnDialogOpen && (
+      {/* STEP 120 — END TURN & ENDGAME CONFIRMATION */}
+      {endTurnDialogOpen && turnLifecycle && (
         <EndTurnDialog
-          playerName={activePlayer?.name ?? "Current Player"}
-          round={game.round}
-          mainActionUsed={game.main_action_used}
-          disabled={actionLoading || game.game_over}
+          playerName={turnLifecycle.playerName}
+          round={turnLifecycle.round}
+          mainActionUsed={turnLifecycle.mainActionUsed}
+          willFinishGame={turnLifecycle.willFinishGame}
+          disabled={!turnLifecycle.canEndTurn}
           onConfirm={onConfirmEndTurn}
           onClose={() => {
             setEndTurnDialogOpen(false);

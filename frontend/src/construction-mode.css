@@ -7260,3 +7260,46 @@ button.tutorial-highlight {
   margin: 6px 0;
   line-height: 1.6;
 }
+
+/* STEP 120 — TURN & ENDGAME LIFECYCLE */
+
+.turn-status-endgame {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid #c59b56;
+  border-radius: 8px;
+  background: #493d2d;
+  color: #f0dfbd;
+}
+
+.turn-status-endgame strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #f0dfbd;
+  font-family: Georgia, serif;
+  font-size: 16px;
+}
+
+.turn-status-endgame p {
+  margin: 0;
+  color: #e8dcc1;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.turn-status-end-button:disabled,
+.immersive-end-turn:disabled,
+.end-turn-dialog-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.end-turn-dialog-warning {
+  padding: 12px;
+  border: 1px solid #b89a65;
+  border-radius: 8px;
+  background: #493d2d;
+  color: #ead8ad;
+  font-size: 12px;
+  line-height: 1.6;
+}
