@@ -2,6 +2,10 @@
 import type { GameSnapshot } from "../types";
 import { pretty } from "../types";
 
+import {
+  auditScoringSnapshot,
+} from "../scoring-integrity";
+
 type Props = {
   game: GameSnapshot;
   onClose: () => void;
@@ -22,7 +26,19 @@ export function FinalResultsDialog({
   game,
   onClose,
 }: Props) {
-  const scores = game.score_preview ?? [];
+    /* STEP 119 — USE FINAL SCORES AFTER GAME OVER */
+
+  const scores =
+    game.game_over && game.final_result
+      ? game.final_result.scores
+      : game.score_preview ?? [];
+
+  const scoringAudit = auditScoringSnapshot(game);
+
+  const authoritativeWinners =
+    game.game_over
+      ? game.final_result?.winners ?? []
+      : [];
 
   const standings: Standing[] = game.players.map(
     (player, index) => {
@@ -60,13 +76,6 @@ export function FinalResultsDialog({
         item => item.total ?? 0
       ))
     : null;
-
-  const leaders =
-    highestScore === null
-      ? []
-      : standings.filter(
-          item => item.total === highestScore
-        );
 
   function getRank(item: Standing): number | null {
     if (item.total === null) return null;
@@ -117,34 +126,49 @@ export function FinalResultsDialog({
             ×
           </button>
         </header>
+        {/* STEP 119 — ENGINE-AUTHORITATIVE WINNERS */}
+        {game.game_over &&
+          game.final_result &&
+          scoringAudit.valid && (
+            <div className="final-results-leader">
+              <span>
+                {authoritativeWinners.length === 1
+                  ? "OFFICIAL WINNER"
+                  : "OFFICIAL SHARED WINNERS"}
+              </span>
 
-        {game.game_over && completeScores &&
-          leaders.length === 1 && (
-          <div className="final-results-leader">
-            <span>HIGHEST REPORTED SCORE</span>
-            <strong>{leaders[0].playerName}</strong>
-            <p>
-              {leaders[0].total} Victory Points
-            </p>
-          </div>
-        )}
+              <strong>
+                {authoritativeWinners
+                  .map(index => game.players[index]?.name)
+                  .filter(
+                    (name): name is string =>
+                      name !== undefined
+                  )
+                  .join(" · ")}
+              </strong>
 
-        {game.game_over && completeScores &&
-          leaders.length > 1 && (
-          <div className="final-results-leader">
-            <span>TIED FOR HIGHEST SCORE</span>
-            <strong>
-              {leaders.map(
-                item => item.playerName
-              ).join(" · ")}
-            </strong>
-            <p>
-              {highestScore} points each.
-              No additional tie-break has been applied.
-            </p>
-          </div>
-        )}
+              <p>
+                Winner determination includes the
+                engine's construction-count and
+                remaining-hand tie-break rules.
+              </p>
+            </div>
+          )}
+          {/* STEP 119 — SCORING DATA DIAGNOSTICS */}
+          {!scoringAudit.valid && (
+            <div
+              className="final-results-warning"
+              role="alert"
+            >
+              <strong>Scoring data needs attention</strong>
 
+              {scoringAudit.issues.map(
+                (issue, index) => (
+                  <p key={index}>{issue}</p>
+                )
+              )}
+            </div>
+          )}
         {!completeScores && (
           <p
             className="final-results-warning"
@@ -164,9 +188,13 @@ export function FinalResultsDialog({
                 key={item.playerIndex}
                 className={[
                   "final-results-player",
-                  rank === 1 && completeScores
-                    ? "is-leading"
-                    : "",
+                  game.game_over && game.final_result
+                    ? authoritativeWinners.includes(item.playerIndex)
+                      ? "is-leading"
+                      : ""
+                    : rank === 1 && completeScores
+                      ? "is-leading"
+                      : "",
                 ].join(" ")}
               >
                 <div className="final-results-player-heading">

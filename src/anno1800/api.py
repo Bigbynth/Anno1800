@@ -615,12 +615,48 @@ def serialize_objective_rule(rule) -> dict:
 def serialize_game(game: Game) -> dict:
     state = game.state
 
+    # STEP 119 — AUTHORITATIVE END-GAME RESULT
+    final_result = (
+        game.result()
+        if state.game_over
+        else None
+    )
+
     return {
         "round": state.turn_number,
         "current_player_index": state.current_player_index,
         "phase": state.end_game_phase.value,
         "game_over": state.game_over,
         "main_action_used": game.turn_state.main_action_used,
+        # STEP 119 — FINAL SCORING AND TIE-BREAKS
+        "final_result": (
+            None
+            if final_result is None
+            else {
+                "winners": [
+                    index
+                    for index, player in enumerate(state.players)
+                    if any(
+                        winner is player
+                        for winner in final_result.winners
+                    )
+                ],
+                "scores": [
+                    {
+                        "player_index": index,
+                        "population_cards": entry.score.population_cards,
+                        "expeditions": entry.score.expeditions,
+                        "gold": entry.score.gold,
+                        "fireworks": entry.score.fireworks,
+                        "objectives": entry.score.objectives,
+                        "total": entry.score.total,
+                    }
+                    for index, entry in enumerate(
+                        final_result.scores
+                    )
+                ],
+            }
+        ),
                 
         # STEP 92 — Shared scoring objectives.
         "objectives": [

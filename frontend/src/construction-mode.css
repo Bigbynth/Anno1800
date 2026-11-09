@@ -7227,3 +7227,36 @@ button.tutorial-highlight {
     font-size: 19px;
   }
 }
+
+/* STEP 119 — SCORING INTEGRITY */
+
+.objectives-score-warning {
+  padding: 13px;
+  margin: 12px 0;
+  border: 1px solid #b77c73;
+  border-radius: 8px;
+  background: #49332e;
+  color: #f2c5b9;
+}
+
+.objectives-score-warning strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.objectives-score-warning p {
+  margin: 6px 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.final-results-warning strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.final-results-warning p {
+  margin: 6px 0;
+  line-height: 1.6;
+}

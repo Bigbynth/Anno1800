@@ -5,6 +5,10 @@ import type {
   GameSnapshot,
 } from "../types";
 
+import {
+  auditScoringSnapshot,
+} from "../scoring-integrity";
+
 type Props = {
   game: GameSnapshot;
   onClose: () => void;
@@ -49,6 +53,9 @@ export function ObjectivesPanel({
   game,
   onClose,
 }: Props) {
+  /* STEP 119 — SCORE INTEGRITY */
+
+  const scoringAudit = auditScoringSnapshot(game);
   const playerIndex = game.current_player_index;
   const player = game.players[playerIndex];
 
@@ -136,7 +143,19 @@ export function ObjectivesPanel({
               tie-breaks are determined by the engine.
             </p>
           </section>
+            {/* STEP 119 — SCORE DATA CONSISTENCY */}
+            {!scoringAudit.valid && (
+              <section
+                className="objectives-score-warning"
+                role="status"
+              >
+                <strong>Score consistency warning</strong>
 
+                {scoringAudit.issues.map((issue, index) => (
+                  <p key={index}>{issue}</p>
+                ))}
+              </section>
+            )}
           <section className="objectives-active-section">
             <h3>Active Objectives</h3>
 

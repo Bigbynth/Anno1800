@@ -70,6 +70,8 @@ export interface GameSnapshot {
   players: GamePlayerSnapshot[];
   objectives: ActiveObjectiveSnapshot[];
   score_preview: ScorePreviewSnapshot[];
+  /* STEP 119 — AUTHORITATIVE FINAL RESULT */
+  final_result?: FinalGameResultSnapshot | null;
 }
 
 
@@ -168,5 +170,16 @@ export interface ScorePreviewSnapshot {
   fireworks: number;
   objectives: number;
   total: number;
+}
+
+/* STEP 119 — FINAL SCORING CONTRACT */
+
+export interface FinalGameResultSnapshot {
+  // Player indices are zero-based.
+  // Multiple entries mean the engine declared
+  // multiple winners after all tie-breaks.
+  winners: number[];
+
+  scores: ScorePreviewSnapshot[];
 }
 
