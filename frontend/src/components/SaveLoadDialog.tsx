@@ -22,6 +22,93 @@ const SLOTS: SaveSlotId[] = [
   "slot3",
 ];
 
+/* STEP 123 — SAVE DIAGNOSTIC PRESENTATION */
+
+function getSaveDiagnosticInfo(
+  code: string | undefined
+): {
+  label: string;
+  guidance: string;
+} {
+  switch (code) {
+    case "unsupported_version":
+      return {
+        label: "Incompatible Version",
+        guidance:
+          "This checkpoint uses a different save format. " +
+          "Preserve it and use a compatible game version " +
+          "or a future migration tool.",
+      };
+
+    case "incompatible_code":
+      return {
+        label: "Engine Incompatible",
+        guidance:
+          "The save was authenticated but cannot be " +
+          "deserialized by this engine. Keep the original " +
+          "file and try the version that created it.",
+      };
+
+    case "authentication_failed":
+      return {
+        label: "Authentication Failed",
+        guidance:
+          "The save cannot be authenticated. Check that " +
+          "the original save and its matching signing key " +
+          "are still available. Do not edit the save file.",
+      };
+
+    case "unknown_format":
+      return {
+        label: "Unknown Format",
+        guidance:
+          "This file is not recognized as an Anno 1800 " +
+          "checkpoint. Preserve it before attempting recovery.",
+      };
+
+    case "incomplete":
+      return {
+        label: "Incomplete Save",
+        guidance:
+          "This save appears truncated. Check for an " +
+          "earlier backup or an intact copy.",
+      };
+
+    case "too_large":
+      return {
+        label: "Oversized Save",
+        guidance:
+          "The file exceeds the permitted checkpoint size. " +
+          "Do not bypass the limit without investigating it.",
+      };
+
+    case "read_error":
+      return {
+        label: "Read Error",
+        guidance:
+          "The server could not read the save. Check " +
+          "filesystem permissions and disk availability.",
+      };
+
+    case "signing_key_error":
+      return {
+        label: "Signing Key Error",
+        guidance:
+          "The server's signing key is invalid. Restore " +
+          "the matching key from a trusted backup.",
+      };
+
+    default:
+      return {
+        label: "Unreadable Save",
+        guidance:
+          "This checkpoint cannot be loaded. Preserve " +
+          "the original file and check the server logs " +
+          "before attempting recovery.",
+      };
+  }
+}
+
 export function SaveLoadDialog({
   onSave,
   onLoad,
@@ -29,6 +116,10 @@ export function SaveLoadDialog({
 }: Props) {
   const [slots, setSlots] =
     useState<SaveSlotInfo[]>([]);
+
+  /* STEP 123 — SUPPORTED SAVE FORMAT */
+  const [supportedSaveVersion, setSupportedSaveVersion] =
+    useState<number | null>(null);
 
   const [busy, setBusy] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(true);
@@ -54,6 +145,9 @@ export function SaveLoadDialog({
       const result = await fetchSaveSlots();
 
       setSlots(result.slots);
+      setSupportedSaveVersion(
+        result.save_format_version
+      );
       setSlotsLoaded(true);
     } catch (caught) {
       setError(
@@ -120,6 +214,11 @@ export function SaveLoadDialog({
             <h2 id="save-load-title">
               Save & Load Game
             </h2>
+            {supportedSaveVersion !== null && (
+              <small className="save-load-version">
+                Supported save format: v{supportedSaveVersion}
+              </small>
+            )}
           </div>
 
           <button
@@ -142,6 +241,14 @@ export function SaveLoadDialog({
               item => item.slot === slot
             );
 
+            /* STEP 123 — SLOT RECOVERY INFORMATION */
+
+            const diagnosticInfo = saved?.exists && !saved.valid
+              ? getSaveDiagnosticInfo(
+                  saved.diagnostic?.code
+                )
+              : null;
+
             return (
               <article
                 className="save-load-slot"
@@ -150,22 +257,49 @@ export function SaveLoadDialog({
                 <div className="save-load-slot-info">
                   <strong>Save Slot {index + 1}</strong>
 
+                  {/* STEP 123 — SAVE SLOT DIAGNOSTICS */}
+
                   {!saved?.exists ? (
                     <small>Empty slot</small>
                   ) : !saved.valid ? (
-                    <small>
-                      Unreadable or incompatible save
-                    </small>
+                    <div className="save-load-diagnostic">
+                      <strong>
+                        {diagnosticInfo?.label ??
+                          "Unreadable Save"}
+                      </strong>
+
+                      {saved.format_version !== null && (
+                        <small>
+                          Checkpoint format: v{saved.format_version}
+                        </small>
+                      )}
+
+                      {saved.diagnostic?.message && (
+                        <small>
+                          {saved.diagnostic.message}
+                        </small>
+                      )}
+
+                      {diagnosticInfo && (
+                        <p>{diagnosticInfo.guidance}</p>
+                      )}
+                    </div>
                   ) : (
                     <>
                       <small>
                         {saved.metadata?.current_player}
                       </small>
+
                       <small>
                         Round {saved.metadata?.round}
                         {saved.metadata?.game_over
                           ? " · Game finished"
                           : ""}
+                      </small>
+
+                      <small className="save-load-compatible">
+                        Compatible · Format v
+                        {saved.format_version}
                       </small>
                     </>
                   )}
@@ -263,6 +397,13 @@ export function SaveLoadDialog({
         )}
 
         <footer className="save-load-footer">
+          <p className="save-load-recovery-note">
+            Recovery notice: If a saved game becomes
+            incompatible or damaged, preserve its file
+            before updating the engine or restoring a
+            backup. The Save Manager does not perform
+            automatic repair or migration.
+          </p>
           <p>
             Saves are stored locally on the Python
             server and may be incompatible after

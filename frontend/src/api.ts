@@ -216,18 +216,28 @@ export type SaveSlotId =
   | "slot2"
   | "slot3";
 
+export interface SaveSlotDiagnostic {
+  code: string;
+  message: string;
+}
+
 export interface SaveSlotInfo {
   slot: SaveSlotId;
   exists: boolean;
   valid: boolean;
+
   metadata: {
     round: number;
     current_player: string;
     game_over: boolean;
   } | null;
+
+  format_version: number | null;
+  diagnostic: SaveSlotDiagnostic | null;
 }
 
 export interface SaveSlotsResponse {
+  save_format_version: number;
   slots: SaveSlotInfo[];
 }
 

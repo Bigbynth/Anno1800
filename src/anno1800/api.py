@@ -16,6 +16,7 @@ from anno1800.game import Game
 import random
 
 from anno1800.services.game_persistence import (
+    SAVE_VERSION,
     SaveError,
     save_game,
     load_game,
@@ -291,8 +292,10 @@ def get_action_history() -> dict:
 @app.get("/api/saves")
 def get_save_slots() -> dict:
     with _game_lock:
-        return {"slots": list_saves()}
-
+        return {
+            "save_format_version": SAVE_VERSION,
+            "slots": list_saves(),
+        }
 
 @app.post("/api/saves/{slot}")
 def save_current_game(slot: str) -> dict:

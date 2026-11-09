@@ -28,7 +28,16 @@ MAGIC = b"ANNO1800-SAVE-V1\n"
 
 
 class SaveError(Exception):
-    pass
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str = "invalid_checkpoint",
+        format_version: int | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.code = code
+        self.format_version = format_version
 
 
 def _ensure_directory() -> None:
@@ -73,20 +82,32 @@ def _read_checkpoint(slot: str) -> dict[str, Any]:
     path = _slot_path(slot)
 
     if not path.exists():
-        raise SaveError("Save slot is empty.")
+        raise SaveError(
+            "Save slot is empty.",
+            code="empty",
+        )
 
     if path.stat().st_size > MAX_SAVE_BYTES:
-        raise SaveError("Save file exceeds size limit.")
+        raise SaveError(
+            "Save file exceeds size limit.",
+            code="too_large",
+        )
 
     raw = path.read_bytes()
 
     if not raw.startswith(MAGIC):
-        raise SaveError("Unrecognized save format.")
+        raise SaveError(
+            "Unrecognized save format.",
+            code="unknown_format",
+        )
 
     remainder = raw[len(MAGIC):]
 
     if len(remainder) < 33:
-        raise SaveError("Save file is incomplete.")
+        raise SaveError(
+            "Save file is incomplete.",
+            code="incomplete",
+        )
 
     signature = remainder[:32]
     payload = remainder[32:]
@@ -97,38 +118,85 @@ def _read_checkpoint(slot: str) -> dict[str, Any]:
         "sha256",
     )
 
-    if not hmac.compare_digest(signature, expected):
+    if not hmac.compare_digest(
+        signature,
+        expected,
+    ):
         raise SaveError(
             "Save authentication failed. "
-            "The checkpoint may have been modified."
+            "The checkpoint may have been modified.",
+            code="authentication_failed",
         )
 
-    # Only authenticated, server-created checkpoint bytes
-    # may reach pickle.loads().
+    # Only authenticated server checkpoints
+    # are eligible for deserialization.
     try:
         data = pickle.loads(payload)
     except Exception as exc:
         raise SaveError(
             "Cannot restore this checkpoint. "
-            "It may be incompatible with the current code."
+            "It may be incompatible with the current code.",
+            code="incompatible_code",
         ) from exc
 
     if not isinstance(data, dict):
-        raise SaveError("Invalid checkpoint structure.")
+        raise SaveError(
+            "Invalid checkpoint structure.",
+            code="invalid_structure",
+        )
 
     if data.get("version") != SAVE_VERSION:
-        raise SaveError("Unsupported checkpoint version.")
+        raise SaveError(
+            "Unsupported checkpoint version.",
+            code="unsupported_version",
+            format_version=(
+                data.get("version")
+                if type(data.get("version")) is int
+                else None
+            ),
+        )
 
     if not isinstance(data.get("game"), Game):
-        raise SaveError("Checkpoint does not contain a Game.")
+        raise SaveError(
+            "Checkpoint does not contain a Game.",
+            code="invalid_structure",
+        )
 
     if not isinstance(data.get("history"), list):
-        raise SaveError("Checkpoint history is invalid.")
+        raise SaveError(
+            "Checkpoint history is invalid.",
+            code="invalid_structure",
+        )
 
-    if not isinstance(data.get("next_event_id"), int):
-        raise SaveError("Checkpoint event sequence is invalid.")
+    if not isinstance(
+        data.get("next_event_id"),
+        int,
+    ):
+        raise SaveError(
+            "Checkpoint event sequence is invalid.",
+            code="invalid_structure",
+        )
+
+    metadata = data.get("metadata")
+
+    if (
+        not isinstance(metadata, dict)
+        or not all(
+            key in metadata
+            for key in (
+                "round",
+                "current_player",
+                "game_over",
+            )
+        )
+    ):
+        raise SaveError(
+            "Checkpoint metadata is invalid.",
+            code="invalid_structure",
+        )
 
     return data
+
 
 
 def save_game(
@@ -209,22 +277,28 @@ def load_game(slot: str) -> dict[str, Any]:
     return _read_checkpoint(slot)
 
 
+
 def list_saves() -> list[dict]:
+    """Return read-only diagnostics for each fixed slot."""
     result = []
 
     for slot in ("slot1", "slot2", "slot3"):
         path = _slot_path(slot)
 
-        if not path.exists():
-            result.append({
-                "slot": slot,
-                "exists": False,
-                "valid": False,
-                "metadata": None,
-            })
-            continue
-
         try:
+            exists = path.exists()
+
+            if not exists:
+                result.append({
+                    "slot": slot,
+                    "exists": False,
+                    "valid": False,
+                    "metadata": None,
+                    "format_version": None,
+                    "diagnostic": None,
+                })
+                continue
+
             data = _read_checkpoint(slot)
 
             result.append({
@@ -232,14 +306,34 @@ def list_saves() -> list[dict]:
                 "exists": True,
                 "valid": True,
                 "metadata": data["metadata"],
+                "format_version": data["version"],
+                "diagnostic": None,
             })
 
-        except SaveError:
+        except SaveError as exc:
             result.append({
                 "slot": slot,
                 "exists": True,
                 "valid": False,
                 "metadata": None,
+                "format_version": exc.format_version,
+                "diagnostic": {
+                    "code": exc.code,
+                    "message": str(exc),
+                },
+            })
+
+        except OSError:
+            result.append({
+                "slot": slot,
+                "exists": True,
+                "valid": False,
+                "metadata": None,
+                "format_version": None,
+                "diagnostic": {
+                    "code": "read_error",
+                    "message": "Unable to read this save slot.",
+                },
             })
 
     return result

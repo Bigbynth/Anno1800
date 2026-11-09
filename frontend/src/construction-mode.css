@@ -7303,3 +7303,57 @@ button.tutorial-highlight {
   font-size: 12px;
   line-height: 1.6;
 }
+
+/* STEP 123 — SAVE COMPATIBILITY & RECOVERY */
+
+.save-load-version {
+  display: block;
+  margin-top: 6px;
+  color: #cbd7ce;
+  font-size: 11px;
+}
+
+.save-load-diagnostic {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 7px;
+  padding: 10px;
+  border: 1px solid #b77c73;
+  border-radius: 7px;
+  background: #49332e;
+}
+
+.save-load-diagnostic strong {
+  color: #f2c5b9;
+  font-size: 12px;
+}
+
+.save-load-diagnostic small {
+  color: #ead0c8;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.save-load-diagnostic p {
+  margin: 5px 0 0;
+  color: #e8dcc1;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.save-load-compatible {
+  color: #a0cdb8;
+  font-size: 11px;
+}
+
+.save-load-recovery-note {
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #98825c;
+  border-radius: 7px;
+  background: #493d2d;
+  color: #e8dcc1;
+  font-size: 11px;
+  line-height: 1.6;
+}
