@@ -32,6 +32,8 @@ export function SaveLoadDialog({
 
   const [busy, setBusy] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(true);
+  /* STEP 122 — SAVE SLOT AVAILABILITY */
+  const [slotsLoaded, setSlotsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -42,10 +44,17 @@ export function SaveLoadDialog({
 
   async function refreshSlots() {
     setLoadingSlots(true);
+    setSlotsLoaded(false);
+    setError(null);
+
+    // Do not display potentially stale save information.
+    setSlots([]);
 
     try {
       const result = await fetchSaveSlots();
+
       setSlots(result.slots);
+      setSlotsLoaded(true);
     } catch (caught) {
       setError(
         caught instanceof Error
@@ -165,7 +174,11 @@ export function SaveLoadDialog({
                 <div className="save-load-slot-actions">
                   <button
                     type="button"
-                    disabled={busy || loadingSlots}
+                    disabled={
+                        busy ||
+                        loadingSlots ||
+                        !slotsLoaded
+                      }
                     onClick={() =>
                       setPending({
                         slot,
@@ -181,6 +194,7 @@ export function SaveLoadDialog({
                     disabled={
                       busy ||
                       loadingSlots ||
+                      !slotsLoaded ||
                       !saved?.valid
                     }
                     onClick={() =>

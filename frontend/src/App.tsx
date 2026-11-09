@@ -509,7 +509,7 @@ function App() {
         "and an active game."
       );
     }
-    
+
     setActionLoading(true);
 
     try {
@@ -584,18 +584,35 @@ function App() {
       // Refresh catalogues for the restored player.
       // Their failure must not turn a successful load
       // into a false "load failed" notification.
-      try {
-        const [industries, naval] = await Promise.all([
+      /* STEP 122 — RESTORE SESSION CATALOGUES */
+
+      // Clear catalogue data belonging to the previous game.
+      setIndustryData(null);
+      setNavalData(null);
+
+      // A successful game restoration must remain successful
+      // even if either catalogue refresh fails.
+      const [industryResult, navalResult] =
+        await Promise.allSettled([
           fetchIndustries(),
           fetchNavalCatalogue(),
         ]);
 
-        setIndustryData(industries);
-        setNavalData(naval);
-      } catch (refreshError) {
+      if (industryResult.status === "fulfilled") {
+        setIndustryData(industryResult.value);
+      } else {
         console.warn(
-          "Game restored, but catalogue refresh failed:",
-          refreshError
+          "Game restored, but industry catalogue refresh failed:",
+          industryResult.reason
+        );
+      }
+
+      if (navalResult.status === "fulfilled") {
+        setNavalData(navalResult.value);
+      } else {
+        console.warn(
+          "Game restored, but naval catalogue refresh failed:",
+          navalResult.reason
         );
       }
     } finally {
